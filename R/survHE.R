@@ -1,5 +1,5 @@
 ## SET OF UTILITY FUNCTIONS TO INCLUDE SURVIVAL ANALYSIS RESULTS INTO A HEALTH ECONOMIC MODEL
-## Gianluca Baio + Will Browne, 1 Nov 2016
+## Gianluca Baio + Will Browne, 8 Dec 2016
 ##
 # cat(paste0("\n# ",ls(),"\n"))
 # bugs2survHE
@@ -601,7 +601,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgamma(data.stan$d,shape[i],lc[i,]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgamma(data.stan$d,shape.bar,lc.bar[i,]))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): shape, rate + covariates
-	        npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	        npars = 2+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="gengamma") {
@@ -618,7 +618,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgengamma(data.stan$d,lc[i,],scale[i],q[i]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgengamma(data.stan$d,lc.bar[i,],scale.bar,q.bar))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): mu, sigma, Q + covariates
-	        npars = 3+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	        npars = 3+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="genf") {
@@ -637,7 +637,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgenf(data.stan$d,lc[i,],sigma[i],Q[i],P[i]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgenf(data.stan$d,lc.bar[i,],sigma.bar,Q.bar,P.bar))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): mu, sigma, Q, P + covariates
-	        npars = 4+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	        npars = 4+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="lognormal") {
@@ -757,7 +757,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       
   n.elements <- ifelse(is.null(newdata),0,length(newdata))
   n.provided <- unlist(lapply(newdata,function(x) length(x)))
-  
+
   # If no newdata are provided then see what to do!
   data <- fit$misc$data
   test <- attributes(terms(fit$misc$formula))$term.labels
@@ -961,7 +961,12 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   if(fit$method=="hmc") {
       beta <- rstan::extract(m)$beta
       coefs = beta
-      coefs=matrix(coefs[,apply(fit$misc$data.stan$X,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
+      if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+        covmat = fit$misc$data.stan$X_obs
+      } else {
+        covmat = fit$misc$data.stan$X
+      }
+      coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
       # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
       #   coefs = matrix(beta[,1],nrow=nrow(beta),byrow=T)
       # }
@@ -1315,170 +1320,188 @@ print.survHE <- function(x,mod=1,...) {
     if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   }
   
-  if(x$method=="hmc" & original==FALSE) {
+  if(x$method=="hmc") {
     quiet <- function(x) { 
       sink(tempfile()) 
       on.exit(sink()) 
       invisible(force(x)) 
     } 
     # If the model is intercept only or only one covariate, then gets rid of unnecessary beta's
-  quiet(print(x$models[[mod]]))
-  table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
-  take.out = which(rownames(table)=="lp__")
-  betas = grep("beta",rownames(table))
-  take.out = c(take.out,betas[apply(x$misc$data.stan$X,2,function(x) all(x==0))])
-  # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
-  #   take.out = c(take.out,which(rownames(table)=="beta[2]"))
-  # }
-  table=table[-take.out,]
-  
-  if (x$models[[mod]]@model_name=="Exponential") {
-    rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
-    rownames(rate) <- "rate"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("rate")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+    quiet(print(x$models[[mod]]))
+    table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
+    take.out = which(rownames(table)=="lp__")
+    betas = grep("beta",rownames(table))
+    if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+      covmat = x$misc$data.stan$X_obs
     } else {
-      effects = matrix(NA,nrow=0,ncol=4)
+      covmat = x$misc$data.stan$X
     }
-    res = rbind(rate,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
+    take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
+    # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
+    #   take.out = c(take.out,which(rownames(table)=="beta[2]"))
+    # }
+    table=table[-take.out,]
   
-  if (x$models[[mod]]@model_name=="Gamma") {
-    rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
-    rownames(rate) <- "rate"
-    shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-    rownames(shape) <- "shape"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res = rbind(shape,rate,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="WeibullAF" | x$models[[mod]]@model_name=="WeibullPH") {
-    scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
-    rownames(scale) <- "scale"
-    shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-    rownames(shape) <- "shape"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res = rbind(shape,scale,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="Gompertz") {
-    rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
-    rownames(rate) <- "rate"
-    shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-    rownames(shape) <- "shape"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res = rbind(shape,rate,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="logNormal") {
-    meanlog <- matrix(table[grep("meanlog",rownames(table)),],ncol=4)
-    rownames(meanlog) <- "meanlog"
-    sigma <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-    rownames(sigma) <- "sdlog"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res = rbind(meanlog,sigma,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="logLogistic") {
-    rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
-    rownames(rate) <- "rate"
-    shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-    rownames(shape) <- "shape"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res = rbind(shape,rate,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="GenF") {
-    mu <- matrix(table[grep("beta",rownames(table)),],ncol=4,nrow=1)
-    rownames(mu) <- "mu"
-    sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
-    rownames(sigma) <- "sigma"
-    Q <- matrix(table[grep("Q",rownames(table)),],ncol=4)
-    rownames(Q) <- "Q"
-    P <- matrix(table[match("P",rownames(table)),],ncol=4)
-    rownames(P) <- "P"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("beta[1]","sigma","Q","P")),],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res <- rbind(mu,sigma,Q,P,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  
-  if (x$models[[mod]]@model_name=="GenGamma") {
-    mu <- matrix(table[grep("beta",rownames(table)),][1,],ncol=4,nrow=1)
-    rownames(mu) <- "mu"
-    sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
-    rownames(sigma) <- "sigma"
-    Q <- matrix(table[grep("Q",rownames(table)),],ncol=4)
-    rownames(Q) <- "Q"
-    if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-      effects=matrix(table[-which(rownames(table) %in% c("beta[1]","Q","sigma")),],ncol=4,byrow=F)
-      rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-    } else {
-      effects = matrix(NA,nrow=0,ncol=4)
-    }
-    res <- rbind(mu,sigma,Q,effects)
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
-  }
-  if (x$models[[mod]]@model_name=="RP") {
-      # # First remove "fake covariates" (used to trick Stan into having a formula with only 1 or 0 covariates for Xbeta)
-      # betas = grep("beta",rownames(table))
-      # take.out = betas[apply(x$misc$data.stan$X,2,function(x) all(x==0))]
-      # if(length(take.out)>0) {table = table[-take.out,]}
-      # Now formats the gammas
-      gamma <- matrix(table[grep("gamma",rownames(table)),],ncol=4)
-      rownames(gamma) <- paste0("gamma",0:(nrow(gamma)-1))
-      if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+    if (original==FALSE) {
+      if (x$models[[mod]]@model_name=="Exponential") {
+        rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
+        rownames(rate) <- "rate"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("rate")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(rate,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="Gamma") {
+        rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
+        rownames(rate) <- "rate"
+        shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(shape) <- "shape"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(shape,rate,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="WeibullAF" | x$models[[mod]]@model_name=="WeibullPH") {
+        scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
+        rownames(scale) <- "scale"
+        shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(shape) <- "shape"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(shape,scale,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="Gompertz") {
+        rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
+        rownames(rate) <- "rate"
+        shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(shape) <- "shape"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(shape,rate,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="logNormal") {
+        meanlog <- matrix(table[grep("meanlog",rownames(table)),],ncol=4)
+        rownames(meanlog) <- "meanlog"
+        sigma <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(sigma) <- "sdlog"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(meanlog,sigma,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="logLogistic") {
+        rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
+        rownames(rate) <- "rate"
+        shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(shape) <- "shape"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res = rbind(shape,rate,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="GenF") {
+        mu <- matrix(table[grep("beta",rownames(table)),],ncol=4,nrow=1)
+        rownames(mu) <- "mu"
+        sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
+        rownames(sigma) <- "sigma"
+        Q <- matrix(table[grep("Q",rownames(table)),],ncol=4)
+        rownames(Q) <- "Q"
+        P <- matrix(table[match("P",rownames(table)),],ncol=4)
+        rownames(P) <- "P"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("beta[1]","sigma","Q","P")),],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res <- rbind(mu,sigma,Q,P,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      
+      if (x$models[[mod]]@model_name=="GenGamma") {
+        mu <- matrix(table[grep("beta",rownames(table)),][1,],ncol=4,nrow=1)
+        rownames(mu) <- "mu"
+        sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
+        rownames(sigma) <- "sigma"
+        Q <- matrix(table[grep("Q",rownames(table)),],ncol=4)
+        rownames(Q) <- "Q"
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+          effects=matrix(table[-which(rownames(table) %in% c("beta[1]","Q","sigma")),],ncol=4,byrow=F)
+          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+        } else {
+          effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res <- rbind(mu,sigma,Q,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+      if (x$models[[mod]]@model_name=="RP") {
+        # # First remove "fake covariates" (used to trick Stan into having a formula with only 1 or 0 covariates for Xbeta)
+        # betas = grep("beta",rownames(table))
+        # take.out = betas[apply(x$misc$data.stan$X,2,function(x) all(x==0))]
+        # if(length(take.out)>0) {table = table[-take.out,]}
+        # Now formats the gammas
+        gamma <- matrix(table[grep("gamma",rownames(table)),],ncol=4)
+        rownames(gamma) <- paste0("gamma",0:(nrow(gamma)-1))
+        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
           effects=matrix(table[-grep("gamma",rownames(table)),],ncol=4,byrow=F)
           rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
-      } else {
+        } else {
           effects = matrix(NA,nrow=0,ncol=4)
+        }
+        res <- rbind(gamma,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
-      res <- rbind(gamma,effects)
-      if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      if (x$models[[mod]]@model_name=="PolyWeibull") {
+        alpha = matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        rownames(alpha) <- paste0("shape_",1:x$misc$data.stan$M)
+        to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0)))),
+                     nrow=length(x$misc$formula),byrow=T)
+        idx = paste0(which(to.rm==TRUE,arr.ind=T),collapse=",")
+        take.out=match(paste0("beta[",idx,"]"),rownames(table))
+        if(!is.na(take.out)) {table=table[-take.out,]}
+        effects=table[-grep("alpha",rownames(table)),]
+        rownames(effects) = unlist(lapply(1:x$misc$data.stan$M,function(m) {
+          paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
+        }))
+        res = rbind(alpha,effects)
+        if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+      }
+    }
   }
-  if (x$models[[mod]]@model_name=="polyweibull") {
-    ### NEED TO THINK ABOUT THIS!!
-  }
-  }
-  
+
   # Finally creates the table
-  
   # Original formatting of the tables from INLA & Stan
   if(original==TRUE) {
     if (x$method=="mle") {
@@ -1488,8 +1511,25 @@ print.survHE <- function(x,mod=1,...) {
       print(summary(x$models[[mod]]))
     }
     if (x$method=="hmc") {
-      print(x$models[[mod]],pars=c("lambda_cens","lambda_obs","cens","d","lp__","loglambda_cens","loglambda_obs"),
-            include=FALSE,probs=c(.025,.975),digits=5)
+      if (x$models[[mod]]@model_name=="PolyWeibull") {
+        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
+      } else {
+        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X,2,function(x) all(x==0))))]
+      }
+      take.out = c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
+      tab=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
+      n_kept <- x$models[[mod]]@sim$n_save - x$models[[mod]]@sim$warmup2
+      cat("Inference for Stan model: ", x$models[[mod]]@model_name, ".\n", sep = "")
+      cat(x$models[[mod]]@sim$chains, " chains, each with iter=", x$models[[mod]]@sim$iter, 
+          "; warmup=", x$models[[mod]]@sim$warmup, "; thin=", x$models[[mod]]@sim$thin, "; \n", 
+          "post-warmup draws per chain=", n_kept[1], ", ", "total post-warmup draws=", 
+          sum(n_kept), ".\n\n", sep = "")
+      print(tab,digits=digits)
+      sampler <- attr(x$models[[mod]]@sim$samples[[1]], "args")$sampler_t
+      cat("\nSamples were drawn using ", sampler, " at ", x$models[[mod]]@date, 
+          ".\n", "For each parameter, n_eff is a crude measure of effective sample size,\n", 
+          "and Rhat is the potential scale reduction factor on split chains (at \n", 
+          "convergence, Rhat=1).\n", sep = "")
     }
   } else {
     # FORMATS THE TABLE
@@ -2388,6 +2428,9 @@ poly.weibull = function(formula=NULL,data,...) {
       formula = list(formula)
     }
     M = length(formula) 
+    if(length(formula)<2){
+      stop("Please speficy at least 2 components for the Poly-Weibull model by creating\n  a list of at least two formulae, eg: 'list(Surv(time,event)~1,Surv(time,event)~treatment)'")
+    }
   }
   
   ## Stan options (the defaults are set in line with Stan's original)
@@ -2545,17 +2588,16 @@ poly.weibull = function(formula=NULL,data,...) {
   
   # Now defines the outputs of the function
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
-  misc <- list(time2run=time2run,formula=formula,data=data)
+  km = list(time=data.stan$t)
+  misc <- list(time2run=time2run,formula=formula,data=data,km=km)
   misc$vars <- vars; misc$data.stan=data.stan
   # If save.stan is set to TRUE, then saves the Stan model file(s) & data
   if(save.stan==TRUE) {
-    write_model <- lapply(1:length(distr),function(i) {
-      model_code <- attr(mod[[i]]$out@stanmodel,"model_code")
-      con <- paste0(distr[i],".stan")
-      writeLines(model_code, con=con)
-      txt <- paste0("Model code saved to the file: ",con,"\n")
-      cat(txt)
-    })
+	model_code = attr(mod$out@stanmodel,"model_code")
+    con = "PolyWeibull.stan"
+    writeLines(model_code,con=con)
+	txt = paste0("Model code saved to the file: ",con,"\n")
+    cat(txt)
   }
   mod = list(out)
   names(mod)="PolyWeibull"
@@ -2564,4 +2606,60 @@ poly.weibull = function(formula=NULL,data,...) {
   # And sets its class attribute to "survHE"
   class(res) <- "survHE"
   return(res)
+}
+
+
+
+##
+surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
+  # Computes the estimated mean survival as the area under the survival curve
+  # This is obtained using the trapezoidal method by taking the average of the "left" and "right" y-values.
+  # x: is the output from a fit.models call
+  # mod: the model to be analysed (default = 1)
+  # t: the vector of times to be used in the computation. Default = NULL, which means the observed times will be used.
+  #     NB: the vector of times should be: i) long enough so that S(t) goes to 0; and ii) dense enough so that
+  #         the approximation to the AUC is sufficiently precise
+  # nsim: number of simulations from the survival curve distributions to be used (to compute interval estimates)
+  # stats: a logical value. If TRUE, also shows a table 
+  # ...: optional arguments
+  #
+  # Defines the utility function to compute the stats table
+  make.stats = function (x, dim = 2) {
+    bugs.stats = function (x) {
+      c(mean(x), sd(x), quantile(x, 0.025), median(x), quantile(x, 0.975))
+    }
+    if (is.null(dim(x)) == TRUE) {
+      tab <- bugs.stats(x)
+      names(tab) <- c("mean", "sd", "2.5%", "median", "97.5%")
+    }
+    if (is.null(dim(x)) == FALSE) {
+      tab <- t(apply(x, dim, function(x) bugs.stats(x)))
+      colnames(tab) <- c("mean", "sd", "2.5%", "median", "97.5%")
+    }
+    return(tab)
+  }
+
+  exArgs = list(...)
+  if (!exists("newdata",where=exArgs)) {newdata=NULL} else {newdata=exArgs$newdata}
+  if (is.null(t)) {t=x$misc$km$time} else {t=t}
+  
+  psa = make.surv(x,mod=mod,t=t,nsim=nsim,newdata=newdata)
+  mean.surv = matrix(unlist(lapply(1:psa$nsim,function(i) {
+    lapply(1:length(psa$S[[1]]),function(j) {
+      xvar = psa$S[[i]][[j]][,1]
+      yvar = psa$S[[i]][[j]][,2]
+      sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+    })
+  })),nrow=psa$nsim,byrow=T)
+  colnames(mean.surv) = names(x$misc$km$strata)
+  
+  tab = NULL
+  if(stats==TRUE & psa$nsim>1) {
+    tab = make.stats(mean.surv)
+    if(!is.null(names(x$misc$km$strata))) {rownames(tab) = names(x$misc$km$strata)} else {rownames(tab) = ""}
+    cat("\nEstimated average survival time distribution* \n")
+    print(tab)
+    cat(paste0("\n*Computed over the range: [",paste(range(t),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
+  }
+  list(mean.surv=mean.surv,tab=tab)
 }
