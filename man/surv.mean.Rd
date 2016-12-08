@@ -1,5 +1,5 @@
-\name{mean.surv}
-\alias{mean.surv}
+\name{surv.mean}
+\alias{surv.mean}
 \title{
 Computes the mean survival time for a given model and data
 }
@@ -7,7 +7,7 @@ Computes the mean survival time for a given model and data
 Calculates the mean survival time as the area under the survival curve
 }
 \usage{
-mean.surv(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...)
+surv.mean(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

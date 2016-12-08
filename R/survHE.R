@@ -2644,6 +2644,13 @@ surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
   if (is.null(t)) {t=x$misc$km$time} else {t=t}
   
   psa = make.surv(x,mod=mod,t=t,nsim=nsim,newdata=newdata)
+  rlabs = rownames(psa$des.mat)
+  if (!is.null(rlabs)) {
+    rlabs=gsub("^1,","",rlabs)
+  } else {
+    rlabs = ""
+  }
+  
   mean.surv = matrix(unlist(lapply(1:psa$nsim,function(i) {
     lapply(1:length(psa$S[[1]]),function(j) {
       xvar = psa$S[[i]][[j]][,1]
@@ -2651,12 +2658,22 @@ surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
       sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
     })
   })),nrow=psa$nsim,byrow=T)
-  colnames(mean.surv) = names(x$misc$km$strata)
+  if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
+    colnames(mean.surv) = names(x$misc$km$strata)
+  }
   
   tab = NULL
   if(stats==TRUE & psa$nsim>1) {
     tab = make.stats(mean.surv)
-    if(!is.null(names(x$misc$km$strata))) {rownames(tab) = names(x$misc$km$strata)} else {rownames(tab) = ""}
+    if(!is.null(names(x$misc$km$strata))) {
+      if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
+        rownames(tab) = names(x$misc$km$strata)
+      } else {
+        rownames(tab) = rlabs
+      }
+    } else {
+      rownames(tab) = rlabs
+    }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
     cat(paste0("\n*Computed over the range: [",paste(range(t),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
