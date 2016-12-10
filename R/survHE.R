@@ -359,11 +359,14 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         data.stan$n_obs <- length(data.stan$t); data.stan$n_cens <- length(data.stan$d)
         data.stan$X_obs = matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
         data.stan$X_cens = matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
+        # NB: X isn't really needed in this case, but it's then used by make.surv & print, plot, summary etc, so it's helpful to have it!
+        data.stan$X=model.matrix(formula,data)
         data.stan$H=ncol(data.stan$X_obs)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
           data.stan$X_obs = cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
           data.stan$X_cens = cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
+          data.stan$X=cbind(data.stan$X,rep(0,data.stan$n))
           data.stan$H = ncol(data.stan$X_obs)
         }
       } 
@@ -519,7 +522,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       out=rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
                       pars=pars,include=include,cores=cores)
       toc = proc.time()-tic
-      time2run[x]=toc[3]
+      time2run=toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
     })
     if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
@@ -707,6 +710,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   if(method=="hmc") {
     misc$vars <- vars
     misc$data.stan=data.stan
+##    misc$data.stan=lapply(1:length(mod),function(i) mod[[i]]$data.stan)
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
     if(save.stan==TRUE) {
       write_model <- lapply(1:length(distr),function(i) {
@@ -961,11 +965,12 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   if(fit$method=="hmc") {
       beta <- rstan::extract(m)$beta
       coefs = beta
-      if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-        covmat = fit$misc$data.stan$X_obs
-      } else {
-        covmat = fit$misc$data.stan$X
-      }
+      covmat = fit$misc$data.stan$X
+      # if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+      #   covmat = fit$misc$data.stan$X_obs
+      # } else {
+      #   covmat = fit$misc$data.stan$X
+      # }
       coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
       # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
       #   coefs = matrix(beta[,1],nrow=nrow(beta),byrow=T)
@@ -1331,15 +1336,14 @@ print.survHE <- function(x,mod=1,...) {
     table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
     take.out = which(rownames(table)=="lp__")
     betas = grep("beta",rownames(table))
-    if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-      covmat = x$misc$data.stan$X_obs
-    } else {
-      covmat = x$misc$data.stan$X
-    }
-    take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
-    # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
-    #   take.out = c(take.out,which(rownames(table)=="beta[2]"))
+    covmat = x$misc$data.stan$X
+    # if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+    #   covmat = x$misc$data.stan$X_obs
+    # } else {
+    #   covmat = x$misc$data.stan$X
     # }
+    ## WILL THIS WORK FOR THE POLY-WEIBULL???
+    take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
     table=table[-take.out,]
   
     if (original==FALSE) {
@@ -1514,7 +1518,7 @@ print.survHE <- function(x,mod=1,...) {
       if (x$models[[mod]]@model_name=="PolyWeibull") {
         take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
       } else {
-        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X,2,function(x) all(x==0))))]
+        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
       }
       take.out = c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
       tab=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
@@ -2590,7 +2594,7 @@ poly.weibull = function(formula=NULL,data,...) {
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
   km = list(time=data.stan$t)
   misc <- list(time2run=time2run,formula=formula,data=data,km=km)
-  misc$vars <- vars; misc$data.stan=data.stan
+  misc$vars <- vars; misc$data.stan=list(data.stan)
   # If save.stan is set to TRUE, then saves the Stan model file(s) & data
   if(save.stan==TRUE) {
 	model_code = attr(mod$out@stanmodel,"model_code")
@@ -2611,10 +2615,10 @@ poly.weibull = function(formula=NULL,data,...) {
 
 
 ##
-surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
+summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
   # Computes the estimated mean survival as the area under the survival curve
   # This is obtained using the trapezoidal method by taking the average of the "left" and "right" y-values.
-  # x: is the output from a fit.models call
+  # object: is the output from a fit.models call
   # mod: the model to be analysed (default = 1)
   # t: the vector of times to be used in the computation. Default = NULL, which means the observed times will be used.
   #     NB: the vector of times should be: i) long enough so that S(t) goes to 0; and ii) dense enough so that
@@ -2622,10 +2626,19 @@ surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
   # nsim: number of simulations from the survival curve distributions to be used (to compute interval estimates)
   # stats: a logical value. If TRUE, also shows a table 
   # ...: optional arguments
+  # newdata = a list (of lists), specifiying the values of the covariates at which the computation is performed. For example
+  #           'list(list(arm=0),list(arm=1))' will create two survival curves, one obtained by setting the covariate 'arm'
+  #           to the value 0 and the other by setting it to the value 1. In line with 'flexsurv' notation, the user needs
+  #           to either specify the value for *all* the covariates or for none (in which case, 'newdata=NULL', which is the
+  #           default). If some value is specified and at least one of the covariates is continuous, then a single survival
+  #           curve will be computed in correspondence of the average values of all the covariates (including the factors, 
+  #           which in this case are expanded into indicators). The order of the variables in the list *must* be the same
+  #           as in the formula used for the model
+  # labs: a vector of strings giving the names of the "profile" of covariates for which the mean survival times are computed
   #
   # Defines the utility function to compute the stats table
-  make.stats = function (x, dim = 2) {
-    bugs.stats = function (x) {
+  make.stats = function(x, dim = 2) {
+    bugs.stats = function(x) {
       c(mean(x), sd(x), quantile(x, 0.025), median(x), quantile(x, 0.975))
     }
     if (is.null(dim(x)) == TRUE) {
@@ -2641,15 +2654,17 @@ surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
 
   exArgs = list(...)
   if (!exists("newdata",where=exArgs)) {newdata=NULL} else {newdata=exArgs$newdata}
-  if (is.null(t)) {t=x$misc$km$time} else {t=t}
-  
-  psa = make.surv(x,mod=mod,t=t,nsim=nsim,newdata=newdata)
+  if (!exists("labs",where=exArgs)) {labs=NULL} else {labs=exArgs$labs}
+  if (is.null(t)) {t=object$misc$km$time} else {t=t}
+
+  psa = make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
   rlabs = rownames(psa$des.mat)
   if (!is.null(rlabs)) {
     rlabs=gsub("^1,","",rlabs)
   } else {
     rlabs = ""
   }
+  if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs=labs}
   
   mean.surv = matrix(unlist(lapply(1:psa$nsim,function(i) {
     lapply(1:length(psa$S[[1]]),function(j) {
@@ -2658,25 +2673,26 @@ surv.mean = function(x,mod=1,t=NULL,nsim=1000,stats=TRUE,...) {
       sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
     })
   })),nrow=psa$nsim,byrow=T)
-  if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
-    colnames(mean.surv) = names(x$misc$km$strata)
+  if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
+    colnames(mean.surv) = names(object$misc$km$strata)
   }
   
   tab = NULL
-  if(stats==TRUE & psa$nsim>1) {
+  if(psa$nsim>1) {
     tab = make.stats(mean.surv)
-    if(!is.null(names(x$misc$km$strata))) {
-      if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
-        rownames(tab) = names(x$misc$km$strata)
-      } else {
-        rownames(tab) = rlabs
-      }
-    } else {
-      rownames(tab) = rlabs
-    }
+    rownames(tab) = rlabs
+    # if(!is.null(names(x$misc$km$strata))) {
+    #   if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
+    #     rownames(tab) = names(x$misc$km$strata)
+    #   } else {
+    #     rownames(tab) = rlabs
+    #   }
+    # } else {
+    #   rownames(tab) = rlabs
+    # }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
     cat(paste0("\n*Computed over the range: [",paste(range(t),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
   }
-  list(mean.surv=mean.surv,tab=tab)
+  invisible(list(mean.surv=mean.surv,tab=tab))
 }
