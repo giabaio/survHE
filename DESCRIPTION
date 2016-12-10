@@ -14,4 +14,4 @@ Additional_repositories: https://www.math.ntnu.no/inla/R/stable
 Description: Contains a suite of functions for survival analysis in health economics. Can be used to feed results to an Excel file (eg for a Markov model).
 License: GPL (>=2)
 NeedsCompilation: no
-Packaged: 2016-12-10 15:48:53 UTC; gianluca
+Packaged: 2016-12-10 16:38:49 UTC; gianluca
