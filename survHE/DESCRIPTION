@@ -1,0 +1,17 @@
+Package: survHE
+Type: Package
+Title: Survival Analysis in Health Economic Evaluation
+Version: 1.0.4
+Date: 2016-12-10
+Author: Gianluca Baio
+Maintainer: Gianluca Baio <gianluca@stats.ucl.ac.uk>
+Depends: R (>= 3.0.2), flexsurv, Rcpp (>= 0.11.0)
+Imports: rms, xlsx, tools, data.table, rstan(>= 2.8.1), INLA, methods
+Suggests: shinystan
+LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0),
+        Rcpp (>= 0.12.0), RcppEigen
+Additional_repositories: https://www.math.ntnu.no/inla/R/stable
+Description: Contains a suite of functions for survival analysis in health economics. Can be used to feed results to an Excel file (eg for a Markov model).
+License: GPL (>=2)
+NeedsCompilation: no
+Packaged: 2016-12-10 15:48:53 UTC; gianluca
