@@ -3554,6 +3554,8 @@ public:
         }
 
         // validate data
+        check_greater_or_equal(function__,"H",H,2);
+        check_greater_or_equal(function__,"M",M,2);
         check_greater_or_equal(function__,"sigma_beta",sigma_beta,0);
 
         double DUMMY_VAR__(std::numeric_limits<double>::quiet_NaN());
@@ -3721,7 +3723,7 @@ public:
         // model body
         try {
             for (int m = 1; m <= M; ++m) {
-                lp_accum__.add(normal_log<propto__>(stan::model::rvalue(beta, stan::model::cons_list(stan::model::index_uni(m), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "beta"), stan::model::rvalue(mu_beta, stan::model::cons_list(stan::model::index_uni(m), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "mu_beta"), stan::model::rvalue(sigma_beta, stan::model::cons_list(stan::model::index_uni(m), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "sigma_beta")));
+                lp_accum__.add(normal_log<propto__>(stan::model::rvalue(beta, stan::model::cons_list(stan::model::index_uni(m), stan::model::cons_list(stan::model::index_omni(), stan::model::nil_index_list())), "beta"), stan::model::rvalue(mu_beta, stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), "mu_beta"), stan::model::rvalue(sigma_beta, stan::model::cons_list(stan::model::index_omni(), stan::model::cons_list(stan::model::index_uni(m), stan::model::nil_index_list())), "sigma_beta")));
             }
             lp_accum__.add(polyweibull_lpdf<propto__>(t, d, alpha, lambda, M, pstream__));
         } catch (const std::exception& e) {

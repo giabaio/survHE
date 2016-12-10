@@ -366,7 +366,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         if (data.stan$H==1) {
           data.stan$X_obs = cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
           data.stan$X_cens = cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
-          data.stan$X=cbind(data.stan$X,rep(0,data.stan$n))
+          data.stan$X=cbind(data.stan$X,rep(0,data.stan$n_obs))
           data.stan$H = ncol(data.stan$X_obs)
         }
       } 
@@ -710,7 +710,6 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   if(method=="hmc") {
     misc$vars <- vars
     misc$data.stan=data.stan
-##    misc$data.stan=lapply(1:length(mod),function(i) mod[[i]]$data.stan)
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
     if(save.stan==TRUE) {
       write_model <- lapply(1:length(distr),function(i) {
@@ -966,15 +965,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       beta <- rstan::extract(m)$beta
       coefs = beta
       covmat = fit$misc$data.stan$X
-      # if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-      #   covmat = fit$misc$data.stan$X_obs
-      # } else {
-      #   covmat = fit$misc$data.stan$X
-      # }
       coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
-      # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
-      #   coefs = matrix(beta[,1],nrow=nrow(beta),byrow=T)
-      # }
       if(ncol(coefs)>0) {
         if(dist!="RP") {
           colnames(coefs) = colnames(model.matrix(fit$misc$formula,fit$misc$data))
@@ -1337,12 +1328,6 @@ print.survHE <- function(x,mod=1,...) {
     take.out = which(rownames(table)=="lp__")
     betas = grep("beta",rownames(table))
     covmat = x$misc$data.stan$X
-    # if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-    #   covmat = x$misc$data.stan$X_obs
-    # } else {
-    #   covmat = x$misc$data.stan$X
-    # }
-    ## WILL THIS WORK FOR THE POLY-WEIBULL???
     take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
     table=table[-take.out,]
   
@@ -1518,7 +1503,7 @@ print.survHE <- function(x,mod=1,...) {
       if (x$models[[mod]]@model_name=="PolyWeibull") {
         take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
       } else {
-        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
+        take.out = betas[apply(covmat,2,function(x) all(x==0))] 
       }
       take.out = c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
       tab=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
@@ -1826,25 +1811,6 @@ plot.survHE <- function(...) {
       legend(x="topright",legend=labs,lwd=2,bty="n",col=col,cex=cex.lab)
     }
 }
-
-
-# model.checking <- function(x,mod=1,...) {
-#   # x = a survHE object with the results of the call to the fit.models function
-#   # mod = the model to analyse
-#   # ... = additional options
-#   
-#   exArgs = list(...)
-#   if (x$method=="mle") {
-#     stop("Model checking is available only for Bayesian models")
-#   }
-#   if (x$method=="inla") {
-#     
-#   }
-#   if (x$method=="hmc") {
-#     rstan::traceplot(x$models[[mod]])
-#     rstan::stan_ac(x$models[[mod]])
-#   }
-# }
 
 
 model.fit.plot <- function(...,type="aic") {
@@ -2507,7 +2473,7 @@ poly.weibull = function(formula=NULL,data,...) {
   # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
   dso <- dso[[6]] 
   
-  data.stan = list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event]); data.stan$n = length(data.stan$t); 
+  data.stan = list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event]); data.stan$n = length(data.stan$t);
   data.stan$M = M;
   X = lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
   # max number of covariates in all the model formulae
@@ -2594,7 +2560,7 @@ poly.weibull = function(formula=NULL,data,...) {
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
   km = list(time=data.stan$t)
   misc <- list(time2run=time2run,formula=formula,data=data,km=km)
-  misc$vars <- vars; misc$data.stan=list(data.stan)
+  misc$vars <- vars; misc$data.stan=data.stan
   # If save.stan is set to TRUE, then saves the Stan model file(s) & data
   if(save.stan==TRUE) {
 	model_code = attr(mod$out@stanmodel,"model_code")
