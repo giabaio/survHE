@@ -1,5 +1,5 @@
 ## SET OF UTILITY FUNCTIONS TO INCLUDE SURVIVAL ANALYSIS RESULTS INTO A HEALTH ECONOMIC MODEL
-## Gianluca Baio + Will Browne, 8 Dec 2016
+## Gianluca Baio + Will Browne, 14 Dec 2016
 ##
 # cat(paste0("\n# ",ls(),"\n"))
 # bugs2survHE
@@ -359,14 +359,11 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         data.stan$n_obs <- length(data.stan$t); data.stan$n_cens <- length(data.stan$d)
         data.stan$X_obs = matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
         data.stan$X_cens = matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
-        # NB: X isn't really needed in this case, but it's then used by make.surv & print, plot, summary etc, so it's helpful to have it!
-        data.stan$X=model.matrix(formula,data)
         data.stan$H=ncol(data.stan$X_obs)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
           data.stan$X_obs = cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
           data.stan$X_cens = cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
-          data.stan$X=cbind(data.stan$X,rep(0,data.stan$n_obs))
           data.stan$H = ncol(data.stan$X_obs)
         }
       } 
@@ -522,7 +519,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       out=rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
                       pars=pars,include=include,cores=cores)
       toc = proc.time()-tic
-      time2run=toc[3]
+      time2run[x]=toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
     })
     if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
@@ -534,11 +531,12 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     names(time2run) <- labs
 
 	# Computes the log-likelihood 
-    dic <- aic <- bic <- numeric()
+    dic <- aic <- bic <- dic2 <- numeric()
 	  for (i in 1:length(distr)) {
 	    # Extracts the simulations for the relevant parameters
 	    beta = rstan::extract(mod[[i]]$out)$beta
-	    beta.hat = apply(beta,2,mean)
+	    # To safeguard against very asymmetric densities use the median (instead of the mean)
+	    beta.hat = apply(beta,2,median)
 	    data.stan=mod[[i]]$data.stan
 	    
 	    if (distr[i] %in% c("exponential","weibull","weibullPH","gompertz","lognormal","loglogistic")) {
@@ -557,7 +555,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 
 	    if (distr[i]=="weibull") {
 	        shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.hat=mean(shape)
+	        shape.hat=median(shape)
 	        logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	          data.stan$d*log(hweibull(data.stan$t,shape[i],exp(linpred[i,]))) + log(1-pweibull(data.stan$t,shape[i],exp(linpred[i,])))
 	        })),nrow=nrow(linpred),byrow=T)
@@ -568,7 +566,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    
 	    if (distr[i]=="weibullPH") {
 	      shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      shape.hat=mean(shape)
+	      shape.hat=median(shape)
 	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hweibullPH(data.stan$t,shape[i],exp(linpred[i,]))) + 
 	          log(1-pweibullPH(data.stan$t,shape[i],exp(linpred[i,])))
@@ -581,7 +579,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 
 	    if (distr[i]=="gompertz") {
 	      shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      shape.hat=mean(shape)
+	      shape.hat=median(shape)
 	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hgompertz(data.stan$t,shape[i],exp(linpred[i,]))) + 
 	          log(1-pgompertz(data.stan$t,shape[i],exp(linpred[i,])))
@@ -594,7 +592,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    
 	    if (distr[i]=="gamma") {
 	        shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.bar=mean(shape)
+	        shape.bar=median(shape)
 	        lo=exp(beta%*%t(data.stan$X_obs))
 	        lc=exp(beta%*%t(data.stan$X_cens))
 	        lo.bar=exp(beta.hat%*%t(data.stan$X_obs))
@@ -609,9 +607,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    
 	    if (distr[i]=="gengamma") {
 	        q=as.numeric(rstan::extract(mod[[i]]$out)$Q)
-	        q.bar=mean(q)
+	        q.bar=median(q)
 	        scale=as.numeric(rstan::extract(mod[[i]]$out)$sigma)
-	        scale.bar=mean(scale)
+	        scale.bar=median(scale)
 	        lo=(beta%*%t(data.stan$X_obs))
 	        lc=(beta%*%t(data.stan$X_cens))
 	        lo.bar=(beta.hat%*%t(data.stan$X_obs))
@@ -626,9 +624,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    
 	    if (distr[i]=="genf") {
 	        Q=as.numeric(rstan::extract(mod[[i]]$out)$Q)
-	        Q.bar=mean(Q)
+	        Q.bar=median(Q)
 	        P=as.numeric(rstan::extract(mod[[i]]$out)$P)
-	        P.bar=mean(P)
+	        P.bar=median(P)
 	        sigma=as.numeric(rstan::extract(mod[[i]]$out)$sigma)
 	        sigma.bar=mean(sigma)
 	        lo=(beta%*%t(data.stan$X_obs))
@@ -645,20 +643,20 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    
 	    if (distr[i]=="lognormal") {
 	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      sigma.hat=mean(sigma)
+	      sigma.hat=median(sigma)
 	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hlnorm(data.stan$t,exp(linpred[i,]),sigma[i])) + 
-	          log(1-plnorm(data.stan$t,exp(linpred[i,]),sigma[i]))
+	        data.stan$d*log(hlnorm(data.stan$t,(linpred[i,]),sigma[i])) + 
+	          log(1-plnorm(data.stan$t,(linpred[i,]),sigma[i]))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hlnorm(data.stan$t,exp(linpred.hat),sigma.hat))+
-	                          log(1-plnorm(data.stan$t,exp(linpred.hat),sigma.hat)),nrow=1)
+	      logf.hat = matrix(data.stan$d*log(hlnorm(data.stan$t,(linpred.hat),sigma.hat))+
+	                          log(1-plnorm(data.stan$t,(linpred.hat),sigma.hat)),nrow=1)
 	      # Number of parameters (for AIC): meanlog, sdlog + covariates
 	      npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 
 	    if (distr[i]=="loglogistic") {
 	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      sigma.hat=mean(sigma)
+	      sigma.hat=median(sigma)
 	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hllogis(data.stan$t,sigma[i],exp(linpred[i,]))) + 
 	          log(1-pllogis(data.stan$t,sigma[i],exp(linpred[i,])))
@@ -671,7 +669,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 
 	    if (distr[i]=="rps") {
 	        gamma = rstan::extract(mod[[i]]$out)$gamma
-	        gamma.hat = apply(gamma,2,mean)
+	        gamma.hat = apply(gamma,2,median)
 	        logf = data.stan$d*(-log(data.stan$t)+log(gamma%*%t(data.stan$DB)) + gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X)) -
 	                     exp(gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X))
 	        logf.hat = t(data.stan$d*(-log(data.stan$t)+log(data.stan$DB%*%gamma.hat)+data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat) - 
@@ -697,7 +695,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    D.theta=-2*loglik
 	    D.bar=-2*loglik.bar
 	    pD = mean(D.theta) - D.bar
+	    pV = .5*var(D.theta)
 	    dic[i] = mean(D.theta)+pD
+	    dic2[i] = mean(D.theta) + pV
 	    # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
 	    aic[i] = D.bar+2*npars                   #mean(D.theta)+2*pD
 	    bic[i] = D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
@@ -710,6 +710,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   if(method=="hmc") {
     misc$vars <- vars
     misc$data.stan=data.stan
+	model.fitting$dic2=dic2
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
     if(save.stan==TRUE) {
       write_model <- lapply(1:length(distr),function(i) {
@@ -964,8 +965,15 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   if(fit$method=="hmc") {
       beta <- rstan::extract(m)$beta
       coefs = beta
-      covmat = fit$misc$data.stan$X
+      if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+        covmat = fit$misc$data.stan$X_obs
+      } else {
+        covmat = fit$misc$data.stan$X
+      }
       coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
+      # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
+      #   coefs = matrix(beta[,1],nrow=nrow(beta),byrow=T)
+      # }
       if(ncol(coefs)>0) {
         if(dist!="RP") {
           colnames(coefs) = colnames(model.matrix(fit$misc$formula,fit$misc$data))
@@ -1327,8 +1335,15 @@ print.survHE <- function(x,mod=1,...) {
     table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
     take.out = which(rownames(table)=="lp__")
     betas = grep("beta",rownames(table))
-    covmat = x$misc$data.stan$X
+    if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+      covmat = x$misc$data.stan$X_obs
+    } else {
+      covmat = x$misc$data.stan$X
+    }
     take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
+    # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
+    #   take.out = c(take.out,which(rownames(table)=="beta[2]"))
+    # }
     table=table[-take.out,]
   
     if (original==FALSE) {
@@ -1396,7 +1411,7 @@ print.survHE <- function(x,mod=1,...) {
         sigma <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(sigma) <- "sdlog"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
+          effects=matrix(table[-which(rownames(table) %in% c("meanlog","alpha")),][-1,],ncol=4,byrow=F)
           rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
           effects = matrix(NA,nrow=0,ncol=4)
@@ -1477,14 +1492,9 @@ print.survHE <- function(x,mod=1,...) {
         rownames(alpha) <- paste0("shape_",1:x$misc$data.stan$M)
         to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0)))),
                      nrow=length(x$misc$formula),byrow=T)
-		nmatch = length(which(to.rm==T))
-		idx = matrix(unlist(lapply(1:nmatch,function(i) {
-			paste0(which(to.rm==TRUE,arr.ind=T)[i,],collapse=",")
-		})))
-		if (!is.null(nrow(idx))) {
-			take.out = match(paste0("beta[",idx,"]"),rownames(table))
-		}
-        if(all(!is.na(take.out))) {table=table[-take.out,]}
+        idx = paste0(which(to.rm==TRUE,arr.ind=T),collapse=",")
+        take.out=match(paste0("beta[",idx,"]"),rownames(table))
+        if(!is.na(take.out)) {table=table[-take.out,]}
         effects=table[-grep("alpha",rownames(table)),]
         rownames(effects) = unlist(lapply(1:x$misc$data.stan$M,function(m) {
           paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
@@ -1505,11 +1515,11 @@ print.survHE <- function(x,mod=1,...) {
       print(summary(x$models[[mod]]))
     }
     if (x$method=="hmc") {
-      if (x$models[[mod]]@model_name=="PolyWeibull") {
-        take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
-      } else {
-        take.out = betas[apply(covmat,2,function(x) all(x==0))] 
-      }
+	  if (x$models[[mod]]@model_name=="PolyWeibull") {
+	      take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
+	  } else {
+	      take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
+	  }
       take.out = c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
       tab=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
       n_kept <- x$models[[mod]]@sim$n_save - x$models[[mod]]@sim$warmup2
@@ -1530,6 +1540,7 @@ print.survHE <- function(x,mod=1,...) {
     # Now recodes the model name to a standardised string
     if (x$method=="hmc") {
       label <- x$models[[mod]]@model_name
+      if (label=="RP") {label="Royston & Parmar splines"}
       label.met="Stan (Bayesian inference via \nHamiltonian Monte Carlo)"
     } else {
       if(x$models[[mod]]$dlist$name=="exp" | x$models[[mod]]$dlist$name=="exponential") {label="Exponential"}
@@ -1627,11 +1638,11 @@ psa.plot <- function(psa,...) {
   axis(1);axis(2)
   if (labs==TRUE) {
     txt1=lapply(1:ncol(psa$des.mat),function(i) {
-      text(xpos,ypos-(i-1)/50,paste0(colnames(psa$des.mat)[i]," : "),cex=cex.txt,pos=2,col="black")
+      text(xpos,ypos-(i-1)/40,paste0(colnames(psa$des.mat)[i]," : "),cex=cex.txt,pos=2,col="black")
     })
     txt2=lapply(1:ncol(psa$des.mat),function(i) {
       lapply(1:nrow(psa$des.mat),function(j) {
-        text(xpos+off[j],ypos-(i-1)/50,format(psa$des.mat[j,i],nsmall=nsmall,digits=digits),cex=cex.txt,pos=2,col=col[j])
+        text(xpos+off[j],ypos-(i-1)/40,format(psa$des.mat[j,i],nsmall=nsmall,digits=digits),cex=cex.txt,pos=2,col=col[j])
       })
     })
   }
@@ -1816,6 +1827,25 @@ plot.survHE <- function(...) {
       legend(x="topright",legend=labs,lwd=2,bty="n",col=col,cex=cex.lab)
     }
 }
+
+
+# model.checking <- function(x,mod=1,...) {
+#   # x = a survHE object with the results of the call to the fit.models function
+#   # mod = the model to analyse
+#   # ... = additional options
+#   
+#   exArgs = list(...)
+#   if (x$method=="mle") {
+#     stop("Model checking is available only for Bayesian models")
+#   }
+#   if (x$method=="inla") {
+#     
+#   }
+#   if (x$method=="hmc") {
+#     rstan::traceplot(x$models[[mod]])
+#     rstan::stan_ac(x$models[[mod]])
+#   }
+# }
 
 
 model.fit.plot <- function(...,type="aic") {
@@ -2478,7 +2508,7 @@ poly.weibull = function(formula=NULL,data,...) {
   # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
   dso <- dso[[6]] 
   
-  data.stan = list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event]); data.stan$n = length(data.stan$t);
+  data.stan = list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event]); data.stan$n = length(data.stan$t); 
   data.stan$M = M;
   X = lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
   # max number of covariates in all the model formulae
@@ -2527,8 +2557,10 @@ poly.weibull = function(formula=NULL,data,...) {
   # Computes the log-likelihood 
   beta = rstan::extract(out)$beta
   alpha = rstan::extract(out)$alpha
-  beta.hat = apply(beta,c(2,3),mean)
-  alpha.hat = apply(alpha,2,mean)
+  # NB: To make more robust estimate of AIC, BIC and DIC uses the median here (instead of the mean)
+  #     This is likely to be a better approximation to the MLE when the underlying distributions are highly skewed!
+  beta.hat = apply(beta,c(2,3),median)
+  alpha.hat = apply(alpha,2,median)
   linpred = lapply(1:data.stan$M,function(m) {
     beta[,m,]%*%t(data.stan$X[m,,])
   })
@@ -2555,6 +2587,7 @@ poly.weibull = function(formula=NULL,data,...) {
   D.theta=-2*loglik
   D.bar=-2*loglik.bar
   pD = mean(D.theta) - D.bar
+  pV = .5*var(D.theta)  # Uses Gelman's definition of pD!
   dic = mean(D.theta)+pD
   # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
   npars = data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
@@ -2607,6 +2640,8 @@ summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
   #           as in the formula used for the model
   # labs: a vector of strings giving the names of the "profile" of covariates for which the mean survival times are computed
   #
+  # NB: NEED TO FIX THIS FOR THE POLY-WEIBULL
+  #
   # Defines the utility function to compute the stats table
   make.stats = function(x, dim = 2) {
     bugs.stats = function(x) {
@@ -2622,12 +2657,12 @@ summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
     }
     return(tab)
   }
-
+  
   exArgs = list(...)
   if (!exists("newdata",where=exArgs)) {newdata=NULL} else {newdata=exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs=NULL} else {labs=exArgs$labs}
   if (is.null(t)) {t=object$misc$km$time} else {t=t}
-
+  
   psa = make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
   rlabs = rownames(psa$des.mat)
   if (!is.null(rlabs)) {
@@ -2663,7 +2698,7 @@ summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
     # }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
-    cat(paste0("\n*Computed over the range: [",paste(range(t),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
+    cat(paste0("\n*Computed over the range: [",paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
   }
   invisible(list(mean.surv=mean.surv,tab=tab))
 }
