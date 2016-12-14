@@ -1492,9 +1492,14 @@ print.survHE <- function(x,mod=1,...) {
         rownames(alpha) <- paste0("shape_",1:x$misc$data.stan$M)
         to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0)))),
                      nrow=length(x$misc$formula),byrow=T)
-        idx = paste0(which(to.rm==TRUE,arr.ind=T),collapse=",")
-        take.out=match(paste0("beta[",idx,"]"),rownames(table))
-        if(!is.na(take.out)) {table=table[-take.out,]}
+		nmatch = length(which(to.rm==T))
+		idx = matrix(unlist(lapply(1:nmatch,function(i) {
+			paste0(which(to.rm==TRUE,arr.ind=T)[i,],collapse=",")
+		})))
+		if (!is.null(nrow(idx))) {
+			take.out = match(paste0("beta[",idx,"]"),rownames(table))
+		}
+        if(all(!is.na(take.out))) {table=table[-take.out,]}
         effects=table[-grep("alpha",rownames(table)),]
         rownames(effects) = unlist(lapply(1:x$misc$data.stan$M,function(m) {
           paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
