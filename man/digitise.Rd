@@ -33,8 +33,6 @@ Something will go here
 \author{
 Patricia Guyot and Gianluca Baio
 }
-\seealso{
-}
 \examples{
 # Something will go here
 }
