@@ -28,3 +28,7 @@ before installing the package using `devtools`:
 ```R
 devtools::install_github("giabaio/survHE")
 ```
+Under Linux or MacOS, it is sufficient to install the package via `devtools`:
+```R
+devtools:install_github("giabaio/survHE")
+```
