@@ -2,10 +2,10 @@
 \alias{test.linear.assumptions}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Tests the linear assumotions fo the parametric model
+Tests the linear assumptions for the parametric model
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Tests the linear assumptions for the parametric model
 }
 \usage{
 test.linear.assumptions(fit, mod = 1, coxph = TRUE, label = FALSE, ...)
