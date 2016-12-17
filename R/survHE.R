@@ -109,7 +109,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     # But if there still are some that are just not available then falls back on MLE
     if (any(is.na(pmatch(distr,availables.inla)))) {
       method <- "mle"
-      cat("NB: INLA can only fit Exponential, Weibull, log-Logistic or log-Normal parametric survival models. \nFalling back on MLE analysis")
+      message("NB: INLA can only fit Exponential, Weibull, log-Logistic or log-Normal parametric survival models. Falling back on MLE analysis")
     }
   }
  
