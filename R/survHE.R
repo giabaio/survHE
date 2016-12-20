@@ -346,10 +346,6 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     # Loads the pre-compiled models
     dso <- stanmodels
     
-    ###############################################################################################
-    ### THIS IS JUST A TEMPORARY LINE (UNTIL THE CORRECT MODELS ARE PRE-COMPILED!)
-    ####dso <- readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
-    ###############################################################################################
     touse <- time2run <- numeric()
     for (i in 1:length(distr)) {
       touse[i] <- match(distr[i],availables.hmc)
@@ -2529,10 +2525,6 @@ poly.weibull <- function(formula=NULL,data,...) {
   # Loads the pre-compiled models
   dso <- stanmodels
   
-  ###############################################################################################
-  ### THIS IS JUST A TEMPORARY LINE (UNTIL THE CORRECT MODELS ARE PRE-COMPILED!)
-  ####dso <- readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
-  ###############################################################################################
   time2run <- numeric()
   # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
   dso <- dso[[6]] 
