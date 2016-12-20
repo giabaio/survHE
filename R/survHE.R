@@ -1,5 +1,5 @@
 ## SET OF UTILITY FUNCTIONS TO INCLUDE SURVIVAL ANALYSIS RESULTS INTO A HEALTH ECONOMIC MODEL
-## Gianluca Baio + Will Browne, 14 Dec 2016
+## Gianluca Baio + Will Browne + Peter Lemna (20 Dec 2016)
 ##
 # cat(paste0("\n# ",ls(),"\n"))
 # bugs2survHE
