@@ -186,9 +186,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     }
   }
   # Computes the Kaplan Meier curve using the package "rms"
-  ObjSurvfit=rms::npsurv(        # Uses the function "npsurv" from the package "rms"
-    formula=km.formula,          # to fit the model specified in the "formula" object
-    data=data                    # to the dataset named "data"
+  ObjSurvfit <- rms::npsurv(        # Uses the function "npsurv" from the package "rms"
+    formula = km.formula,          # to fit the model specified in the "formula" object
+    data = data                    # to the dataset named "data"
   )
   
   # If method = MLE, then fits the model(s) using flexsurvreg
@@ -205,25 +205,26 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       tic <- proc.time()
       if(distr=="rps") {
           # If user selects RPS model, then could also provide some optional arguments - uses flexsurv defaults
-          if(exists("bhazard",where=exArgs)) {bhazard=exArgs$bhazard} else {bhazard=NULL}
-          if(exists("weights",where=exArgs)) {weights=exArgs$weights} else {weights=NULL}
-          if(exists("subset",where=exArgs)) {subset=exArgs$subset} else {subset=NULL}
-          if(exists("knots",where=exArgs)) {knots=exArgs$knots} else {knots=NULL}
-          if(exists("k",where=exArgs)) {k=exArgs$k} else {k=0}
-          if(exists("bknots",where=exArgs)) {bknots=exArgs$bknots} else {bknots=NULL}
-          if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
-          if(exists("timescale",where=exArgs)) {timescale=exArgs$scale} else {timescale="log"}
-          model = flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,timescale=timescale)
+          if(exists("bhazard",where=exArgs)) {bhazard <- exArgs$bhazard} else {bhazard <-NULL}
+          if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights <- NULL}
+          if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
+          if(exists("knots",where=exArgs)) {knots <- exArgs$knots} else {knots <- NULL}
+          if(exists("k",where=exArgs)) {k <- exArgs$k} else {k <- 0}
+          if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
+          if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
+          if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
+          model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,timescale=timescale)
       } else {
           model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=distr)
       }
       toc <- proc.time()-tic
-      time2run=toc[3]
+      time2run <- toc[3]
       list(model=model,time2run=time2run)
     }
     output <- lapply(distr,function(x) runMLE(x))
     mod <- lapply(output, function(x) x$model)
-    time2run <- unlist(lapply(output, function(x) x$time2run)); names(time2run) <- labs
+    time2run <- unlist(lapply(output, function(x) x$time2run))
+    names(time2run) <- labs
     aic <- unlist(lapply(mod,function(x) x$AIC))
     bic <- unlist(lapply(mod,function(x) -2*x$loglik+x$npars*log(x$N)))
     dic <- rep(NA,length(distr))
@@ -256,7 +257,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         # prior prec -> 0 for the intercept 
         ## This makes the priors consistent with the defaults in HMC
         ## The available models all have sd=5 in HMC, which translates to a precision of 1/25!
-        control.fixed$prec=control.fixed$prec.intercept=1/(5^2); 
+        control.fixed$prec <- control.fixed$prec.intercept <- 1/(5^2)
       }
       if(exists("control.family",where=exArgs)) {
         control.family <- replicate(length(distr),list(INLA::inla.set.control.family.default()))
@@ -288,14 +289,18 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       })
       # Now re-writes the formula in general terms (without linking to INLA::inla.surv)
       formula <- as.formula(gsub("INLA::inla.surv","Surv",deparse(formula)))
-      time2run <- unlist(lapply(mod,function(x) x$cpu.used["Total"])); names(time2run) <- labs
+      time2run <- unlist(lapply(mod,function(x) x$cpu.used["Total"]))
+      names(time2run) <- labs
       # NB Internally, DIC = model$dic$mean.deviance+model$dic$p.eff
       dic <- unlist(lapply(mod,function(x) x$dic$dic))
       # NB But to estimate the AIC & BIC is probably best to use model$dic$deviance.mean!
-      aic <- unlist(lapply(1:length(mod), function(i) 2*mod[[i]]$dic$p.eff+mod[[i]]$dic$deviance.mean)); names(aic) <- NULL
+      aic <- unlist(lapply(1:length(mod), function(i) 2*mod[[i]]$dic$p.eff+mod[[i]]$dic$deviance.mean))
+      names(aic) <- NULL
       bic <- unlist(lapply(1:length(mod),function(i) 
-        mod[[i]]$dic$deviance.mean+mod[[i]]$dic$p.eff*log(mod[[i]]$size.linear.predictor$n))); names(bic) <- NULL
-      for (i in 1:length(distr)) {mod[[i]]$dlist$name <- distr[i]}
+        mod[[i]]$dic$deviance.mean+mod[[i]]$dic$p.eff*log(mod[[i]]$size.linear.predictor$n)))
+      names(bic) <- NULL
+      for (i in 1:length(distr)) {
+        mod[[i]]$dlist$name <- distr[i]}
     }
   }
     
@@ -333,8 +338,8 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       pars <- c("lambda_cens","lambda_obs","cens","d","lp__","loglambda_cens","loglambda_obs","mu","logP","linpred")
     }
     if(exists("include",where=exArgs)) {include <- exArgs$include} else {include <- FALSE}
-    if(exists("k",where=exArgs)) {k=exArgs$k} else {k=0}
-    if(exists("cores",where=exArgs)) {cores=exArgs$cores} else {cores=1}
+    if(exists("k",where=exArgs)) {k <- exArgs$k} else {k <- 0}
+    if(exists("cores",where=exArgs)) {cores <- exArgs$cores} else {cores <- 1}
 
     non.on.log.scale <- c("genf","gengamma","lognormal")
     
@@ -343,9 +348,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     
     ###############################################################################################
     ### THIS IS JUST A TEMPORARY LINE (UNTIL THE CORRECT MODELS ARE PRE-COMPILED!)
-    ####dso = readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
+    ####dso <- readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
     ###############################################################################################
-    touse = time2run = numeric()
+    touse <- time2run <- numeric()
     for (i in 1:length(distr)) {
       touse[i] <- match(distr[i],availables.hmc)
     }
@@ -355,35 +360,37 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       # First makes the data list
       if (distr[x] %in% c("gamma","gengamma","genf")) {
         # If model is Gamma, GenGamma or GenF, then use the "obs vs" censored format
-        data.stan = list(t=data[data[,vars$event]==1,vars$time],d=data[data[,vars$event]==0,vars$time])
-        data.stan$n_obs <- length(data.stan$t); data.stan$n_cens <- length(data.stan$d)
-        data.stan$X_obs = matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
-        data.stan$X_cens = matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
+        data.stan <- list(t=data[data[,vars$event]==1,vars$time],d=data[data[,vars$event]==0,vars$time])
+        data.stan$n_obs <- length(data.stan$t)
+        data.stan$n_cens <- length(data.stan$d)
+        data.stan$X_obs <- matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
+        data.stan$X_cens <- matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
         data.stan$H=ncol(data.stan$X_obs)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
-          data.stan$X_obs = cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
-          data.stan$X_cens = cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
-          data.stan$H = ncol(data.stan$X_obs)
+          data.stan$X_obs <- cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
+          data.stan$X_cens <- cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
+          data.stan$H <- ncol(data.stan$X_obs)
         }
       } 
       if (distr[x] %in% c("exponential","gompertz","weibull","weibullPH","loglogistic","lognormal")) {
         # If it's one of the others (except polyweibull), use the "h,S" format
-        data.stan = list(t=data[,vars$time], d=data[,vars$event]); data.stan$n = length(data.stan$t); 
-        data.stan$X = model.matrix(formula,data)
-        data.stan$H = ncol(data.stan$X)
+        data.stan <- list(t=data[,vars$time], d=data[,vars$event])
+        data.stan$n <- length(data.stan$t) 
+        data.stan$X <- model.matrix(formula,data)
+        data.stan$H <- ncol(data.stan$X)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
-          data.stan$X = cbind(data.stan$X,rep(0,data.stan$n))
-          data.stan$H = ncol(data.stan$X)
+          data.stan$X <- cbind(data.stan$X,rep(0,data.stan$n))
+          data.stan$H <- ncol(data.stan$X)
         }
       }
       if (distr[x]=="rps"){
         # If it's Royston-Parmar splines, then gets the correct data 
-        knots=quantile(log(data[data[,vars$event]==1,vars$time]), seq(0, 1, length = k+2))
+        knots <- quantile(log(data[data[,vars$event]==1,vars$time]), seq(0, 1, length = k+2))
         # Uses flexsurv to compute the basis and derivatives of the basis
         ######################################
-        basis = function (knots, x) {
+        basis <- function (knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 
             knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
@@ -402,7 +409,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
           }
           b
         }
-        dbasis = function (knots, x) {
+        dbasis <- function (knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 
             knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
@@ -423,17 +430,17 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
           b
         }
         ######################################
-        B = basis(knots,log(data[,vars$time]))
-        DB = dbasis(knots,log(data[,vars$time]))
+        B <- basis(knots,log(data[,vars$time]))
+        DB <- dbasis(knots,log(data[,vars$time]))
         # Now checks to see whether the user wants to specify covariates and removes the intercept from the formula (for identifiability)
-        mm = model.matrix(formula,data)[,-1]
+        mm <- model.matrix(formula,data)[,-1]
         # a. if the formula is ~ 1, then adds two fictional covariates of all 0s
         if (length(mm)<1) {
-            mm = matrix(rep(0,nrow(data)),nrow=nrow(data),ncol=2)
+            mm <- matrix(rep(0,nrow(data)),nrow=nrow(data),ncol=2)
         }
         # b. in case there's only one covariate, then adds another fake covariate of all 0s
         if (is.null(dim(mm))) {
-         mm = cbind(mm,rep(0,length(mm)))
+         mm <- cbind(mm,rep(0,length(mm)))
         }
         data.stan=list(t=data[,vars$time], d=data[,vars$event], n=nrow(data),M=k,X=mm,H=ncol(mm),B=B,DB=DB,
                        mu_gamma=rep(0,k+2),sigma_gamma=rep(5,k+2),knots=knots) 
@@ -441,18 +448,18 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       # ###########################################################################################################################
       # ### Poly-Weibull is in theory possible and pre-compiled, but it poses problems if the formula is a list
       # if (distr[x]=="polyweibull") {
-      #   data.stan = list(t=data[,vars$time], d=data[,vars$event]); data.stan$n = length(data.stan$t); 
-      #   data.stan$M = length(formula)
-      #   X = lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
-      #   data.stan$H = max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
-      #   X = lapply(1:data.stan$M,function(i) {
+      #   data.stan <- list(t=data[,vars$time], d=data[,vars$event]); data.stan$n <- length(data.stan$t); 
+      #   data.stan$M <- length(formula)
+      #   X <- lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
+      #   data.stan$H <- max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
+      #   X <- lapply(1:data.stan$M,function(i) {
       #     if(ncol(X[[i]]<data.stan$H)) {
-      #       X[[i]] = cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
+      #       X[[i]] <- cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
       #     }
       #   })
       #   data.stan$X=array(NA,c(data.stan$M,data.stan$n,data.stan$H))
       #   for (m in 1:data.stan$M) {
-      #     data.stan$X[m,,] = X[[m]]
+      #     data.stan$X[m,,] <- X[[m]]
       #   }
       # }
       # # Linear predictor coefficients
@@ -462,24 +469,29 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       # } else {
       data.stan$mu_beta=rep(0,data.stan$H)
       if (distr[x]%in%non.on.log.scale) {
-        data.stan$sigma_beta = rep(100,data.stan$H)
+        data.stan$sigma_beta <- rep(100,data.stan$H)
       } else {
-        data.stan$sigma_beta = rep(5,data.stan$H)
+        data.stan$sigma_beta <- rep(5,data.stan$H)
       }
       # }
       # Ancillary parameters
-      if (distr[x]=="gamma") {data.stan$a_alpha=data.stan$b_alpha = 0.1}
+      if (distr[x]=="gamma") {data.stan$a_alpha=data.stan$b_alpha <- 0.1}
       if (distr[x]=="genf") {
         data.stan$a_sigma=data.stan$b_sigma=0.1
-        data.stan$mu_P=0; data.stan$sigma_P=0.5
-        data.stan$mu_Q=0; data.stan$sigma_Q=2.5
+        data.stan$mu_P=0
+        data.stan$sigma_P=0.5
+        data.stan$mu_Q=0
+        data.stan$sigma_Q=2.5
       }
       if (distr[x]=="gengamma") {
         data.stan$a_sigma=data.stan$b_sigma=0.1
-        data.stan$mu_Q=0; data.stan$sigma_Q=100
+        data.stan$mu_Q=0
+        data.stan$sigma_Q=100
       }
       if (distr[x] %in% c("gompertz","loglogistic","weibull","weibullPH")) {data.stan$a_alpha=data.stan$b_alpha=0.1}
-      if (distr[x]=="lognormal") {data.stan$a_alpha=0; data.stan$b_alpha=5}
+      if (distr[x]=="lognormal") {
+        data.stan$a_alpha=0
+        data.stan$b_alpha=5}
 
       # These are modified if the user gives values in the call to fit.models
       if(exists("priors",where=exArgs)) {
@@ -487,7 +499,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         # If the user has not given values for all the distrs, then fill priors with empty lists
         if(length(priors)<length(distr)) {
           for (i in (length(priors)+1):length(distr)) {
-            priors[[i]] = list()
+            priors[[i]] <- list()
           }
         }
         # Linear predictor coefficients
@@ -495,13 +507,13 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
           data.stan$mu_beta=priors[[x]]$mu_beta
         }
         if(!is.null(priors[[x]]$sigma_beta)) {
-          data.stan$sigma_beta = priors[[x]]$sigma_beta
+          data.stan$sigma_beta <- priors[[x]]$sigma_beta
         }
         if(!is.null(priors[[x]]$mu_gamma) & distr[x]=="rps") {
-          data.stan$mu_gamma = priors[[x]]$mu_gamma
+          data.stan$mu_gamma <- priors[[x]]$mu_gamma
         }
         if(!is.null(priors[[x]]$sigma_gamma) & distr[x]=="rps") {
-            data.stan$sigma_gamma = priors[[x]]$sigma_gamma
+            data.stan$sigma_gamma <- priors[[x]]$sigma_gamma
         }
         # Ancillary parameters
         if(!is.null(priors[[x]]$a_sigma)) {a_sigma=priors[[x]]$a_sigma}
@@ -515,94 +527,94 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       }
       
       # Now runs Stan to sample from the posterior distributions
-      tic = proc.time()
+      tic <- proc.time()
       out=rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
                       pars=pars,include=include,cores=cores)
-      toc = proc.time()-tic
+      toc <- proc.time()-tic
       time2run[x]=toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
     })
     if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
     #   save.stan=ifelse(any(distr=="rps"),TRUE,FALSE)
     # }
-    time_survHE = unlist(lapply(1:length(mod),function(x) mod[[x]]$time2run))
+    time_survHE <- unlist(lapply(1:length(mod),function(x) mod[[x]]$time2run))
     time_stan <- unlist(lapply(1:length(mod),function(x) sum(rstan::get_elapsed_time(mod[[x]]$out))))
-    time2run = pmin(time_survHE,time_stan)
+    time2run <- pmin(time_survHE,time_stan)
     names(time2run) <- labs
 
 	# Computes the log-likelihood 
     dic <- aic <- bic <- dic2 <- numeric()
 	  for (i in 1:length(distr)) {
 	    # Extracts the simulations for the relevant parameters
-	    beta = rstan::extract(mod[[i]]$out)$beta
+	    beta <- rstan::extract(mod[[i]]$out)$beta
 	    # To safeguard against very asymmetric densities use the median (instead of the mean)
-	    beta.hat = apply(beta,2,median)
+	    beta.hat <- apply(beta,2,median)
 	    data.stan=mod[[i]]$data.stan
 	    
 	    if (distr[i] %in% c("exponential","weibull","weibullPH","gompertz","lognormal","loglogistic")) {
-	      linpred = beta%*%t(data.stan$X)
-	      linpred.hat = beta.hat%*%t(data.stan$X)
+	      linpred <- beta%*%t(data.stan$X)
+	      linpred.hat <- beta.hat%*%t(data.stan$X)
 	    }
 
 	    if(distr[i]=="exponential") {
-	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hexp(data.stan$t,exp(linpred[i,]))) + log(1-pexp(data.stan$t,exp(linpred[i,])))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hexp(data.stan$t,exp(linpred.hat))) + log(1-pexp(data.stan$t,exp(linpred.hat))),nrow=1)
+	      logf.hat <- matrix(data.stan$d*log(hexp(data.stan$t,exp(linpred.hat))) + log(1-pexp(data.stan$t,exp(linpred.hat))),nrow=1)
 	      # Number of parameters (for AIC): rate + covariates
-	      npars = 1+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	      npars <- 1+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 
 	    if (distr[i]=="weibull") {
-	        shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.hat=median(shape)
-	        logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	        shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	        shape.hat <- median(shape)
+	        logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	          data.stan$d*log(hweibull(data.stan$t,shape[i],exp(linpred[i,]))) + log(1-pweibull(data.stan$t,shape[i],exp(linpred[i,])))
 	        })),nrow=nrow(linpred),byrow=T)
-	        logf.hat = matrix(data.stan$d*log(hweibull(data.stan$t,shape.hat,exp(linpred.hat))) + log(1-pweibull(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
+	        logf.hat <- matrix(data.stan$d*log(hweibull(data.stan$t,shape.hat,exp(linpred.hat))) + log(1-pweibull(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
 	        # Number of parameters (for AIC): shape, scale + covariates
-	        npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	        npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="weibullPH") {
-	      shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
 	      shape.hat=median(shape)
-	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hweibullPH(data.stan$t,shape[i],exp(linpred[i,]))) + 
 	          log(1-pweibullPH(data.stan$t,shape[i],exp(linpred[i,])))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hweibullPH(data.stan$t,shape.hat,exp(linpred.hat)))+
+	      logf.hat <- matrix(data.stan$d*log(hweibullPH(data.stan$t,shape.hat,exp(linpred.hat)))+
 	                          log(1-pweibullPH(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
 	      # Number of parameters (for AIC): shape, scale + covariates
-	      npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 
 	    if (distr[i]=="gompertz") {
-	      shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
 	      shape.hat=median(shape)
-	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hgompertz(data.stan$t,shape[i],exp(linpred[i,]))) + 
 	          log(1-pgompertz(data.stan$t,shape[i],exp(linpred[i,])))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hgompertz(data.stan$t,shape.hat,exp(linpred.hat)))+
+	      logf.hat <- matrix(data.stan$d*log(hgompertz(data.stan$t,shape.hat,exp(linpred.hat)))+
 	                          log(1-pgompertz(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
 	      # Number of parameters (for AIC): shape, rate + covariates
-	      npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="gamma") {
-	        shape=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.bar=median(shape)
-	        lo=exp(beta%*%t(data.stan$X_obs))
-	        lc=exp(beta%*%t(data.stan$X_cens))
-	        lo.bar=exp(beta.hat%*%t(data.stan$X_obs))
-	        lc.bar=exp(beta.hat%*%t(data.stan$X_cens))
+	        shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	        shape.bar <- median(shape)
+	        lo <- exp(beta%*%t(data.stan$X_obs))
+	        lc <- exp(beta%*%t(data.stan$X_cens))
+	        lo.bar <- exp(beta.hat%*%t(data.stan$X_obs))
+	        lc.bar <- exp(beta.hat%*%t(data.stan$X_cens))
 	        f=matrix(unlist(lapply(1:nrow(lo),function(i) dgamma(data.stan$t,shape[i],lo[i,]))),nrow=nrow(lo),byrow=T)
 	        f.bar=matrix(unlist(lapply(1:nrow(lo.bar),function(i) dgamma(data.stan$t,shape.bar,lo.bar[i,]))),nrow=1,byrow=T)
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgamma(data.stan$d,shape[i],lc[i,]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgamma(data.stan$d,shape.bar,lc.bar[i,]))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): shape, rate + covariates
-	        npars = 2+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
+	        npars <- 2+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="gengamma") {
@@ -619,7 +631,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgengamma(data.stan$d,lc[i,],scale[i],q[i]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgengamma(data.stan$d,lc.bar[i,],scale.bar,q.bar))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): mu, sigma, Q + covariates
-	        npars = 3+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
+	        npars <- 3+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="genf") {
@@ -638,69 +650,71 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgenf(data.stan$d,lc[i,],sigma[i],Q[i],P[i]))),nrow=nrow(lc),byrow=T)
 	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgenf(data.stan$d,lc.bar[i,],sigma.bar,Q.bar,P.bar))),nrow=1,byrow=T)
 	        # Number of parameters (for AIC): mu, sigma, Q, P + covariates
-	        npars = 4+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
+	        npars <- 4+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
 	    }
 	    
 	    if (distr[i]=="lognormal") {
 	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
 	      sigma.hat=median(sigma)
-	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hlnorm(data.stan$t,(linpred[i,]),sigma[i])) + 
 	          log(1-plnorm(data.stan$t,(linpred[i,]),sigma[i]))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hlnorm(data.stan$t,(linpred.hat),sigma.hat))+
+	      logf.hat <- matrix(data.stan$d*log(hlnorm(data.stan$t,(linpred.hat),sigma.hat))+
 	                          log(1-plnorm(data.stan$t,(linpred.hat),sigma.hat)),nrow=1)
 	      # Number of parameters (for AIC): meanlog, sdlog + covariates
-	      npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }
 
 	    if (distr[i]=="loglogistic") {
 	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
 	      sigma.hat=median(sigma)
-	      logf = matrix(unlist(lapply(1:nrow(linpred),function(i) {
+	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
 	        data.stan$d*log(hllogis(data.stan$t,sigma[i],exp(linpred[i,]))) + 
 	          log(1-pllogis(data.stan$t,sigma[i],exp(linpred[i,])))
 	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat = matrix(data.stan$d*log(hllogis(data.stan$t,sigma.hat,exp(linpred.hat)))+
+	      logf.hat <- matrix(data.stan$d*log(hllogis(data.stan$t,sigma.hat,exp(linpred.hat)))+
 	                          log(1-pllogis(data.stan$t,sigma.hat,exp(linpred.hat))),nrow=1)
 	      # Number of parameters (for AIC): shape, scale + covariates
-	      npars = 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
+	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
 	    }	      
 
 	    if (distr[i]=="rps") {
-	        gamma = rstan::extract(mod[[i]]$out)$gamma
-	        gamma.hat = apply(gamma,2,median)
-	        logf = data.stan$d*(-log(data.stan$t)+log(gamma%*%t(data.stan$DB)) + gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X)) -
+	        gamma <- rstan::extract(mod[[i]]$out)$gamma
+	        gamma.hat <- apply(gamma,2,median)
+	        logf <- data.stan$d*(-log(data.stan$t)+log(gamma%*%t(data.stan$DB)) + gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X)) -
 	                     exp(gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X))
-	        logf.hat = t(data.stan$d*(-log(data.stan$t)+log(data.stan$DB%*%gamma.hat)+data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat) - 
+	        logf.hat <- t(data.stan$d*(-log(data.stan$t)+log(data.stan$DB%*%gamma.hat)+data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat) - 
 	            exp(data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat))
 	        # Number of parameters (for AIC): gamma + covariates
-	        npars = length(gamma.hat)+sum(apply(data.stan$X,2,function(x) 1-all(x==0)))
+	        npars <- length(gamma.hat)+sum(apply(data.stan$X,2,function(x) 1-all(x==0)))
 	    }	  
 	    
 	    # Now computes the log-likelihood and then deviance and DIC, AIC, BIC
 	    # Little function to compute the log-likelihood (for the obs vs censored cases)
 	    compute.loglik <- function(f,s) {
-	      loglik = (apply(log(f),1,sum)+apply(log(s),1,sum))
+	      loglik <- (apply(log(f),1,sum)+apply(log(s),1,sum))
 	      return(loglik)
 	    }
 	    if (distr[i] %in% c("gamma","gengamma","genf")) {
-	      loglik = compute.loglik(f,s); D.theta=-2*loglik 
-	      loglik.bar = compute.loglik(f.bar,s.bar); D.bar=-2*loglik.bar
-	      data.stan$n = data.stan$n_obs+data.stan$n_cens
+	      loglik <- compute.loglik(f,s)
+	      D.theta <- -2*loglik 
+	      loglik.bar <- compute.loglik(f.bar,s.bar)
+	      D.bar <- -2*loglik.bar
+	      data.stan$n <- data.stan$n_obs+data.stan$n_cens
 	    } else {
-	      loglik = apply(logf,1,sum)
-	      loglik.bar = apply(logf.hat,1,sum)
+	      loglik <- apply(logf,1,sum)
+	      loglik.bar <- apply(logf.hat,1,sum)
 	    }
-	    D.theta=-2*loglik
-	    D.bar=-2*loglik.bar
-	    pD = mean(D.theta) - D.bar
-	    pV = .5*var(D.theta)
-	    dic[i] = mean(D.theta)+pD
-	    dic2[i] = mean(D.theta) + pV
+	    D.theta <- -2*loglik
+	    D.bar <- -2*loglik.bar
+	    pD <- mean(D.theta) - D.bar
+	    pV <- 0.5*var(D.theta)
+	    dic[i] <- mean(D.theta)+pD
+	    dic2[i] <- mean(D.theta) + pV
 	    # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
-	    aic[i] = D.bar+2*npars                   #mean(D.theta)+2*pD
-	    bic[i] = D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
+	    aic[i] <- D.bar+2*npars                   #mean(D.theta)+2*pD
+	    bic[i] <- D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
 	  }
   }
   
@@ -721,10 +735,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         cat(txt)
       })
     }
-    mod = lapply(1:length(mod),function(i) mod[[i]]$out)
+    mod <- lapply(1:length(mod),function(i) mod[[i]]$out)
   }
   # Names the models list
-  names(mod) = names(misc$time2run)
+  names(mod) <- names(misc$time2run)
   # Finally prepares the output object
   res <- list(models=mod,model.fitting=model.fitting,method=method,misc=misc)
   # And sets its class attribute to "survHE"
@@ -819,10 +833,10 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       if (length(w)>0) {
         for (i in 1:length(w)) {
           for (j in 1:n.elements) {
-            check = eval(parse(text=paste0("levels(as.factor(data$",names[w[i]],"))")))
+            check <- eval(parse(text=paste0("levels(as.factor(data$",names[w[i]],"))")))
             if (class(check)=="character") {
               # check will be 0 or 1 depending on which level of the factor is selected in newdata
-              check = as.numeric(grepl(temp[j,w[i]],check))
+              check <- as.numeric(grepl(temp[j,w[i]],check))
             } else {
               check <- eval(parse(text=paste0("temp[j,w[i]]==as.numeric(levels(as.factor(data$",names[w[i]],")))")))
             }
@@ -858,7 +872,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
               if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
               if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
               if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
-              tmp = lapply(1:length(sim), function(i) {
+              tmp <- lapply(1:length(sim), function(i) {
                   matrix(unlist(
                       lapply(1:nsim,function(j) {
                           1-flexsurv::psurvspline(t,gamma=sim[[i]][j,],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)
@@ -964,24 +978,24 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   
   if(fit$method=="hmc") {
       beta <- rstan::extract(m)$beta
-      coefs = beta
+      coefs <- beta
       if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-        covmat = fit$misc$data.stan$X_obs
+        covmat <- fit$misc$data.stan$X_obs
       } else {
-        covmat = fit$misc$data.stan$X
+        covmat <- fit$misc$data.stan$X
       }
       coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
       # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
-      #   coefs = matrix(beta[,1],nrow=nrow(beta),byrow=T)
+      #   coefs <- matrix(beta[,1],nrow=nrow(beta),byrow=T)
       # }
       if(ncol(coefs)>0) {
         if(dist!="RP") {
-          colnames(coefs) = colnames(model.matrix(fit$misc$formula,fit$misc$data))
+          colnames(coefs) <- colnames(model.matrix(fit$misc$formula,fit$misc$data))
         } else {
-          colnames(coefs) = colnames(model.matrix(fit$misc$formula,fit$misc$data))[-1]
+          colnames(coefs) <- colnames(model.matrix(fit$misc$formula,fit$misc$data))[-1]
         } 
       }
-      basis = function (knots, x) {
+      basis <- function (knots, x) {
         nx <- length(x)
         if (!is.matrix(knots)) 
           knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
@@ -1006,63 +1020,63 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
           sim <- NULL
           coefs <- apply(coefs,2,mean)
           if(dist=="Exponential") {
-              linpred=exp(coefs%*%t(X))
+              linpred <- exp(coefs%*%t(X))
               s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pexp(t,linpred[1,i])))
           }
           if (dist=="WeibullAF") {
-              shape=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=exp(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(j) cbind(t,1-pweibull(t,shape,linpred[1,j])))
+              shape <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- exp(coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(j) cbind(t,1-pweibull(t,shape,linpred[1,j])))
           }
           if (dist=="WeibullPH") {
-              shape=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=exp(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pweibullPH(t,shape,linpred[1,i])))
+              shape <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- exp(coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pweibullPH(t,shape,linpred[1,i])))
           }
           if (dist=="Gompertz") {
-              shape=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=exp(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pgompertz(t,shape,linpred[1,i])))
+              shape <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- exp(coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgompertz(t,shape,linpred[1,i])))
           }
           if (dist=="Gamma") {
-              shape=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=exp(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pgamma(t,shape,linpred[1,i])))
+              shape <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- exp(coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgamma(t,shape,linpred[1,i])))
           }
           if (dist=="GenGamma") {
-              q=mean(as.numeric(rstan::extract(m)$Q))
-              scale=mean(as.numeric(rstan::extract(m)$sigma))
-              linpred=(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pgengamma(t,linpred[1,i],scale,q)))
+              q <- mean(as.numeric(rstan::extract(m)$Q))
+              scale <- mean(as.numeric(rstan::extract(m)$sigma))
+              linpred <- (coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgengamma(t,linpred[1,i],scale,q)))
           }
           if (dist=="GenF") {
-              Q=mean(as.numeric(rstan::extract(m)$Q))
-              P=mean(as.numeric(rstan::extract(m)$P))
-              sigma=mean(as.numeric(rstan::extract(m)$sigma))
-              linpred=(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pgenf(t,linpred[1,i],sigma,Q,P)))
+              Q <- mean(as.numeric(rstan::extract(m)$Q))
+              P <- mean(as.numeric(rstan::extract(m)$P))
+              sigma <- mean(as.numeric(rstan::extract(m)$sigma))
+              linpred <- (coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgenf(t,linpred[1,i],sigma,Q,P)))
           }
           if (dist=="logNormal") {
-              sigma=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-plnorm(t,linpred[1,i],sigma)))
+              sigma <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- (coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-plnorm(t,linpred[1,i],sigma)))
           }
           if (dist=="logLogistic") {
-              sigma=mean(as.numeric(rstan::extract(m)$alpha))
-              linpred=exp(coefs%*%t(X))
-              s=lapply(1:ncol(linpred),function(i) cbind(t,1-pllogis(t,scale=linpred[1,i],shape=sigma)))
+              sigma <- mean(as.numeric(rstan::extract(m)$alpha))
+              linpred <- exp(coefs%*%t(X))
+              s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pllogis(t,scale=linpred[1,i],shape=sigma)))
           }
           if (dist=="RP") {
             # Computes the knots wrt to the times selected for the analysis
             # If there's a time=0, then add a little constant
-            t[t==0] = min(0.00001,min(t[t>0]))
-            B = basis(fit$misc$data.stan$knots,log(t))
-            gamma=apply(rstan::extract(m)$gamma,2,mean)
-            coefs=c(0,coefs)
+            t[t==0] <- min(0.00001,min(t[t>0]))
+            B <- basis(fit$misc$data.stan$knots,log(t))
+            gamma <- apply(rstan::extract(m)$gamma,2,mean)
+            coefs <- c(0,coefs)
             if(nrow(X)==1) {
-              s=cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X,knots=fit$misc$data.stan$knots))
+              s <- cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X,knots=fit$misc$data.stan$knots))
             } else {
-              s=lapply(1:ncol(X),function(i) 
+              s <- lapply(1:ncol(X),function(i) 
                 cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X[i,],knots=fit$misc$data.stan$knots)))
             }
           }
@@ -1070,124 +1084,124 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       } else {
           if (nsim>length(beta)) {nrow=length(beta)}
           if(dist=="Exponential") {
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pexp(t,linpred[i,j]))  
                   })
               }) 
-              sim = coefs[1:nsim,]
+              sim <- coefs[1:nsim,]
           }
           if (dist=="WeibullAF") {
-              shape=as.numeric(rstan::extract(m)$alpha)
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              shape <- as.numeric(rstan::extract(m)$alpha)
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pweibull(t,shape[i],linpred[i,j]))  
                   })
               }) 
-              sim = cbind(coefs,shape)[1:nsim,]
+              sim <- cbind(coefs,shape)[1:nsim,]
           }
           if (dist=="WeibullPH") {
-              shape=as.numeric(rstan::extract(m)$alpha)
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              shape <- as.numeric(rstan::extract(m)$alpha)
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pweibullPH(t,shape[i],linpred[i,j]))  
                   })
               }) 
-              sim = cbind(coefs,shape)[1:nsim,]
+              sim <- cbind(coefs,shape)[1:nsim,]
           }
           if (dist=="Gompertz") {
-              shape=as.numeric(rstan::extract(m)$alpha)
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              shape <- as.numeric(rstan::extract(m)$alpha)
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pgompertz(t,shape[i],linpred[i,j]))  
                   })
               }) 
-              sim = cbind(coefs,shape)[1:nsim,]
+              sim <- cbind(coefs,shape)[1:nsim,]
           }
           if (dist=="Gamma") {
-              shape=as.numeric(rstan::extract(m)$alpha)
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              shape <- as.numeric(rstan::extract(m)$alpha)
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pgamma(t,shape[i],linpred[i,j]))  
                   })
               }) 
-              sim = cbind(coefs,shape)[1:nsim,]
+              sim <- cbind(coefs,shape)[1:nsim,]
           }
           if (dist=="GenGamma") {
-              Q=as.numeric(rstan::extract(m)$Q)
-              shape=as.numeric(rstan::extract(m)$sigma)
-              linpred=(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              Q <- as.numeric(rstan::extract(m)$Q)
+              shape <- as.numeric(rstan::extract(m)$sigma)
+              linpred <- (coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pgengamma(t,linpred[i,j],shape[i],Q[i]))  
                   })
               }) 
-              sim = cbind(coefs,shape,Q)[1:nsim,]
+              sim <- cbind(coefs,shape,Q)[1:nsim,]
           }
           if (dist=="GenF") {
-              Q=as.numeric(rstan::extract(m)$Q)
-              P=as.numeric(rstan::extract(m)$P)
-              sigma=as.numeric(rstan::extract(m)$sigma)
-              linpred=(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              Q <- as.numeric(rstan::extract(m)$Q)
+              P <- as.numeric(rstan::extract(m)$P)
+              sigma <- as.numeric(rstan::extract(m)$sigma)
+              linpred <- (coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pgenf(t,linpred[i,j],sigma[i],Q[i],P[i]))  
                   })
               }) 
-              sim = cbind(coefs,sigma,Q,P)[1:nsim,]
+              sim <- cbind(coefs,sigma,Q,P)[1:nsim,]
           }
           if (dist=="logNormal") {
-              sigma=as.numeric(rstan::extract(m)$alpha)
-              linpred=(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              sigma <- as.numeric(rstan::extract(m)$alpha)
+              linpred <- (coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-plnorm(t,linpred[i,j],sigma[i]))  
                   })
               }) 
-              sim = cbind(coefs,sigma)[1:nsim,]
+              sim <- cbind(coefs,sigma)[1:nsim,]
           }
           if (dist=="logLogistic") {
               sigma=as.numeric(rstan::extract(m)$alpha)
-              linpred=exp(coefs%*%t(X))
-              S=lapply(1:nsim,function(i) {
+              linpred <- exp(coefs%*%t(X))
+              S <- lapply(1:nsim,function(i) {
                   lapply(1:ncol(linpred),function(j) {
                       cbind(t,1-pllogis(t,linpred[i,j],sigma[i]))  
                   })
               }) 
-              sim = cbind(coefs,sigma)[1:nsim,]
+              sim <- cbind(coefs,sigma)[1:nsim,]
           }
           if (dist=="RP") {
             # Computes the knots wrt to the times selected for the analysis
-            t[t==0] = min(0.00001,min(t[t>0]))
-            B = basis(fit$misc$data.stan$knots,log(t))
-            gamma=rstan::extract(m)$gamma
-            coefs=cbind(rep(0,nrow(coefs)),coefs)
+            t[t==0] <- min(0.00001,min(t[t>0]))
+            B <- basis(fit$misc$data.stan$knots,log(t))
+            gamma <- rstan::extract(m)$gamma
+            coefs <- cbind(rep(0,nrow(coefs)),coefs)
             if(nrow(X)==1) {
-              S=lapply(1:nsim,function(i) {
+              S <- lapply(1:nsim,function(i) {
                 lapply(1,function(j) {
                   cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X,knots=fit$misc$data.stan$knots))
                 })
               })
             } else {
-              S = lapply(1:nsim,function(i) {
+              S <- lapply(1:nsim,function(i) {
                 lapply(1:ncol(X),function(j) {
                   cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X[j,],knots=fit$misc$data.stan$knots))
                 })
               })
             }
-            sim = cbind(coefs[,-1],gamma)[1:nsim,]
+            sim <- cbind(coefs[,-1],gamma)[1:nsim,]
           }
       }
   }
 
   n.elements <- length(S[[1]]) 
   if (fit$method=="mle") {
-    mat = lapply(1:n.elements,function(j) matrix(unlist(lapply(1:nsim,function(i) S[[i]][[j]][,2])),nrow=nsim,byrow=T))
+    mat <- lapply(1:n.elements,function(j) matrix(unlist(lapply(1:nsim,function(i) S[[i]][[j]][,2])),nrow=nsim,byrow=T))
   }
   mat <- lapply(1:n.elements,function(j) matrix(unlist(lapply(1:nsim,function(i) S[[i]][[j]][,2])),nrow=nsim,byrow=T))
 
@@ -1257,7 +1271,8 @@ print.survHE <- function(x,mod=1,...) {
       pos <- pmatch(rownames(x$models[[mod]]$summary.fixed),rownames(jpost[[1]]$latent))
       
       if(x$models[[mod]]$dlist=="weibull") {
-        shape <- unlist(lapply(jpost,function(x) x$hyperpar)); names(shape) <- NULL
+        shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+        names(shape) <- NULL
         scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))^(1/-shape)
         effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
@@ -1280,7 +1295,8 @@ print.survHE <- function(x,mod=1,...) {
         tab <- rbind(rate,effects)
       }
       if(x$models[[mod]]$dlist=="lognormal") {
-        prec <- unlist(lapply(jpost,function(x) x$hyperpar)); names(prec) <- NULL
+        prec <- unlist(lapply(jpost,function(x) x$hyperpar))
+        names(prec) <- NULL
         sdlog <- 1/sqrt(prec)
         meanlog <- unlist(lapply(jpost,function(x) x$latent[pos[1],]))
         effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
@@ -1293,7 +1309,8 @@ print.survHE <- function(x,mod=1,...) {
         tab <- rbind(meanlog,sdlog,effects)
       }
       if(x$models[[mod]]$dlist=="loglogistic") {
-        shape <- unlist(lapply(jpost,function(x) x$hyperpar)); names(shape) <- NULL
+        shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+        names(shape) <- NULL
         scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))
         effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
@@ -1333,30 +1350,30 @@ print.survHE <- function(x,mod=1,...) {
     # If the model is intercept only or only one covariate, then gets rid of unnecessary beta's
     quiet(print(x$models[[mod]]))
     table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
-    take.out = which(rownames(table)=="lp__")
-    betas = grep("beta",rownames(table))
+    take.out <- which(rownames(table)=="lp__")
+    betas <- grep("beta",rownames(table))
     if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-      covmat = x$misc$data.stan$X_obs
+      covmat <- x$misc$data.stan$X_obs
     } else {
-      covmat = x$misc$data.stan$X
+      covmat <- x$misc$data.stan$X
     }
-    take.out = c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
+    take.out <- c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
     # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
     #   take.out = c(take.out,which(rownames(table)=="beta[2]"))
     # }
-    table=table[-take.out,]
+    table <- table[-take.out,]
   
     if (original==FALSE) {
       if (x$models[[mod]]@model_name=="Exponential") {
         rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
         rownames(rate) <- "rate"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-which(rownames(table) %in% c("rate")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          effects <- matrix(table[-which(rownames(table) %in% c("rate")),][-1,],ncol=4,byrow=F)
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(rate,effects)
+        res <- rbind(rate,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1366,12 +1383,12 @@ print.survHE <- function(x,mod=1,...) {
         shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(shape) <- "shape"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          effects <- matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(shape,rate,effects)
+        res <- rbind(shape,rate,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1381,12 +1398,12 @@ print.survHE <- function(x,mod=1,...) {
         shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(shape) <- "shape"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          effects <- matrix(table[-which(rownames(table) %in% c("scale","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(shape,scale,effects)
+        res <- rbind(shape,scale,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1396,12 +1413,12 @@ print.survHE <- function(x,mod=1,...) {
         shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(shape) <- "shape"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          effects <- matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(shape,rate,effects)
+        res <- rbind(shape,rate,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1412,11 +1429,11 @@ print.survHE <- function(x,mod=1,...) {
         rownames(sigma) <- "sdlog"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
           effects=matrix(table[-which(rownames(table) %in% c("meanlog","alpha")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(meanlog,sigma,effects)
+        res <- rbind(meanlog,sigma,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1427,11 +1444,11 @@ print.survHE <- function(x,mod=1,...) {
         rownames(shape) <- "shape"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
           effects=matrix(table[-which(rownames(table) %in% c("rate","alpha")),][-1,],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
-        res = rbind(shape,rate,effects)
+        res <- rbind(shape,rate,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       
@@ -1446,9 +1463,9 @@ print.survHE <- function(x,mod=1,...) {
         rownames(P) <- "P"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
           effects=matrix(table[-which(rownames(table) %in% c("beta[1]","sigma","Q","P")),],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
         res <- rbind(mu,sigma,Q,P,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
@@ -1463,9 +1480,9 @@ print.survHE <- function(x,mod=1,...) {
         rownames(Q) <- "Q"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
           effects=matrix(table[-which(rownames(table) %in% c("beta[1]","Q","sigma")),],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
         res <- rbind(mu,sigma,Q,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
@@ -1479,32 +1496,32 @@ print.survHE <- function(x,mod=1,...) {
         gamma <- matrix(table[grep("gamma",rownames(table)),],ncol=4)
         rownames(gamma) <- paste0("gamma",0:(nrow(gamma)-1))
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          effects=matrix(table[-grep("gamma",rownames(table)),],ncol=4,byrow=F)
-          rownames(effects) = colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
+          effects <- matrix(table[-grep("gamma",rownames(table)),],ncol=4,byrow=F)
+          rownames(effects) <- colnames(model.matrix(x$misc$formula,x$misc$data))[-1]
         } else {
-          effects = matrix(NA,nrow=0,ncol=4)
+          effects <- matrix(NA,nrow=0,ncol=4)
         }
         res <- rbind(gamma,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
       if (x$models[[mod]]@model_name=="PolyWeibull") {
-        alpha = matrix(table[grep("alpha",rownames(table)),],ncol=4)
+        alpha <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(alpha) <- paste0("shape_",1:x$misc$data.stan$M)
         to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0)))),
                      nrow=length(x$misc$formula),byrow=T)
-		nmatch = length(which(to.rm==T))
-		idx = matrix(unlist(lapply(1:nmatch,function(i) {
+		nmatch <- length(which(to.rm==T))
+		idx <- matrix(unlist(lapply(1:nmatch,function(i) {
 			paste0(which(to.rm==TRUE,arr.ind=T)[i,],collapse=",")
 		})))
 		if (!is.null(nrow(idx))) {
-			take.out = match(paste0("beta[",idx,"]"),rownames(table))
+			take.out <- match(paste0("beta[",idx,"]"),rownames(table))
 		}
         if(all(!is.na(take.out))) {table=table[-take.out,]}
         effects=table[-grep("alpha",rownames(table)),]
-        rownames(effects) = unlist(lapply(1:x$misc$data.stan$M,function(m) {
+        rownames(effects) <- unlist(lapply(1:x$misc$data.stan$M,function(m) {
           paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
         }))
-        res = rbind(alpha,effects)
+        res <- rbind(alpha,effects)
         if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
       }
     }
@@ -1521,12 +1538,12 @@ print.survHE <- function(x,mod=1,...) {
     }
     if (x$method=="hmc") {
 	  if (x$models[[mod]]@model_name=="PolyWeibull") {
-	      take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
+	      take.out <- betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
 	  } else {
-	      take.out = betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
+	      take.out <- betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
 	  }
-      take.out = c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
-      tab=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
+      take.out <- c(take.out,grep("lp__",rownames(rstan::summary(x$models[[mod]])$summary)))
+      tab <- rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary[-take.out,]
       n_kept <- x$models[[mod]]@sim$n_save - x$models[[mod]]@sim$warmup2
       cat("Inference for Stan model: ", x$models[[mod]]@model_name, ".\n", sep = "")
       cat(x$models[[mod]]@sim$chains, " chains, each with iter=", x$models[[mod]]@sim$iter, 
@@ -1545,21 +1562,21 @@ print.survHE <- function(x,mod=1,...) {
     # Now recodes the model name to a standardised string
     if (x$method=="hmc") {
       label <- x$models[[mod]]@model_name
-      if (label=="RP") {label="Royston & Parmar splines"}
-      label.met="Stan (Bayesian inference via \nHamiltonian Monte Carlo)"
+      if (label=="RP") {label <- "Royston & Parmar splines"}
+      label.met <- "Stan (Bayesian inference via \nHamiltonian Monte Carlo)"
     } else {
-      if(x$models[[mod]]$dlist$name=="exp" | x$models[[mod]]$dlist$name=="exponential") {label="Exponential"}
-      if(x$models[[mod]]$dlist$name=="gamma") {label="Gamma"}
-      if(x$models[[mod]]$dlist$name=="lognormal" | x$models[[mod]]$dlist$name=="lnorm") {label="log-Normal"}
-      if(x$models[[mod]]$dlist$name=="llogis" | x$models[[mod]]$dlist$name=="loglogistic") {label="log-Logistic"}
-      if(x$models[[mod]]$dlist$name=="gengamma") {label="Generalised Gamma"}
-      if(x$models[[mod]]$dlist$name=="weibull" | x$models[[mod]]$dlist$name=="weibull.quiet" | x$models[[mod]]$dlist$name=="weibullPH") {label="Weibull"}
-      if(x$models[[mod]]$dlist$name=="genf") {label="Generalised F"}
-      if(x$models[[mod]]$dlist$name=="gompertz") {label="Gompertz"}
-      if(x$models[[mod]]$dlist$name=="survspline") {label="Royston & Parmar splines"}
+      if(x$models[[mod]]$dlist$name=="exp" | x$models[[mod]]$dlist$name=="exponential") {label <- "Exponential"}
+      if(x$models[[mod]]$dlist$name=="gamma") {label <- "Gamma"}
+      if(x$models[[mod]]$dlist$name=="lognormal" | x$models[[mod]]$dlist$name=="lnorm") {label <- "log-Normal"}
+      if(x$models[[mod]]$dlist$name=="llogis" | x$models[[mod]]$dlist$name=="loglogistic") {label <-"log-Logistic"}
+      if(x$models[[mod]]$dlist$name=="gengamma") {label <- "Generalised Gamma"}
+      if(x$models[[mod]]$dlist$name=="weibull" | x$models[[mod]]$dlist$name=="weibull.quiet" | x$models[[mod]]$dlist$name=="weibullPH") {label <- "Weibull"}
+      if(x$models[[mod]]$dlist$name=="genf") {label <- "Generalised F"}
+      if(x$models[[mod]]$dlist$name=="gompertz") {label <- "Gompertz"}
+      if(x$models[[mod]]$dlist$name=="survspline") {label <- "Royston & Parmar splines"}
     }
-    if(x$method=="mle") {label.met="Flexsurvreg \n(Maximum Likelihood Estimate)"}
-    if(x$method=="inla") {label.met="INLA (Bayesian inference via \nIntegrated Nested Laplace Approximation)"}
+    if(x$method=="mle") {label.met <- "Flexsurvreg \n(Maximum Likelihood Estimate)"}
+    if(x$method=="inla") {label.met <- "INLA (Bayesian inference via \nIntegrated Nested Laplace Approximation)"}
 
     cat("\n")
     cat(paste0("Model fit for the ",label," model, obtained using ",label.met,". Running time: ",
@@ -1600,18 +1617,18 @@ psa.plot <- function(psa,...) {
   n.elements <- length(psa$S[[1]]) 
   times <- psa$S[[1]][[1]][,1]
   exArgs <- list(...)
-  if(!exists("xlab",where=exArgs)) {xlab="Time"} else {xlab=exArgs$xlab}
-  if(!exists("ylab",where=exArgs)) {ylab="Survival"} else {ylab=exArgs$ylab}
-  if(!exists("col",where=exArgs)) {col=sample(colors(),n.elements)} else {col=exArgs$col}
-  if(!exists("alpha",where=exArgs)) {alpha=0.1} else {alpha=exArgs$alpha}
-  if(!exists("main",where=exArgs)) {main=""} else {main=exArgs$main}
-  if(!exists("labs",where=exArgs)) {labs=TRUE} else {labs=exArgs$labs}
-  if(!exists("xpos",where=exArgs)) {xpos=max(times)*0.65} else {xpos=exArgs$xpos}
-  if(!exists("ypos",where=exArgs)) {ypos=1} else {ypos=exArgs$ypos}
-  if(!exists("cex.txt",where=exArgs)) {cex.txt=.75} else {cex.txt=exArgs$cex.txt}
-  if(!exists("offset",where=exArgs)) {off=seq(1,nrow(psa$des.mat))*.35} else {off=seq(1,nrow(psa$des.mat))*exArgs$offset}
-  if(!exists("nsmall",where=exArgs)) {nsmall=2} else {nsmall=exArgs$nsmall}
-  if(!exists("digits",where=exArgs)) {digits=5} else {digits=exArgs$digits}
+  if(!exists("xlab",where=exArgs)) {xlab <- "Time"} else {xlab <- exArgs$xlab}
+  if(!exists("ylab",where=exArgs)) {ylab="Survival"} else {ylab <- exArgs$ylab}
+  if(!exists("col",where=exArgs)) {col <- sample(colors(),n.elements)} else {col <- exArgs$col}
+  if(!exists("alpha",where=exArgs)) {alpha <- 0.1} else {alpha <- exArgs$alpha}
+  if(!exists("main",where=exArgs)) {main <- ""} else {main <- exArgs$main}
+  if(!exists("labs",where=exArgs)) {labs <- TRUE} else {labs <- exArgs$labs}
+  if(!exists("xpos",where=exArgs)) {xpos <- max(times)*0.65} else {xpos <- exArgs$xpos}
+  if(!exists("ypos",where=exArgs)) {ypos <- 1} else {ypos <- exArgs$ypos}
+  if(!exists("cex.txt",where=exArgs)) {cex.txt <- 0.75} else {cex.txt <- exArgs$cex.txt}
+  if(!exists("offset",where=exArgs)) {off <- seq(1,nrow(psa$des.mat))*.35} else {off <- seq(1,nrow(psa$des.mat))*exArgs$offset}
+  if(!exists("nsmall",where=exArgs)) {nsmall <- 2} else {nsmall <- exArgs$nsmall}
+  if(!exists("digits",where=exArgs)) {digits <- 5} else {digits <- exArgs$digits}
 
   # If there's only the average value for the survival curve, simpler plot
   if (psa$nsim==1) {
@@ -1640,12 +1657,13 @@ psa.plot <- function(psa,...) {
       })
     }
   }
-  axis(1);axis(2)
+  axis(1)
+  axis(2)
   if (labs==TRUE) {
-    txt1=lapply(1:ncol(psa$des.mat),function(i) {
+    txt1 <- lapply(1:ncol(psa$des.mat),function(i) {
       text(xpos,ypos-(i-1)/40,paste0(colnames(psa$des.mat)[i]," : "),cex=cex.txt,pos=2,col="black")
     })
-    txt2=lapply(1:ncol(psa$des.mat),function(i) {
+    txt2 <- lapply(1:ncol(psa$des.mat),function(i) {
       lapply(1:nrow(psa$des.mat),function(j) {
         text(xpos+off[j],ypos-(i-1)/40,format(psa$des.mat[j,i],nsmall=nsmall,digits=digits),cex=cex.txt,pos=2,col=col[j])
       })
@@ -1682,8 +1700,8 @@ plot.survHE <- function(...) {
     exArgs <- list(...) 		# Lists all the additional inputs
     nexArgs <- length(exArgs)
     classes <- unlist(lapply(1:nexArgs,function(i) class(exArgs[[i]])))
-    w=which(classes=="survHE")
-    original.method=unlist(lapply(w,function(i) exArgs[[i]]$method))
+    w <- which(classes=="survHE")
+    original.method <- unlist(lapply(w,function(i) exArgs[[i]]$method))
     if(length(w)==0) {
         stop("You need to input at least one 'survHE' object to run this function!")
     }
@@ -1718,34 +1736,36 @@ plot.survHE <- function(...) {
       dic <- dic[which.model]
     }
     model.fitting <- list(aic=aic,bic=bic,dic=dic)
-    x <- list(); x$models <- mods; class(x) <- "survHE"
+    x <- list()
+    x$models <- mods
+    class(x) <- "survHE"
     x$model.fitting <- model.fitting
     ## Needs to include in the misc object the element vars (which is used for HMC models)
     if (any(method=="hmc")) {
-      x$misc=exArgs[[min(which(original.method=="hmc"))]]$misc
+      x$misc <- exArgs[[min(which(original.method=="hmc"))]]$misc
     } else {
       # If none of the survHE objects are HMC, then just use the first
-      x$misc=exArgs[[1]]$misc
+      x$misc <- exArgs[[1]]$misc
     }
 
     nmodels <- length(x$models)  # Number of models fitted by fit.models()
     
     # Checks that extra options are specified
-    if (is.null(exArgs$t)) {t=sort(unique(x$misc$km$time))} else {t=exArgs$t}
-    if (is.null(exArgs$xlab)) {xl="time"} else {xl=exArgs$xlab}
-    if (is.null(exArgs$ylab)) {yl="Survival"} else {yl=exArgs$ylab}
-    if (is.null(exArgs$lab.trt)) {lab.trt=names(x$misc$km$strata)} else {lab.trt=names(x$km$strata)<-exArgs$lab.trt}
-    if (is.null(exArgs$cex.trt)) {cex.trt=.8} else {cex.trt=exArgs$cex.trt}
-    if (is.null(exArgs$n.risk)) {nrisk=FALSE} else {nrisk=exArgs$n.risk}
-    if (is.null(exArgs$main)) {main=""} else {main=exArgs$main}
-    if (is.null(exArgs$newdata)) {newdata = NULL} else {newdata=exArgs$newdata}
-    if (is.null(exArgs$cex.lab)) {cex.lab = .8} else {cex.lab=exArgs$cex.lab}
+    if (is.null(exArgs$t)) {t <- sort(unique(x$misc$km$time))} else {t <- exArgs$t}
+    if (is.null(exArgs$xlab)) {xl <- "time"} else {xl <- exArgs$xlab}
+    if (is.null(exArgs$ylab)) {yl <- "Survival"} else {yl <- exArgs$ylab}
+    if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<- names(x$km$strata)<-exArgs$lab.trt}
+    if (is.null(exArgs$cex.trt)) {cex.trt <- 0.8} else {cex.trt <- exArgs$cex.trt}
+    if (is.null(exArgs$n.risk)) {nrisk <- FALSE} else {nrisk <- exArgs$n.risk}
+    if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
+    if (is.null(exArgs$newdata)) {newdata <- NULL} else {newdata <- exArgs$newdata}
+    if (is.null(exArgs$cex.lab)) {cex.lab <- 0.8} else {cex.lab <- exArgs$cex.lab}
     
     if (is.null(exArgs$xlim) & is.null(exArgs$t)) {
-        xlm=range(pretty(x$misc$km$time))
+        xlm <- range(pretty(x$misc$km$time))
     } 
     if (is.null(exArgs$xlim) & !is.null(exArgs$t)) {
-        xlm=range(pretty(t))
+        xlm <- range(pretty(t))
     }
     if (!is.null(exArgs$xlim) & is.null(exArgs$t)) {
         xlm <- exArgs$xlim
@@ -1755,25 +1775,25 @@ plot.survHE <- function(...) {
     }
     
     if (is.null(exArgs$colors)) {
-        if (nmodels>1) {colors=(2:(nmodels+1))} else {colors=2}
-    } else {colors=exArgs$colors}
-    if(is.null(exArgs$axes)){axes=TRUE} else {axes=exArgs$axes}
+        if (nmodels>1) {colors <- (2:(nmodels+1))} else {colors <- 2}
+    } else {colors <- exArgs$colors}
+    if(is.null(exArgs$axes)){axes <- TRUE} else {axes <- exArgs$axes}
     if (is.null(exArgs$labs)) {
         labs <- unlist(lapply(1:length(x$models),function(i) {
             if(class(x$models[[i]])=="stanfit") {tolower(x$models[[i]]@model_name)} else {x$models[[i]]$dlist$name}
         }))
-        labs[labs %in% c("weibull.quiet","weibull","weibullaf","weibullph")] = "Weibull"
-        labs[labs %in% c("exp","exponential")] = "Exponential"
+        labs[labs %in% c("weibull.quiet","weibull","weibullaf","weibullph")] <- "Weibull"
+        labs[labs %in% c("exp","exponential")] <- "Exponential"
         labs[labs %in% "gamma"] <- "Gamma"
-        labs[labs %in% c("lnorm","lognormal")] = "log-Normal"
-        labs[labs %in% c("llogis","loglogistic","loglogis")] = "log-Logistic"
+        labs[labs %in% c("lnorm","lognormal")] <- "log-Normal"
+        labs[labs %in% c("llogis","loglogistic","loglogis")] <- "log-Logistic"
         labs[labs %in% "gengamma"] <- "Gen. Gamma"
         labs[labs %in% "genf"] <- "Gen. F"
         labs[labs %in% "gompertz"] <- "Gompertz"
         labs[labs %in% c("survspline","rp")] <- "Royston & Parmar splines"
-    } else {labs=exArgs$labs}
+    } else {labs <- exArgs$labs}
     labs <- c("Kaplan Meier",labs)
-    if (is.null(exArgs$add.km)) {add.km=TRUE} else {add.km=exArgs$add.km}
+    if (is.null(exArgs$add.km)) {add.km <- TRUE} else {add.km <- exArgs$add.km}
     
     # Now plots the KM curve using "rms" if add.km is set to TRUE
     if (add.km==TRUE & is.null(newdata)) {
@@ -1789,11 +1809,13 @@ plot.survHE <- function(...) {
         labs <- labs[-1]
         if(class(colors)!="character") {colors <- colors-1}
         plot(0,0,col="white",xlab=xl,ylab=yl,axes=F,xlim=xlm,ylim=c(0,1),main=main)
-        if(axes==TRUE) {axis(1);axis(2)}
+        if(axes==TRUE) {
+          axis(1)
+          axis(2)}
         col <- colors
     }
     res <- lapply(1:nmodels,function(i) {
-        x$method=method[i]
+        x$method <- method[i]
         make.surv(x,nsim=1,t=t,mod=i,newdata=newdata)
     })
     
@@ -1803,22 +1825,22 @@ plot.survHE <- function(...) {
       pts <- list()
       for (i in 1:nmodels) {
         if (method[i]=="mle") {
-          pts[[i]] = lapply(1:length(newdata),function(j) {
-            tmp=matrix(unlist(res[[i]]$S[[j]]),ncol=4)
+          pts[[i]] <- lapply(1:length(newdata),function(j) {
+            tmp <- matrix(unlist(res[[i]]$S[[j]]),ncol=4)
             cbind(tmp[,1],tmp[,2])
           })
         } else {
-          pts[[i]] = lapply(1:length(newdata),function(j) {
+          pts[[i]] <- lapply(1:length(newdata),function(j) {
             res[[i]]$S[[1]][[j]]
           })
         }
       }
-      colors = 1:nmodels
-      leg.txt = character()
+      colors <- 1:nmodels
+      leg.txt <- character()
       for (i in 1:nmodels) {
         for (j in 1:length(newdata)) {
           points(pts[[i]][[j]],t="l",col=colors[i],lty=j)
-          leg.txt[j] = paste0(names(newdata[[j]]),"=",prettyNum(newdata[[j]],format="fg"),collapse=", ")
+          leg.txt[j] <- paste0(names(newdata[[j]]),"=",prettyNum(newdata[[j]],format="fg"),collapse=", ")
         }
       }
       legend("topright",legend=leg.txt,bty="n",lty=1:length(newdata),cex=cex.lab)
@@ -1896,29 +1918,31 @@ model.fit.plot <- function(...,type="aic") {
     dic <- dic[which.model]
   }
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
-  fit <- list(); fit$models <- mods; class(fit) <- "survHE"
+  fit <- list()
+  fit$models <- mods
+  class(fit) <- "survHE"
   fit$model.fitting <- model.fitting
   ## Needs to include in the misc object the element vars (which is used for HMC models)
   if (any(method=="hmc")) {
-    fit$misc=exArgs[[min(which(original.method=="hmc"))]]$misc
+    fit$misc <- exArgs[[min(which(original.method=="hmc"))]]$misc
   } else {
     # If none of the survHE objects are HMC, then just use the first
-    fit$misc=exArgs[[1]]$misc
+    fit$misc <- exArgs[[1]]$misc
   }
   
     if (is.null(exArgs$models)) {
         models <- unlist(lapply(1:length(fit$models),function(i) {
             if(class(fit$models[[i]])=="stanfit") {tolower(fit$models[[i]]@model_name)} else {fit$models[[i]]$dlist$name}
         }))
-        models[models %in% c("weibull.quiet","weibull","weibullaf","weibullph")] = "Weibull"
-        models[models %in% c("exp","exponential")] = "Exponential"
-        models[models %in% "gamma"] = "Gamma"
-        models[models %in% c("lnorm","lognormal")] = "log-Normal"
-        models[models %in% c("llogis","loglogistic","loglogis")] = "log-Logistic"
-        models[models %in% "gengamma"] = "Gen. Gamma"
-        models[models %in% "genf"] = "Gen. F"
+        models[models %in% c("weibull.quiet","weibull","weibullaf","weibullph")] <- "Weibull"
+        models[models %in% c("exp","exponential")] <- "Exponential"
+        models[models %in% "gamma"] <- "Gamma"
+        models[models %in% c("lnorm","lognormal")] <- "log-Normal"
+        models[models %in% c("llogis","loglogistic","loglogis")] <- "log-Logistic"
+        models[models %in% "gengamma"] <- "Gen. Gamma"
+        models[models %in% "genf"] <- "Gen. F"
     } else {
-        models=exArgs$models 
+        models <- exArgs$models 
     }
     
     # Defines the data to be plotted
@@ -1934,12 +1958,12 @@ model.fit.plot <- function(...,type="aic") {
     }
     
     # Finally do the plot
-    if (is.null(exArgs$xlim)) {xlm=range(pretty(mf[,2]))} else {xlm=exArgs$xlim}
-    if (is.null(exArgs$digits)) {digits=7} else {digits=exArgs$digits}
-    if (is.null(exArgs$nsmall)) {nsmall=3} else {nsmall=exArgs$nsmall}
-    if (is.null(exArgs$main)) {main=paste0("Model comparison based on ",lab.type)} else {main=exArgs$main}
-    if (is.null(exArgs$mar)) {mar=c(4,6,3,1.3)} else {mar=exArgs$mar}
-    if (is.null(exArgs$cex.names)) {cex.names=0.8} else {cex.names=exArgs$cex.names}
+    if (is.null(exArgs$xlim)) {xlm <- range(pretty(mf[,2]))} else {xlm <- exArgs$xlim}
+    if (is.null(exArgs$digits)) {digits <- 7} else {digits <- exArgs$digits}
+    if (is.null(exArgs$nsmall)) {nsmall <- 3} else {nsmall <- exArgs$nsmall}
+    if (is.null(exArgs$main)) {main <- paste0("Model comparison based on ",lab.type)} else {main <- exArgs$main}
+    if (is.null(exArgs$mar)) {mar <- c(4,6,3,1.3)} else {mar <- exArgs$mar}
+    if (is.null(exArgs$cex.names)) {cex.names <- 0.8} else {cex.names <- exArgs$cex.names}
     par(mar=mar)                                           # Bottom,left,top & right margins
     b <- barplot(                                          # Function to draw a barplot (see BMS NICE submission)
         mf[,2],  	                                         # Makes a barplot using the values of the AIC or BIC
@@ -1962,7 +1986,7 @@ model.fit.plot <- function(...,type="aic") {
 }
 
 
-test.linear.assumptions <- function(fit,mod=1,coxph=TRUE,label = FALSE,...){
+test.linear.assumptions <- function(fit,mod=1,coxph=TRUE,label=FALSE,...){
   ## THIS IS INTERESTING, BUT NEEDS TO COMPLETE WITH THE OTHER DISTRIBUTIONS!!!
   exArgs <- list(...)
   
@@ -2067,7 +2091,7 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
       tot.rows <- dims[1]*nobjs + nobjs
       cn <- as.character(object$S[[1]][[1]][,1])
       for (i in 1:nobjs) {
-        colnames(export[[i]])=paste0("t_",cn)
+        colnames(export[[i]]) <- paste0("t_",cn)
       }
     }
     
@@ -2077,13 +2101,13 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     #   out=export[[1]]
     #   if (nobjs>1) {
     #     for (i in 2:nobjs) {
-    #       out = rbind(out,rep(NA,ncol(out)),export[[i]])
+    #       out <- rbind(out,rep(NA,ncol(out)),export[[i]])
     #     }
     #   }
     #   write.csv(out,file=file)
     # }
     
-    if(is.null(sheet)) {sheet="Sheet 1"}
+    if(is.null(sheet)) {sheet <- "Sheet 1"}
     
     # If it already exists, we need to append the data to a different sheet
     if (file.exists(file)) {
@@ -2282,7 +2306,7 @@ digitise <- function(surv_inp,nrisk_inp,km_output="KMdata.txt",ipd_output="IPDda
           }
           if (d[k] != 0) last<-k
         }
-        sumd<- sum(d[1:upper[n.int]])
+        sumd <- sum(d[1:upper[n.int]])
       }
     }
   }
@@ -2296,7 +2320,7 @@ digitise <- function(surv_inp,nrisk_inp,km_output="KMdata.txt",ipd_output="IPDda
   t.IPD <- rep(t.S[n.t],n.risk[1])
   event.IPD <- rep(0,n.risk[1])
   #Write event time and event indicator (=1) for each event, as separate row in t.IPD and event.IPD
-  k=1
+  k <- 1
   for (j in 1:n.t){
     if(d[j]!=0){
       t.IPD[k:(k+d[j]-1)]<- rep(t.S[j],d[j])
@@ -2369,9 +2393,9 @@ make.transition.probs <- function(x,...) {
   # ... = additional arguments. 
   #       labs = a string vector of names for the elements of the list (strata for the survival analysis)
 
-  exArgs=list(...)
+  exArgs <- list(...)
   
-  tp = lapply(1:length(x$mat),function(i) {
+  tp <- lapply(1:length(x$mat),function(i) {
     matrix(unlist(lapply(1:nrow(x$mat[[1]]),function(j) {
       1-(x$mat[[i]][j,2:ncol(x$mat[[1]])]/x$mat[[i]][j,1:ncol(x$mat[[1]])-1])
     })),byrow=T,nrow=nrow(x$mat[[1]]))
@@ -2379,19 +2403,19 @@ make.transition.probs <- function(x,...) {
   
   if (exists("labs",where=exArgs)) {
     if(length(exArgs$labs)==length(x$mat)) {
-      names(tp) = exArgs$labs
+      names(tp) <- exArgs$labs
     }
   } else {
-    names(tp) = rownames(x$des.mat)
+    names(tp) <- rownames(x$des.mat)
   }
   
   # Defines the column labels (to specify what the times refer to)
-  col.labs = character()
+  col.labs <- character()
   for (i in 1:length(x$times)-1) {
-    col.labs[i] = paste0(x$times[i],"-",x$times[i+1])
+    col.labs[i] <- paste0(x$times[i],"-",x$times[i+1])
   }
   for (i in 1:length(tp)) {
-    colnames(tp[[i]]) = col.labs
+    colnames(tp[[i]]) <- col.labs
   }
 
   # Output
@@ -2401,7 +2425,7 @@ make.transition.probs <- function(x,...) {
 }
 
 
-poly.weibull = function(formula=NULL,data,...) {
+poly.weibull <- function(formula=NULL,data,...) {
   # Fits the PolyWeibull model of Demiris et al (2015), SMMR 24(2), 287-301 to the data
   #
   # formula = a list of formulae to be used for each of the M components of the model
@@ -2426,7 +2450,7 @@ poly.weibull = function(formula=NULL,data,...) {
   }
   
   # Optional arguments
-  exArgs = list(...)
+  exArgs <- list(...)
   
   # Sets up defaults
   
@@ -2435,9 +2459,9 @@ poly.weibull = function(formula=NULL,data,...) {
     # a. The user has specified a formula, but has only given 1 element, then expand it
     #    so that formula becomes a list of formulae and sets up 2 components by default
     if (class(formula)=="formula") {
-      formula = list(formula)
+      formula <- list(formula)
     }
-    M = length(formula) 
+    M <- length(formula) 
     if(length(formula)<2){
       stop("Please speficy at least 2 components for the Poly-Weibull model by creating\n  a list of at least two formulae, eg: 'list(Surv(time,event)~1,Surv(time,event)~treatment)'")
     }
@@ -2449,16 +2473,16 @@ poly.weibull = function(formula=NULL,data,...) {
   if(exists("iter",where=exArgs)) {iter <- exArgs$iter} else {iter <- 2000}
   if(exists("warmup",where=exArgs)) {warmup <- exArgs$warmup} else {warmup <- floor(iter/2)}
   if(exists("thin",where=exArgs)) {thin <- exArgs$thin} else {thin <- 1}
-  if(exists("control",where=exArgs)) {control=exArgs$control} else {control=NULL}
+  if(exists("control",where=exArgs)) {control <- exArgs$control} else {control <- NULL}
   if(exists("seed",where=exArgs)) {seed <- exArgs$seed} else {seed <- sample.int(.Machine$integer.max, 1)}
   if(exists("pars",where=exArgs)) {pars <- exArgs$pars} else {
     pars <- c("loglambda","lambda","lp__")
   }
   if(exists("include",where=exArgs)) {include <- exArgs$include} else {include <- FALSE}
-  if(exists("cores",where=exArgs)) {cores=exArgs$cores} else {cores=1}
+  if(exists("cores",where=exArgs)) {cores <- exArgs$cores} else {cores <- 1}
 
   # Reconstructs the vars list based on the formula
-  vars = list()
+  vars <- list()
   for (i in 1:M) {
     test <- attributes(terms(formula[[i]]))$term.labels
     ncovs <- length(test)
@@ -2499,7 +2523,7 @@ poly.weibull = function(formula=NULL,data,...) {
     } else {
       D <- 0
     }
-    vars[[i]] = list(time=time,event=event,factors=factors,covs=covs,nlevs=D)
+    vars[[i]] <- list(time=time,event=event,factors=factors,covs=covs,nlevs=D)
   }
   
   # Loads the pre-compiled models
@@ -2507,113 +2531,115 @@ poly.weibull = function(formula=NULL,data,...) {
   
   ###############################################################################################
   ### THIS IS JUST A TEMPORARY LINE (UNTIL THE CORRECT MODELS ARE PRE-COMPILED!)
-  ####dso = readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
+  ####dso <- readRDS("~/Dropbox/UCL/Mapi/Projects/Survival/Stan_code/DSOs.rds")
   ###############################################################################################
-  time2run = numeric()
+  time2run <- numeric()
   # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
   dso <- dso[[6]] 
   
-  data.stan = list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event]); data.stan$n = length(data.stan$t); 
-  data.stan$M = M;
-  X = lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
+  data.stan <- list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event])
+  data.stan$n <- length(data.stan$t)
+  data.stan$M <- M
+  X <- lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
   # max number of covariates in all the model formulae
-  data.stan$H = max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
+  data.stan$H <- max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
   # NB: Stan doesn't allow matrices with 1 column, so if there's only one covariate (eg intercept only), needs a little trick
-  if (data.stan$H==1) {data.stan$H=data.stan$H+1}
-  X = lapply(1:data.stan$M,function(i) {
+  if (data.stan$H==1) {data.stan$H <- data.stan$H+1}
+  X <- lapply(1:data.stan$M,function(i) {
     if(ncol(X[[i]])<data.stan$H) {
-      X[[i]] = cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
+      X[[i]] <- cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
     } else {
-      X[[i]] = X[[i]]
+      X[[i]] <- X[[i]]
     }
   })
-  data.stan$X=array(NA,c(data.stan$M,data.stan$n,data.stan$H))
+  data.stan$X <- array(NA,c(data.stan$M,data.stan$n,data.stan$H))
   for (m in 1:data.stan$M) {
-    data.stan$X[m,,] = X[[m]]
+    data.stan$X[m,,] <- X[[m]]
   }
-  data.stan$mu_beta=matrix(0,nrow=data.stan$H,ncol=data.stan$M); data.stan$sigma_beta=matrix(10,data.stan$H,data.stan$M)
+  data.stan$mu_beta <- matrix(0,nrow=data.stan$H,ncol=data.stan$M)
+  data.stan$sigma_beta <- matrix(10,data.stan$H,data.stan$M)
   
   # These are modified if the user gives values in the call to poly.weibull
   if(exists("priors",where=exArgs)) {
-    priors=exArgs$priors
+    priors <- exArgs$priors
     # Linear predictor coefficients
     if(!is.null(priors$mu_beta)) {
-      data.stan$mu_beta=priors$mu_beta
+      data.stan$mu_beta <- priors$mu_beta
     }
     if(!is.null(priors$sigma_beta)) {
-      data.stan$sigma_beta = priors$sigma_beta
+      data.stan$sigma_beta <- priors$sigma_beta
     }
   }
 
   # Now runs Stan to sample from the posterior distributions
-  tic = proc.time()
-  out=rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control,
+  tic <- proc.time()
+  out <- rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control,
                       pars=pars,include=include,cores=cores)
-  toc = proc.time()-tic
-  time2run=toc[3]
+  toc <- proc.time()-tic
+  time2run <- toc[3]
   list(out=out,data.stan=data.stan,time2run=time2run)
   
-  if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
-  time_survHE = time2run
+  if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan <- FALSE}
+  time_survHE <- time2run
   time_stan <- sum(rstan::get_elapsed_time(out))
-  time2run = min(time_survHE,time_stan)
+  time2run <- min(time_survHE,time_stan)
   names(time2run) <- "PolyWeibull"
     
   # Computes the log-likelihood 
-  beta = rstan::extract(out)$beta
-  alpha = rstan::extract(out)$alpha
+  beta <- rstan::extract(out)$beta
+  alpha <- rstan::extract(out)$alpha
   # NB: To make more robust estimate of AIC, BIC and DIC uses the median here (instead of the mean)
   #     This is likely to be a better approximation to the MLE when the underlying distributions are highly skewed!
-  beta.hat = apply(beta,c(2,3),median)
-  alpha.hat = apply(alpha,2,median)
-  linpred = lapply(1:data.stan$M,function(m) {
+  beta.hat <- apply(beta,c(2,3),median)
+  alpha.hat <- apply(alpha,2,median)
+  linpred <- lapply(1:data.stan$M,function(m) {
     beta[,m,]%*%t(data.stan$X[m,,])
   })
-  linpred.hat = lapply(1:data.stan$M,function(m) {
+  linpred.hat <- lapply(1:data.stan$M,function(m) {
     beta.hat[m,]%*%t(data.stan$X[m,,])
   })
   
-  h=log_s=array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
-  h_bar = log_s_bar = matrix(NA,data.stan$n,data.stan$M)
+  h <- log_s <- array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
+  h_bar <- log_s_bar <- matrix(NA,data.stan$n,data.stan$M)
   for (m in 1:data.stan$M) {
-    h_bar[,m]=alpha.hat[m]*exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m]-1)
-    log_s_bar[,m] = exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m])
+    h_bar[,m] <- alpha.hat[m]*exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m]-1)
+    log_s_bar[,m] <- exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m])
     for (i in 1:nrow(linpred[[m]])) {
-      h[i,,m] = alpha[i,m]*exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m]-1)
-      log_s[i,,m] = exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m])
+      h[i,,m] <- alpha[i,m]*exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m]-1)
+      log_s[i,,m] <- exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m])
     }
   }
-  d_log_sum_h = matrix(NA,nrow(alpha),data.stan$n)
+  d_log_sum_h <- matrix(NA,nrow(alpha),data.stan$n)
   for (i in 1:nrow(alpha)) {
-    d_log_sum_h[i,] = data.stan$d * log(rowSums(h[i,,]))
+    d_log_sum_h[i,] <- data.stan$d * log(rowSums(h[i,,]))
   }
-  loglik.bar = sum(data.stan$d*log(rowSums(h_bar))-rowSums(log_s_bar))
-  loglik = rowSums(d_log_sum_h) - rowSums(log_s,2)
-  D.theta=-2*loglik
-  D.bar=-2*loglik.bar
-  pD = mean(D.theta) - D.bar
-  pV = .5*var(D.theta)  # Uses Gelman's definition of pD!
-  dic = mean(D.theta)+pD
+  loglik.bar <- sum(data.stan$d*log(rowSums(h_bar))-rowSums(log_s_bar))
+  loglik <- rowSums(d_log_sum_h) - rowSums(log_s,2)
+  D.theta <- -2*loglik
+  D.bar <- -2*loglik.bar
+  pD <- mean(D.theta) - D.bar
+  pV <- 0.5*var(D.theta)  # Uses Gelman's definition of pD!
+  dic <- mean(D.theta)+pD
   # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
-  npars = data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
-  aic = D.bar+2*npars
-  bic = D.bar+npars*log(data.stan$n)
+  npars <- data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
+  aic <- D.bar+2*npars
+  bic <- D.bar+npars*log(data.stan$n)
   
   # Now defines the outputs of the function
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
-  km = list(time=data.stan$t)
+  km <- list(time=data.stan$t)
   misc <- list(time2run=time2run,formula=formula,data=data,km=km)
   misc$vars <- vars; misc$data.stan=data.stan
   # If save.stan is set to TRUE, then saves the Stan model file(s) & data
   if(save.stan==TRUE) {
-	model_code = attr(mod$out@stanmodel,"model_code")
-    con = "PolyWeibull.stan"
+	model_code <- attr(mod$out@stanmodel,"model_code")
+    con <- "PolyWeibull.stan"
     writeLines(model_code,con=con)
-	txt = paste0("Model code saved to the file: ",con,"\n")
+	txt <- paste0("Model code saved to the file: ",con,"\n")
     cat(txt)
   }
-  mod = list(out)
-  names(mod)="PolyWeibull"
+  mod <- list(out)
+  names(mod) <- "PolyWeibull"
   # Finally prepares the output object
   res <- list(models=mod,model.fitting=model.fitting,method="hmc",misc=misc)
   # And sets its class attribute to "survHE"
@@ -2624,7 +2650,8 @@ poly.weibull = function(formula=NULL,data,...) {
 
 
 ##
-summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
+summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
+  
   # Computes the estimated mean survival as the area under the survival curve
   # This is obtained using the trapezoidal method by taking the average of the "left" and "right" y-values.
   # object: is the output from a fit.models call
@@ -2648,8 +2675,8 @@ summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
   # NB: NEED TO FIX THIS FOR THE POLY-WEIBULL
   #
   # Defines the utility function to compute the stats table
-  make.stats = function(x, dim = 2) {
-    bugs.stats = function(x) {
+  make.stats <- function(x, dim = 2) {
+    bugs.stats <- function(x) {
       c(mean(x), sd(x), quantile(x, 0.025), median(x), quantile(x, 0.975))
     }
     if (is.null(dim(x)) == TRUE) {
@@ -2663,47 +2690,47 @@ summary.survHE = function(object,mod=1,t=NULL,nsim=1000,...) {
     return(tab)
   }
   
-  exArgs = list(...)
-  if (!exists("newdata",where=exArgs)) {newdata=NULL} else {newdata=exArgs$newdata}
-  if (!exists("labs",where=exArgs)) {labs=NULL} else {labs=exArgs$labs}
-  if (is.null(t)) {t=object$misc$km$time} else {t=t}
+  exArgs <- list(...)
+  if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
+  if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
+  if (is.null(t)) {t <- object$misc$km$time} else {t <- t}
   
-  psa = make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
-  rlabs = rownames(psa$des.mat)
+  psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
+  rlabs <- rownames(psa$des.mat)
   if (!is.null(rlabs)) {
-    rlabs=gsub("^1,","",rlabs)
+    rlabs <- gsub("^1,","",rlabs)
   } else {
-    rlabs = ""
+    rlabs <- ""
   }
-  if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs=labs}
+  if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs <- labs}
   
-  mean.surv = matrix(unlist(lapply(1:psa$nsim,function(i) {
+  mean.surv <- matrix(unlist(lapply(1:psa$nsim,function(i) {
     lapply(1:length(psa$S[[1]]),function(j) {
-      xvar = psa$S[[i]][[j]][,1]
-      yvar = psa$S[[i]][[j]][,2]
+      xvar <- psa$S[[i]][[j]][,1]
+      yvar <- psa$S[[i]][[j]][,2]
       sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
     })
-  })),nrow=psa$nsim,byrow=T)
+  })),nrow = psa$nsim,byrow=T)
   if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
-    colnames(mean.surv) = names(object$misc$km$strata)
+    colnames(mean.surv) <- names(object$misc$km$strata)
   }
   
-  tab = NULL
+  tab <- NULL
   if(psa$nsim>1) {
-    tab = make.stats(mean.surv)
-    rownames(tab) = rlabs
+    tab <- make.stats(mean.surv)
+    rownames(tab) <- rlabs
     # if(!is.null(names(x$misc$km$strata))) {
     #   if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
-    #     rownames(tab) = names(x$misc$km$strata)
+    #     rownames(tab) <- names(x$misc$km$strata)
     #   } else {
-    #     rownames(tab) = rlabs
+    #     rownames(tab) <- rlabs
     #   }
     # } else {
-    #   rownames(tab) = rlabs
+    #   rownames(tab) <- rlabs
     # }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
     cat(paste0("\n*Computed over the range: [",paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
   }
-  invisible(list(mean.surv=mean.surv,tab=tab))
+  return(invisible(list(mean.surv=mean.surv,tab=tab)))
 }
