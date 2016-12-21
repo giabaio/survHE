@@ -2,7 +2,7 @@ Package: survHE
 Type: Package
 Title: Survival Analysis in Health Economic Evaluation
 Version: 1.0.4
-Date: 2016-12-14
+Date: 2016-21-14
 Author: Gianluca Baio
 Maintainer: Gianluca Baio <gianluca@stats.ucl.ac.uk>
 Depends: R (>= 3.0.2), flexsurv, Rcpp (>= 0.11.0)
