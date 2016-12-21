@@ -65,7 +65,7 @@ test.linear.assumptions <- function(fit,mod=1,coxph=TRUE,label=FALSE,...){
     axis(1)
     axis(2)
     ### NEED TO CHECK --- WHAT IS V2???
-    pts <- lapply(1:dim(split_mat)[1],function(m) data.table::data.table(cbind(times[[m]],estimate.h(survs[[m]],times[[m]])))[V2!=0,])
+    pts <- lapply(1:dim(split_mat)[1],function(m) cbind(times[[m]],estimate.h(survs[[m]],times[[m]])))[V2!=0,]
     lapply(1:length(pts), function(x) points(pts[[x]],t="l",lty=x))
     if (label){legend('topright','Gompertz distributional assumption',bty='n')}
     

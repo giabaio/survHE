@@ -6,7 +6,7 @@ Date: 2016-21-14
 Author: Gianluca Baio
 Maintainer: Gianluca Baio <gianluca@stats.ucl.ac.uk>
 Depends: R (>= 3.0.2), flexsurv, Rcpp (>= 0.11.0)
-Imports: rms, xlsx, tools, data.table, rstan(>= 2.8.1), INLA, methods
+Imports: rms, xlsx, tools, rstan(>= 2.8.1), INLA, methods
 Suggests: shinystan
 LinkingTo: StanHeaders (>= 2.9.0), rstan (>= 2.9.0), BH (>= 1.60.0),
         Rcpp (>= 0.12.0), RcppEigen
