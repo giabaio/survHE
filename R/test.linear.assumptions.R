@@ -1,9 +1,17 @@
 test.linear.assumptions <- function(fit, mod = 1, label = FALSE, ...) {
   ## THIS IS INTERESTING, BUT NEEDS TO COMPLETE WITH THE OTHER DISTRIBUTIONS!!!
   
+  stopifnot(length(mod) == 1)
+  if(is.numeric(mod)) stopifnot(mod <= length(fit$models))
+  if(is.character(mod)) stopifnot(mod %in% names(fit$models))
+  
   m <- fit$models[[mod]]
   dist <- tolower(ifelse(fit$method == "hmc", m@model_name, m$dlist$name))
-  split_vector <- c(1)
+  
+  stopifnot(dist %in% c("exp", "exponential", "weibull", "weibull.quiet", "weibullaf", "weibullph",
+                        "llogis", "loglogistic", "lognormal", "lnorm", "gompertz"))
+  
+  split_vector <- 1
   for (i in 2:length(fit$misc$km$time)) {
     if (fit$misc$km$time[i] < fit$misc$km$time[i - 1]) {
       split_vector <- c(split_vector, i - 1, i)

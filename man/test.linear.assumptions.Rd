@@ -8,35 +8,28 @@ Tests the linear assumptions for the parametric model
 Tests the linear assumptions for the parametric model
 }
 \usage{
-test.linear.assumptions(fit, mod = 1, coxph = TRUE, label = FALSE, ...)
+test.linear.assumptions(fit, mod = 1, label = FALSE, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{fit}{
-%%     ~~Describe \code{fit} here~~
+an object of class survHE
 }
   \item{mod}{
-%%     ~~Describe \code{mod} here~~
-}
-  \item{coxph}{
-%%     ~~Describe \code{coxph} here~~
+index or name of a model in fit. Defaults to 1.
 }
   \item{label}{
-%%     ~~Describe \code{label} here~~
+if TRUE, labels assumptions. Defaults to FALSE.
 }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
+further arguments, passed on to points()
 }
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+A diagnostic plot
 }
 \references{
 %% ~put references to the literature/web site here ~
