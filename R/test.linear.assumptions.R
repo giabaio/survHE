@@ -11,13 +11,13 @@ test.linear.assumptions <- function(fit, mod = 1, label = FALSE, ...) {
   stopifnot(dist %in% c("exp", "exponential", "weibull", "weibull.quiet", "weibullaf", "weibullph",
                         "llogis", "loglogistic", "lognormal", "lnorm", "gompertz"))
   
-  split_vector <- 1
-  for (i in 2:length(fit$misc$km$time)) {
-    if (fit$misc$km$time[i] < fit$misc$km$time[i - 1]) {
-      split_vector <- c(split_vector, i - 1, i)
-    }
-  }
-  split_vector <- c(split_vector, length(fit$misc$km$time))
+  
+  split_vector <- which(diff(fit$misc$km$time) < 0)
+  split_vector <- sort(c(1,
+                         split_vector,
+                         split_vector + 1,
+                         length(fit$misc$km$time)))
+
   split_mat <- matrix(split_vector,
                       length(split_vector)/2,
                       2,
