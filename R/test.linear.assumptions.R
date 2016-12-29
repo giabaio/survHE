@@ -57,17 +57,18 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   }
   
   if (dist == "gompertz") {
-    
-    estimate.h <- function(s, t) {
-      denom <- t - c(t[-1], max(t) + 1)
-      numerator <- log(s) - log(c(s[-1], 0))
-      return(-numerator/denom)
-    }
+    # placeholder
+    warning("Gompertz models are not yet implemented in test.linear.assumptions()")
+    x <- 0
+    y <- 0
+    # estimate.h <- function(s, t) {
+    #   denom <- t - c(t[-1], max(t) + 1)
+    #   numerator <- log(s) - log(c(s[-1], 0))
+    #   return(-numerator/denom)
+    # }
     
     xlab <- "log(time)"
     ylab <- "h(t)"
-    xlim = range(pretty(all_times))
-    # ylim = range(pretty(estimate.h(survs[[1]], times[[1]])))
     legend_text <- "Gompertz distributional assumption"
     ### NEED TO CHECK --- WHAT IS V2???
     # pts <- lapply(1:dim(split_mat)[1],
@@ -75,10 +76,6 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
     #                 cbind(times[[m]],
     #                       estimate.h(survs[[m]],
     #                                  times[[m]])))[V2 != 0, ]
-    y0 <- lapply(mapply(cbind, survs, times), function(x) estimate.h(x[, 1], x[, 2]))
-    not_zero <- lapply(y, function(x) x != 0)
-    x <- mapply(subset, times, not_zero)
-    y <- mapply(subset, y0, not_zero)
   }
   
   # actual plot
