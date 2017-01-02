@@ -8,7 +8,7 @@ Tests the linear assumptions for the parametric model
 Tests the linear assumptions for the parametric model
 }
 \usage{
-test.linear.assumptions(fit, mod = 1, label = FALSE, ...)
+test.linear.assumptions(fit, mod = 1, label_plot = FALSE, ...)
 }
 
 \arguments{
@@ -18,7 +18,7 @@ an object of class survHE
   \item{mod}{
 index or name of a model in fit. Defaults to 1.
 }
-  \item{label}{
+  \item{label_plot}{
 if TRUE, labels assumptions. Defaults to FALSE.
 }
   \item{\dots}{
