@@ -270,8 +270,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    # As of 9 Jan 2017, INLA is creating new distribution names for survival models
 	    # so needs to update the name
 		if(distr[x] %in% c("exponential","weibull","lognormal")) {distr[x]=paste0(distr[x],"surv")}
-		# Workaround to load the libraries (needed in LINUX????)
-		INLA:::inla.dynload.workaround()
+		####
+		## Workaround to load the libraries (needed in LINUX????)
+		## INLA:::inla.dynload.workaround()
+		####
         INLA::inla(formula,family=distr[x],data=data,control.compute=list(config=TRUE,dic=TRUE),
                    control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                    control.fixed=control.fixed,control.family=control.family[[x]]
