@@ -267,6 +267,9 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       
       # 4. Finally runs INLA
       mod <- lapply(1:length(distr), function(x) {
+	    # As of 9 Jan 2017, INLA is creating new distribution names for survival models
+	    # so needs to update the name
+		if(distr[x] %in% c("exponential","weibull","lognormal")) {distr[x]=paste0(distr[x],"surv")}
         INLA::inla(formula,family=distr[x],data=data,control.compute=list(config=TRUE,dic=TRUE),
                    control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                    control.fixed=control.fixed,control.family=control.family[[x]]
@@ -692,7 +695,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    pD <- mean(D.theta) - D.bar
 	    pV <- 0.5*var(D.theta)
 	    dic[i] <- mean(D.theta)+pD
-	    dic2[i] <- mean(D.theta) + pV
+	    dic2[i] <- mean(D.theta)+pV
 	    # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
 	    aic[i] <- D.bar+2*npars                   #mean(D.theta)+2*pD
 	    bic[i] <- D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
