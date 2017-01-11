@@ -15,7 +15,7 @@ print.survHE <- function(x,mod=1,...) {
   availables.mle <- c("genf", "genf.orig", "gengamma", "gengamma.orig", "exp", 
                       "weibull", "weibull.quiet","weibullPH", "lnorm", "gamma", "gompertz", 
                       "llogis", "exponential", "lognormal","survspline")
-  availables.inla <- c("exponential","weibull","lognormal","loglogistic")
+  availables.inla <- c("exponential","weibull","weibullPH","lognormal","loglogistic")
   availables.hmc <- c("Exponential","Gamma","GenF","GenGamma","Gompertz","PolyWeibull","RP",
                       "WeibullAF","WeibullPH","logLogistic","logNormal")
   # If the distribution specified is not-standard (eg user-defined in MLE, or using random effects or non-standard
@@ -50,18 +50,47 @@ print.survHE <- function(x,mod=1,...) {
       pos <- pmatch(rownames(x$models[[mod]]$summary.fixed),rownames(jpost[[1]]$latent))
       
       if(x$models[[mod]]$dlist=="weibull") {
-        shape <- unlist(lapply(jpost,function(x) x$hyperpar))
-        names(shape) <- NULL
-        scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))^(1/-shape)
-        effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
-        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-          for (j in 2:length(pos)) {
-            effects[(j-1),] <- log(exp(unlist(lapply(jpost,function(x) x$latent[pos[j],])))^(1/-shape))
-          }
-          rownames(effects) <- x$models[[mod]]$names.fixed[-1]
-        }
-        tab <- rbind(shape,scale,effects)
+	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+	names(shape) <- NULL
+	## NB: As of Jan 11 2017, there's a mistake in INLA and so needs to minus the argument of the exp here!
+	scale <- exp(-unlist(lapply(jpost,function(x) x$latent[pos[1],])))
+	effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
+	if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+	  for (j in 2:length(pos)) {
+	    effects[(j-1),] <- log(exp(-unlist(lapply(jpost,function(x) x$latent[pos[j],]))))
+	  }
+	  rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+	}
+	tab <- rbind(shape,scale,effects)
       }
+      if(x$models[[mod]]$dlist=="weibullPH") {
+	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+	names(shape) <- NULL
+	scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))
+	effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
+	if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+	  for (j in 2:length(pos)) {
+	    effects[(j-1),] <- log(exp(unlist(lapply(jpost,function(x) x$latent[pos[j],]))))
+	  }
+	  rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+	}
+	tab <- rbind(shape,scale,effects)
+      }
+      ### OLD CODE --- worked on older versions of INLA!
+#      if(x$models[[mod]]$dlist=="weibull") {
+#        shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+#        names(shape) <- NULL
+#        scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))^(1/-shape)
+#        effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
+#        if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+#          for (j in 2:length(pos)) {
+#            effects[(j-1),] <- log(exp(unlist(lapply(jpost,function(x) x$latent[pos[j],])))^(1/-shape))
+#          }
+#          rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+#        }
+#        tab <- rbind(shape,scale,effects)
+#      }
+      ###
       if(x$models[[mod]]$dlist=="exponential") {
         rate <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))
         effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)

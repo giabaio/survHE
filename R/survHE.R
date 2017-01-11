@@ -1,5 +1,5 @@
 ## SET OF UTILITY FUNCTIONS TO INCLUDE SURVIVAL ANALYSIS RESULTS INTO A HEALTH ECONOMIC MODEL
-## Gianluca Baio + Will Browne + Peter Konings (20 Dec 2016)
+## Gianluca Baio + Will Browne + Peter Konings (10 Jan 2017)
 ##
 fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   ## Main function - runs the survival analysis with several useful options
@@ -63,7 +63,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   availables.mle <- c("genf", "genf.orig", "gengamma", "gengamma.orig", "exp", 
                       "weibull", "weibullPH", "lnorm", "gamma", "gompertz", 
                       "llogis", "exponential", "lognormal","rps")
-  availables.inla <- c("exponential","weibull","lognormal","loglogistic")
+  availables.inla <- c("exponential","weibull","weibullPH","lognormal","loglogistic")
   availables.hmc <- c("exponential","gamma","genf","gengamma","gompertz","polyweibull","rps",
                       "weibull","weibullPH","loglogistic","lognormal")
   ### NB: The Poly-Weibull model does work, but it needs some special function
@@ -267,13 +267,21 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       
       # 4. Finally runs INLA
       mod <- lapply(1:length(distr), function(x) {
-	    # As of 9 Jan 2017, INLA is creating new distribution names for survival models
-	    # so needs to update the name
-		if(distr[x] %in% c("exponential","weibull","lognormal")) {distr[x]=paste0(distr[x],"surv")}
-		####
-		## Workaround to load the libraries (needed in LINUX????)
-		## INLA:::inla.dynload.workaround()
-		####
+	# As of 9 Jan 2017, INLA is creating new distribution names for survival models
+	# so needs to update the name
+	if(distr[x] %in% c("exponential","lognormal")) {distr[x]=paste0(distr[x],"surv")}
+        if(distr[x]=="weibullPH") {
+		distr[x]="weibullsurv"
+		control.family[[x]]$variant=0
+	}
+	if(distr[x]=="weibull") {
+		distr[x]="weibullsurv"
+		control.family[[x]]$variant=1
+	}
+	####
+	## Workaround to load the libraries (needed in LINUX????)
+	## INLA:::inla.dynload.workaround()
+	####
         INLA::inla(formula,family=distr[x],data=data,control.compute=list(config=TRUE,dic=TRUE),
                    control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                    control.fixed=control.fixed,control.family=control.family[[x]]
