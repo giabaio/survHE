@@ -6,7 +6,13 @@ Contains a suite of functions to systematise the workflow involving survival ana
 ## Installation
 There are two ways of installing `survHE`. A "stable" version is packaged and binary files are available for Windows and as source. To install the stable version on a Windows machine with x64 architecture, run the following commands
 ```R
-install.packages("http://www.statistica.it/gianluca/survHE/x64/survHE_1.0.4.zip",repos=NULL)
+install.packages("survHE",repos=c("http://www.statistica.it/gianluca/R","https://cran.rstudio.org"),dependencies=TRUE)
+```
+Note that you need to specify a vector of repositories - the first one hosts `survHE`, while the second one should be an official [CRAN mirror](https://cran.r-project.org/index.html). You can select whichever one you like, but a CRAN mirror must be provided, so that `install.packages()` can also install the "dependencies" (e.g. other packages that are required for `survHE` to work). This process can be quite lengthy, if you miss many of the relevant packages.
+
+On a Windows machine with a i386 architecture, you can also use the following command
+```R
+install.packages("http://www.statistica.it/gianluca/survHE/i386/survHE_1.0.4.zip",repos=NULL)
 deps <- tools::package_dependencies("survHE", db = installed.packages())[[1]]
 pkgs <- deps[!deps %in% installed.packages()[,1]]
 if (length(pkgs) > 0) 
@@ -15,11 +21,7 @@ if (length(pkgs) > 0)
 	dependencies="Depends")
 rm(deps, installed.packages(), pkgs)
 ```
-which first install `survHE` and then the relevant "dependencies". This process can be quite lengthy. On a Windows machine with a i386 architecture, simply replace the first line with
-```R
-install.packages("http://www.statistica.it/gianluca/survHE/i386/survHE_1.0.4.zip",repos=NULL)
-```
-Finally, to install from source (e.g. on a Linux machine), run
+which first install `survHE` and then the relevant "dependencies". Finally, to install from source (e.g. on a Linux machine), run
 ```R
 install.packages("http://www.statistica.it/gianluca/survHE/src/survHE_1.0.4.tar.gz",type="source",repos=NULL)
 ```
