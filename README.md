@@ -6,9 +6,14 @@ Contains a suite of functions to systematise the workflow involving survival ana
 ## Installation
 There are two ways of installing `survHE`. A "stable" version is packaged and binary files are available for Windows and as source. To install the stable version on a Windows machine with x64 architecture, run the following commands
 ```R
-install.packages("survHE",repos=c("http://www.statistica.it/gianluca/R","https://cran.rstudio.org"),dependencies=TRUE)
+install.packages("survHE",
+	repos=c("http://www.statistica.it/gianluca/R",
+		"https://cran.rstudio.org",
+		"https://www.math.ntnu.no/inla/R/stable"),
+	dependencies=TRUE
+)
 ```
-Note that you need to specify a vector of repositories - the first one hosts `survHE`, while the second one should be an official [CRAN mirror](https://cran.r-project.org/index.html). You can select whichever one you like, but a CRAN mirror must be provided, so that `install.packages()` can also install the "dependencies" (e.g. other packages that are required for `survHE` to work). This process can be quite lengthy, if you miss many of the relevant packages.
+Note that you need to specify a vector of repositories - the first one hosts `survHE`, while the second one should be an official [CRAN mirror](https://cran.r-project.org/index.html). You can select whichever one you like, but a CRAN mirror must be provided, so that `install.packages()` can also install the "dependencies" (e.g. other packages that are required for `survHE` to work). The third one is used to install the package [`INLA`](http://www.r-inla.org/), which is used to do one version of the Bayesian analysis. This process can be quite lengthy, if you miss many of the relevant packages.
 
 On a Windows machine with a i386 architecture, you can also use the following command
 ```R
