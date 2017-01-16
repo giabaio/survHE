@@ -3,6 +3,7 @@
 language: R
 sudo: required
 cache: packages
+warnings_are_errors: false,
 
 before_install:
   Rscript -e 'update.packages(ask = FALSE)'
