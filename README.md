@@ -23,7 +23,7 @@ install.packages("survHE",
 		"https://www.math.ntnu.no/inla/R/stable"),
 	type="source",
 	dependencies=TRUE
-
+)
 ```
 
 The second way involves using the "development" version of `survHE` - this will usually be updated more frequently and may be continuously tested. On Windows machines, you need to install a few dependencies, including [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first, e.g. by running
