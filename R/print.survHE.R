@@ -168,7 +168,11 @@ print.survHE <- function(x,mod=1,...) {
     if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
       covmat <- x$misc$data.stan[[mod]]$X_obs
     } else {
-      covmat <- x$misc$data.stan[[mod]]$X
+      if (x$models[[mod]]@model_name!="PolyWeibull") {
+        covmat <- x$misc$data.stan[[mod]]$X
+      } else {
+        covmat <- x$misc$data.stan$X
+      }
     }
     take.out <- c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
     # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
