@@ -27,7 +27,9 @@ print.survHE <- function(x,mod=1,...) {
     if (x$method=="inla") {
       # Needs to attache the namespace as it uses a hidden function 
       # (that is actually only required when doing knitr and printing the tables)
-      suppressPackageStartupMessages(attachNamespace("INLA"))
+      if (!is.element("INLA", (.packages()))) {
+        suppressPackageStartupMessages(attachNamespace("INLA"))
+      }
       if (x$models[[mod]]$dlist$name %in% availables.inla) {original=FALSE} else {original=TRUE}
     }
     if (x$method=="hmc") {
