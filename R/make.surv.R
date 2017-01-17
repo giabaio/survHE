@@ -248,9 +248,9 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     beta <- rstan::extract(m)$beta
     coefs <- beta
     if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-      covmat <- fit$misc$data.stan$X_obs
+      covmat <- fit$misc$data.stan[[mod]]$X_obs
     } else {
-      covmat <- fit$misc$data.stan$X
+      covmat <- fit$misc$data.stan[[mod]]$X
     }
     coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
     # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
@@ -338,14 +338,14 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
         # Computes the knots wrt to the times selected for the analysis
         # If there's a time=0, then add a little constant
         t[t==0] <- min(0.00001,min(t[t>0]))
-        B <- basis(fit$misc$data.stan$knots,log(t))
+        B <- basis(fit$misc$data.stan[[mod]]$knots,log(t))
         gamma <- apply(rstan::extract(m)$gamma,2,mean)
         coefs <- c(0,coefs)
         if(nrow(X)==1) {
-          s <- cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X,knots=fit$misc$data.stan$knots))
+          s <- cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X,knots=fit$misc$data.stan[[mod]]$knots))
         } else {
           s <- lapply(1:ncol(X),function(i) 
-            cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X[i,],knots=fit$misc$data.stan$knots)))
+            cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X[i,],knots=fit$misc$data.stan[[mod]]$knots)))
         }
       }
       S[[1]] <- s
@@ -446,19 +446,19 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       if (dist=="RP") {
         # Computes the knots wrt to the times selected for the analysis
         t[t==0] <- min(0.00001,min(t[t>0]))
-        B <- basis(fit$misc$data.stan$knots,log(t))
+        B <- basis(fit$misc$data.stan[[mod]]$knots,log(t))
         gamma <- rstan::extract(m)$gamma
         coefs <- cbind(rep(0,nrow(coefs)),coefs)
         if(nrow(X)==1) {
           S <- lapply(1:nsim,function(i) {
             lapply(1,function(j) {
-              cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X,knots=fit$misc$data.stan$knots))
+              cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X,knots=fit$misc$data.stan[[mod]]$knots))
             })
           })
         } else {
           S <- lapply(1:nsim,function(i) {
             lapply(1:ncol(X),function(j) {
-              cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X[j,],knots=fit$misc$data.stan$knots))
+              cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X[j,],knots=fit$misc$data.stan[[mod]]$knots))
             })
           })
         }
