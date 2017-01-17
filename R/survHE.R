@@ -362,11 +362,14 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         data.stan$X_obs <- matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
         data.stan$X_cens <- matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
         data.stan$H=ncol(data.stan$X_obs)
+        # data.stan$n <- length(data[,vars$time])
+        # data.stan$X <- model.matrix(formula,data)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
           data.stan$X_obs <- cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
           data.stan$X_cens <- cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
           data.stan$H <- ncol(data.stan$X_obs)
+#          data.stan$X <- cbind(data.stan$X,rep(0,data.stan$n))
         }
       } 
       if (distr[x] %in% c("exponential","gompertz","weibull","weibullPH","loglogistic","lognormal")) {
@@ -441,6 +444,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         data.stan=list(t=data[,vars$time], d=data[,vars$event], n=nrow(data),M=k,X=mm,H=ncol(mm),B=B,DB=DB,
                        mu_gamma=rep(0,k+2),sigma_gamma=rep(5,k+2),knots=knots) 
       }
+      
+      ## Needs to make sure that data.stan contains both X and (X_obs,X_cens)
+      
+      
       # ###########################################################################################################################
       # ### Poly-Weibull is in theory possible and pre-compiled, but it poses problems if the formula is a list
       # if (distr[x]=="polyweibull") {
@@ -524,10 +531,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       
       # Now runs Stan to sample from the posterior distributions
       tic <- proc.time()
-      out=rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
+      out <- rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
                       pars=pars,include=include,cores=cores)
       toc <- proc.time()-tic
-      time2run[x]=toc[3]
+      time2run <- toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
     })
     if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
@@ -719,8 +726,8 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   misc <- list(time2run=time2run,formula=formula,km=ObjSurvfit,data=data)
   if(method=="hmc") {
     misc$vars <- vars
-    misc$data.stan=data.stan
-	model.fitting$dic2=dic2
+    misc$data.stan=lapply(1:length(mod),function(x) mod[[x]]$data.stan)
+	  model.fitting$dic2=dic2
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
     if(save.stan==TRUE) {
       write_model <- lapply(1:length(distr),function(i) {

@@ -161,9 +161,9 @@ print.survHE <- function(x,mod=1,...) {
     take.out <- which(rownames(table)=="lp__")
     betas <- grep("beta",rownames(table))
     if(x$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
-      covmat <- x$misc$data.stan$X_obs
+      covmat <- x$misc$data.stan[[mod]]$X_obs
     } else {
-      covmat <- x$misc$data.stan$X
+      covmat <- x$misc$data.stan[[mod]]$X
     }
     take.out <- c(take.out,betas[apply(covmat,2,function(x) all(x==0))])
     # if (is.null(x$misc$vars$factors) & is.null(x$misc$vars$covs)) {
