@@ -68,6 +68,7 @@ plot.survHE <- function(...) {
   ## Needs to include in the misc object the element vars (which is used for HMC models)
   if (any(method=="hmc")) {
     x$misc <- exArgs[[min(which(original.method=="hmc"))]]$misc
+    x$misc$data.stan=x$misc$data.stan[which.model]
   } else {
     # If none of the survHE objects are HMC, then just use the first
     x$misc <- exArgs[[1]]$misc
