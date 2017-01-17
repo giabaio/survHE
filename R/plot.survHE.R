@@ -63,18 +63,23 @@ plot.survHE <- function(...) {
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
   x <- list()
   x$models <- mods
+  nmodels <- length(x$models)  # Number of models fitted by fit.models()
   class(x) <- "survHE"
   x$model.fitting <- model.fitting
   ## Needs to include in the misc object the element vars (which is used for HMC models)
   if (any(method=="hmc")) {
-    x$misc <- exArgs[[min(which(original.method=="hmc"))]]$misc
-    x$misc$data.stan=x$misc$data.stan[which.model]
+   x$misc <- exArgs[[min(which(original.method=="hmc"))]]$misc
+   x$misc$data.stan=x$misc$data.stan[[1]]
+   if (exists("X",x$misc$data.stan)) {
+     x$misc$data.stan$X_obs <- x$misc$data.stan$X
+   } else {
+     x$misc$data.stan$X <- x$misc$data.stan$X_obs
+   }
+   x$misc$data.stan <- rep(list(x$misc$data.stan),nmodels)
   } else {
-    # If none of the survHE objects are HMC, then just use the first
-    x$misc <- exArgs[[1]]$misc
+   # If none of the survHE objects are HMC, then just use the first
+   x$misc <- exArgs[[1]]$misc
   }
-  
-  nmodels <- length(x$models)  # Number of models fitted by fit.models()
   
   # Checks that extra options are specified
   if (is.null(exArgs$t)) {t <- sort(unique(x$misc$km$time))} else {t <- exArgs$t}
