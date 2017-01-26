@@ -243,7 +243,6 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         ## This makes the priors consistent with the defaults in HMC
         ## The available models all have sd=5 in HMC, which translates to a precision of 1/25!
         control.fixed$prec <- control.fixed$prec.intercept <- 1/(5^2)
-	print(control.fixed)
       }
       if(exists("control.family",where=exArgs)) {
         control.family <- replicate(length(distr),list(INLA::inla.set.control.family.default()))
