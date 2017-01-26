@@ -100,10 +100,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
  
   if (method=="hmc") {
 	 # Fixes the way in which the distribution is written up so it's consistent with flexsurv
-	 user.distr <- distr
-   distr[pmatch("exp",user.distr)] <- "exponential"
-   distr[pmatch("lnorm",user.distr)] <- "lognormal"
-   distr[pmatch("llogis",user.distr)] <- "loglogistic"
+	user.distr <- distr
+    distr[pmatch("exp",user.distr)] <- "exponential"
+    distr[pmatch("lnorm",user.distr)] <- "lognormal"
+    distr[pmatch("llogis",user.distr)] <- "loglogistic"
   }
 
   # Reconstructs the vars list based on the formula
@@ -243,6 +243,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         ## This makes the priors consistent with the defaults in HMC
         ## The available models all have sd=5 in HMC, which translates to a precision of 1/25!
         control.fixed$prec <- control.fixed$prec.intercept <- 1/(5^2)
+	print(control.fixed)
       }
       if(exists("control.family",where=exArgs)) {
         control.family <- replicate(length(distr),list(INLA::inla.set.control.family.default()))
@@ -727,7 +728,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   if(method=="hmc") {
     misc$vars <- vars
     misc$data.stan=lapply(1:length(mod),function(x) mod[[x]]$data.stan)
-	  model.fitting$dic2=dic2
+    model.fitting$dic2=dic2
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
     if(save.stan==TRUE) {
       write_model <- lapply(1:length(distr),function(i) {

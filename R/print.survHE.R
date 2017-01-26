@@ -256,7 +256,7 @@ print.survHE <- function(x,mod=1,...) {
       
       if (x$models[[mod]]@model_name=="logLogistic") {
         rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
-        rownames(rate) <- "rate"
+        rownames(rate) <- "scale"
         shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
         rownames(shape) <- "shape"
         if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
