@@ -25,6 +25,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   ##                  control.family=list(weibull=list(param=c(.1,.1)),lognormal=list(initial=2))
   ##                  the names of the elements of the list need to be the same as those given
   ##                  in the vector distr
+  ## verbose = logical input. If TRUE, then shows messages from INLA. Default at FALSE.
   ##### NB: COULD SPECIFY DIFFERENT control.family OPTIONS FOR THE INLA METHOD WITH MANY DISTRIBUTIONS
   ##
   ## max_splines 
@@ -264,6 +265,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         #          control.family[[i]]$initial=.1
         #        }
       }
+      if(exists("verbose",where=exArgs)) {verbose <- exArgs$verbose} else {verbose <- FALSE}
       
       # 4. Finally runs INLA
       mod <- lapply(1:length(distr), function(x) {
@@ -284,7 +286,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	####
         INLA::inla(formula,family=distr[x],data=data,control.compute=list(config=TRUE,dic=TRUE),
                    control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
-                   control.fixed=control.fixed,control.family=control.family[[x]]
+                   control.fixed=control.fixed,control.family=control.family[[x]],verbose=verbose
         )
       })
       # Now re-writes the formula in general terms (without linking to INLA::inla.surv)
