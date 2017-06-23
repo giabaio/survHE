@@ -149,14 +149,14 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     # A function to rescale the parameters of a given model and then computes the survival curve
     rescale.inla <- function(m,linpred) {
       if (m$dlist$name=="weibull") {
-	      shape <- m$summary.hyperpar[1,1]
-	      # NB: As of Jan 11 2017, there's a little mistake in INLA and so need to minus the linpred HERE
+	    shape <- m$summary.hyperpar[1,1]
+	    # NB: As of Jan 11 2017, there's a little mistake in INLA and so need to minus the linpred HERE
         scale <- exp(-linpred)
         S <- lapply(1:length(scale), function(x) cbind(t,dweibull(t,shape,scale[x])/hweibull(t,shape,scale[x]))) 
       }
       if (m$dlist$name=="weibullPH") {
-	      shape <- m$summary.hyperpar[1,1]
-	      # NB: As of Jan 11 2017, there's a little mistake in INLA and so need to minus the linpred HERE
+	    shape <- m$summary.hyperpar[1,1]
+	    # NB: As of Jan 11 2017, there's a little mistake in INLA and so need to minus the linpred HERE
         scale <- exp(linpred)
         S <- lapply(1:length(scale), function(x) cbind(t,dweibullPH(t,shape,scale[x])/hweibullPH(t,shape,scale[x]))) 
       }

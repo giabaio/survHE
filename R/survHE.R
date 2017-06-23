@@ -269,21 +269,21 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       
       # 4. Finally runs INLA
       mod <- lapply(1:length(distr), function(x) {
-	# As of 9 Jan 2017, INLA is creating new distribution names for survival models
-	# so needs to update the name
-	if(distr[x] %in% c("exponential","lognormal")) {distr[x]=paste0(distr[x],"surv")}
+      	# As of 9 Jan 2017, INLA is creating new distribution names for survival models
+      	# so needs to update the name
+      	if(distr[x] %in% c("exponential","lognormal")) {distr[x]=paste0(distr[x],"surv")}
         if(distr[x]=="weibullPH") {
-		distr[x]="weibullsurv"
-		control.family[[x]]$variant=0
-	}
-	if(distr[x]=="weibull") {
-		distr[x]="weibullsurv"
-		control.family[[x]]$variant=1
-	}
-	####
-	## Workaround to load the libraries (needed in LINUX????)
-	## INLA:::inla.dynload.workaround()
-	####
+      		distr[x]="weibullsurv"
+      		control.family[[x]]$variant=0
+      	}
+      	if(distr[x]=="weibull") {
+      		distr[x]="weibullsurv"
+      		control.family[[x]]$variant=1
+      	}
+      	####
+      	## Workaround to load the libraries (needed in LINUX????)
+      	## INLA:::inla.dynload.workaround()
+      	####
         INLA::inla(formula,family=distr[x],data=data,control.compute=list(config=TRUE,dic=TRUE),
                    control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                    control.fixed=control.fixed,control.family=control.family[[x]],verbose=verbose
@@ -409,7 +409,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
             }
           }
           b
-        }
+        }m2$models[[1]]$dic$p.eff
         dbasis <- function (knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 

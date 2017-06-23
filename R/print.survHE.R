@@ -67,8 +67,8 @@ print.survHE <- function(x,mod=1,...) {
 	  rownames(effects) <- x$models[[mod]]$names.fixed[-1]
 	}
 	tab <- rbind(shape,scale,effects)
-      }
-      if(x$models[[mod]]$dlist=="weibullPH") {
+    }
+    if(x$models[[mod]]$dlist=="weibullPH") {
 	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
 	names(shape) <- NULL
 	scale <- exp(unlist(lapply(jpost,function(x) x$latent[pos[1],])))
