@@ -409,7 +409,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
             }
           }
           b
-        }m2$models[[1]]$dic$p.eff
+        }
         dbasis <- function (knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 
