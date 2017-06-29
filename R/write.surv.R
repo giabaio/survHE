@@ -76,6 +76,6 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     }
     
     msg <- paste0("Written to file: ",file)
-    cat(export.lab,"\n",profile.lab,"\n",msg)
+    cat(export.lab,"\n",profile.lab,"\n",msg,"\n")
   }
 }
