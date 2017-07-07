@@ -2,7 +2,6 @@
 
 language: R
 sudo: required
-group: deprecated-2017Q2
 cache: packages
 warnings_are_errors: false,
 
