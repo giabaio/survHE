@@ -26,9 +26,7 @@ Available options are:
 
 \code{flexsurv}: "exponential","gamma","genf","gengamma","gompertz","weibull",
 "weibullPH","loglogistic","lognormal"
-
 \code{INLA}: "exponential","weibull","lognormal","loglogistic"
-
 \code{hmc}: "exponential","gamma","genf","gengamma","gompertz","weibull","weibullPH",
 "loglogistic","lognormal"
 }

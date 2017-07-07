@@ -204,10 +204,8 @@ digitise <- function(surv_inp,nrisk_inp,km_output="KMdata.txt",ipd_output="IPDda
   if (dirname(ipd_output)==".") {
     cat("\n")
     cat(paste0("IPD data written to file: ",working.dir,ipd_output))    
-    cat("\n")
   } else {
     cat("\n")
     cat(paste0("IPD data written to file: ",ipd_output))
-    cat("\n")
   }
 }
