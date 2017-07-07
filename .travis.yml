@@ -9,18 +9,18 @@ before_install:
 # Check https://github.com/eddelbuettel/rcppgeiger/blob/master/.travis.yml
 # and http://dirk.eddelbuettel.com/blog/code/
 # (tricks to get Travis around the C++14 issue)
-  curl -OLs https://eddelbuettel.github.io/r-travis/run.sh && chmod 0755 run.sh  
-  Rscript -e 'update.packages(ask = FALSE)'
+  - curl -OLs https://eddelbuettel.github.io/r-travis/run.sh && chmod 0755 run.sh  
+  - Rscript -e 'update.packages(ask = FALSE)'
 
 install: 
-  ./run.sh install_aptget r-cran-rcpp r-cran-bh
-  sudo apt-get install -y gcc-6 g++-6
-  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+  - ./run.sh install_aptget r-cran-rcpp r-cran-bh
+  - sudo apt-get install -y gcc-6 g++-6
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
+    #  - gcc-4.8
+    #  - g++-4.8
