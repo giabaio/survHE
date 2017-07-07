@@ -1,9 +1,13 @@
 # See https://github.com/eddelbuettel/rcppgeiger/blob/master/.travis.yml
 
 language: R
+
 sudo: required
-###group: deprecated-2017Q2
+
+dist: trusty
+
 cache: packages
+
 warnings_are_errors: false,
 
 before_install:
@@ -16,10 +20,10 @@ install:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
   - gcc -v
 
-##addons:
-##  apt:
-##    sources:
-##      - ubuntu-toolchain-r-test
-##    packages:
-##      - gcc-4.8
-##      - g++-4.8
+#addons:
+#  apt:
+#    sources:
+#      - ubuntu-toolchain-r-test
+#    packages:
+#      - gcc-6
+#      - g++-6
