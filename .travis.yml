@@ -11,6 +11,8 @@ cache: packages
 warnings_are_errors: false,
 
 before_install:
+  - sudo R CMD javareconf
+  - sudo apt-get install r-cran-rjava
   - Rscript -e 'update.packages(ask = FALSE)'
 
 #install: 
