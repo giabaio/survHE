@@ -11,11 +11,11 @@ cache: packages
 warnings_are_errors: false,
 
 before_install:
-  - sudo R CMD javareconf
-  - sudo apt-get install r-cran-rjava
   - Rscript -e 'update.packages(ask = FALSE)'
 
-#install: 
+install: 
+  - sudo R CMD javareconf
+  - sudo apt-get install r-cran-rjava
 #  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 #  - sudo apt-get update
 #  - sudo apt-get install -y gcc-6 g++-6
