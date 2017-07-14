@@ -1,0 +1,31 @@
+# See https://github.com/eddelbuettel/rcppgeiger/blob/master/.travis.yml
+
+language: R
+
+sudo: required
+
+dist: trusty
+
+cache: packages
+
+warnings_are_errors: false,
+
+before_install:
+  - Rscript -e 'update.packages(ask = FALSE)'
+  Packages suggested but not available: ‘shinystan’ ‘INLA’
+
+install: 
+   - sudo apt-get install -y r-cran-rjava
+#  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+#  - sudo apt-get update
+#  - sudo apt-get install -y gcc-6 g++-6
+#  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-6
+#  - gcc -v
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
