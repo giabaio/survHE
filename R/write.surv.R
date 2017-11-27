@@ -1,3 +1,26 @@
+#' write.surv
+#' 
+#' Writes the survival summary to an excel file (helpful to then call the
+#' values in the Markov model)
+#' 
+#' Something will go here
+#' 
+#' @param object a summary.flexsurvreg object containing the survival curves
+#' (with times, estimates and interval limits)
+#' @param file a string with the full path to the file name to be saved
+#' @param sheet a string with the name of the sheet to be created
+#' @param what a string to describe what to be exported
+#' @return Something will go here
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @seealso Something will go here
+#' @references Something will go here
+#' @keywords Excel
+#' @examples
+#' 
+#' # Something will go here
+#' 
+#' @export write.surv
 write.surv <- function(object,file,sheet=NULL,what="surv") {
   # Writes the survival summary to an excel file (helpful to then call the values in the Markov model)
   # object = a summary.flexsurvreg object containing the survival curves (with times, estimates and interval limits)

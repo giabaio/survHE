@@ -1,3 +1,16 @@
+#' Tests the linear assumptions for the parametric model
+#' 
+#' Tests the linear assumptions for the parametric model
+#' 
+#' 
+#' @param fit an object of class survHE
+#' @param mod index or name of a model in fit. Defaults to 1.
+#' @param label_plot if TRUE, labels assumptions. Defaults to FALSE.
+#' @param \dots further arguments, passed on to points()
+#' @return A diagnostic plot
+#' @author William Browne
+#' @keywords survival hplot
+#' @export test.linear.assumptions
 test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   ## THIS IS INTERESTING, BUT NEEDS TO COMPLETE WITH THE OTHER DISTRIBUTIONS!!!
   

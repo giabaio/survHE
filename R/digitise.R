@@ -1,3 +1,24 @@
+#' Format digitised data for use in survival analysis
+#' 
+#' Produces txt files with Kaplan Meier and individual level survival data from
+#' digitised Kaplan Meier curves obtained by DigitizeIT
+#' 
+#' 
+#' @param surv_inp a txt file obtained for example by DigitizeIT and containing
+#' the input survival times from graph reading
+#' @param nrisk_inp a txt file obtained by DigitizeIT and containing the
+#' reported number at risk
+#' @param km_output the name of the file to which the KM data will be written
+#' @param ipd_output the name of the file to which the individual level data
+#' data will be written
+#' @author Patricia Guyot and Gianluca Baio
+#' @references Something will go here
+#' @keywords Digitized Kaplan Meier curve
+#' @examples
+#' 
+#' # Something will go here
+#' 
+#' @export digitise
 digitise <- function(surv_inp,nrisk_inp,km_output="KMdata.txt",ipd_output="IPDdata.txt") {
   # Post-process the data obtained by DigitizeIT to obtain the KM data and the individual level data
   # surv_inp = a txt file obtained by DigitizeIT and containing the input survival times from graph reading

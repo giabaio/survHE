@@ -1,3 +1,24 @@
+#' Graphical representation of the measures of model fitting based on
+#' Information Criteria
+#' 
+#' Plots a summary of the model fit for all the models fitted
+#' 
+#' Something will go here
+#' 
+#' @param ...  Optional inputs. Must include at least one \code{survHE} object.
+#' @param type should the AIC or the BIC plotted? (values = \code{"aic"},
+#' \code{"bic"} or \code{"dic"})
+#' @return Something will go here
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @seealso Something will go here
+#' @references Something will go here
+#' @keywords Model fitting Parametric survival models
+#' @examples
+#' 
+#' # Something will go here
+#' 
+#' @export model.fit.plot
 model.fit.plot <- function(...,type="aic") {
   ## Plots a summary of the model fit for all the models 
   ## Can also combine several survHE objects each containing the fit for one model

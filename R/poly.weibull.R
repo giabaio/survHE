@@ -1,3 +1,55 @@
+#' Fit Poly-Weibull model for survival analysis of mixture hazards
+#' 
+#' Runs the survival analysis using a Poly-Weibull model
+#' 
+#' On object in the class \code{survHE} containing the following elements
+#' 
+#' @param formula a list of formulae (one for each components of the mixture.
+#' Can specify one single formula (in which case, the model is a simple Weibull
+#' regression). For example, a valid call is using
+#' \code{formula=list(Surv(time,event)~1,Surv(time,event)~arm)}
+#' @param data A data frame containing the data to be used for the analysis.
+#' This must contain data for the 'event' variable. In case there is no
+#' censoring, then \code{event} is a column of 1s.
+#' @param \dots Additional options (for INLA or HMC).
+#' 
+#' **HMC** specific options \code{chains} = number of chains to run in the HMC
+#' (default = 2) \code{iter} = total number of iterations (default = 2000)
+#' \code{warmup} = number of warmup iterations (default = iter/2) \code{thin} =
+#' number of thinning (default = 1) \code{control} = a list specifying
+#' Stan-related options, eg \code{control=list(adapt_delta=0.85)} (default =
+#' NULL) \code{seed} = the random seed (to make things replicable) \code{pars}
+#' = a vector of parameters (string, default = NA) \code{include} = a logical
+#' indicator (if FALSE, then the pars are not saved; default = TRUE)
+#' \code{priors} = a list (of lists) specifying the values for the parameters
+#' of the prior distributions in the models \code{save.stan} = a logical
+#' indicator (default = FALSE). If TRUE, then saves the data list for Stan and
+#' the model file(s)
+#' @return \item{models}{ A list containing the fitted models. These contain
+#' the output from the original inference engine (\code{flexsurv}, \code{INLA}
+#' or \code{rstan}). Can be processed using the methods specific to the
+#' original packages, or via \code{survHE}-specific methods (such as
+#' \code{plot}, \code{print}) or other specialised functions (eg to extrapolate
+#' the survival curves, etc). } \item{model.fitting}{ A list containing the
+#' output of the model-fit statistics (AIC, BIC, DIC). The AIC and BIC are
+#' estimated for all methods, while the DIC is only estimated when using
+#' Bayesian inference. } \item{method}{ A string indicating the method used to
+#' fit the model, ie \code{'mle'}, \code{'inla'} or \code{'hmc'}.  }
+#' \item{misc}{ A list containing the time needed to run the model(s) (in
+#' seconds), the formula used, the results of the Kaplan-Meier analysis (which
+#' is automatically performed using \code{npsurv}) and the original data frame.
+#' }
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @seealso Something will go here
+#' @references Something will go here
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian
+#' Monte Carlo Poly-Weibull model
+#' @examples
+#' 
+#' ###
+#' 
+#' @export poly.weibull
 poly.weibull <- function(formula=NULL,data,...) {
   # Fits the PolyWeibull model of Demiris et al (2015), SMMR 24(2), 287-301 to the data
   #
