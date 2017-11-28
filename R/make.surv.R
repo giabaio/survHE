@@ -480,7 +480,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
         linpred <- exp(coefs%*%t(X))
         S <- lapply(1:nsim,function(i) {
           lapply(1:ncol(linpred),function(j) {
-            cbind(t,1-pllogis(t,linpred[i,j],sigma[i]))  
+            cbind(t,1-pllogis(t,scale=linpred[i,j],shape=sigma[i]))  
           })
         }) 
         sim <- cbind(coefs,sigma)[1:nsim,]

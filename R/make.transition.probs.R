@@ -33,7 +33,7 @@ make.transition.probs <- function(x,...) {
   
   tp <- lapply(1:length(x$mat),function(i) {
     matrix(unlist(lapply(1:nrow(x$mat[[1]]),function(j) {
-      1-(x$mat[[i]][j,2:ncol(x$mat[[1]])]/x$mat[[i]][j,1:ncol(x$mat[[1]])-1])
+      1-(x$mat[[i]][j,2:ncol(x$mat[[1]])]/x$mat[[i]][j,1:(ncol(x$mat[[1]])-1)])
     })),byrow=T,nrow=nrow(x$mat[[1]]))
   })
   
