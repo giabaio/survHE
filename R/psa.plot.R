@@ -40,6 +40,7 @@ psa.plot <- function(psa,...) {
   # digits = number of digits used for the numerical values in the labels
   # xlim = a vector of limits for the times
   # scale.time = a factor by which to rescale the time variable (eg 1/52 rescales weeks to years)
+  # round.fact = the number of decimal places to include in the x-axis for the time variable (when rescaling!)
   
   n.elements <- length(psa$S[[1]]) 
   times <- psa$S[[1]][[1]][,1]
@@ -87,7 +88,8 @@ psa.plot <- function(psa,...) {
   }
   # If the time has been re-scaled, then use the new scale as labels on the x-axis. Otherwise, use original scale
   if(exists("scale.time",where=exArgs)) {
-      axis(1,at=pretty(times),labels=sprintf("%.2f",pretty(times)*exArgs$scale.time))
+      if(exists("round.fact",where=exArgs)) {round.fact=exArgs$round.fact} else {round.fact=1}
+      axis(1,at=pretty(times),labels=round(pretty(times)*exArgs$scale.time,round.fact))
   } else {
       axis(1)
   }
