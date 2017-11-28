@@ -38,6 +38,8 @@ psa.plot <- function(psa,...) {
   # offset = how much space between text for each line? (default = .35)
   # nsmall = number of decimal places (default = 2)
   # digits = number of digits used for the numerical values in the labels
+  # xlim = a vector of limits for the times
+  # scale.time = a factor by which to rescale the time variable (eg 1/52 rescales weeks to years)
   
   n.elements <- length(psa$S[[1]]) 
   times <- psa$S[[1]][[1]][,1]
@@ -55,7 +57,6 @@ psa.plot <- function(psa,...) {
   if(!exists("nsmall",where=exArgs)) {nsmall <- 2} else {nsmall <- exArgs$nsmall}
   if(!exists("digits",where=exArgs)) {digits <- 5} else {digits <- exArgs$digits}
   if(exists("xlim",where=exArgs)) {xlim=exArgs$xlim} else {xlim <- range(pretty(times))}
-  print(xlim)
   
   # If there's only the average value for the survival curve, simpler plot
   if (psa$nsim==1) {
@@ -84,7 +85,12 @@ psa.plot <- function(psa,...) {
       })
     }
   }
-  axis(1)
+  # If the time has been re-scaled, then use the new scale as labels on the x-axis. Otherwise, use original scale
+  if(exists("scale.time",where=exArgs)) {
+      axis(1,at=pretty(times),labels=sprintf("%.2f",pretty(times)*exArgs$scale.time))
+  } else {
+      axis(1)
+  }
   axis(2)
   if (class(labs)=="logical") {
     txt1 <- lapply(1:ncol(psa$des.mat),function(i) {
