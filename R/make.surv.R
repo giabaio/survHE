@@ -255,7 +255,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
       }
       if (m$dlist$name=="lognormal") {
         mulog <- linpred
-        sdlog <- INLA::inla.contrib.sd(m)$hyper[1,1]
+        sdlog <- inla.contrib.sd(m)$hyper[1,1]
         S <- lapply(1:length(mulog), function(x) cbind(t,dlnorm(t,mulog[x],sdlog)/hlnorm(t,mulog[x],sdlog))) 
       }
       return(S)
