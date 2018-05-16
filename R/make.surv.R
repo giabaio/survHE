@@ -186,6 +186,48 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     }
   } 
   
+  # Re-defines inla.contrib.sd --- in case it's not in the main INLA package anymore
+  inla.contrib.sd = function(model, nsamples=1000) {
+    ## contributed by Gianluca Baio <gianluca@stats.ucl.ac.uk>
+
+    ## Computes the sd for the random effects in an INLA model
+    ## 1. Defines the precision (generates a matrix with bins and
+    ## density on the precision scale)
+
+    ## 2. Simulates replications from the posterior distributions of
+    ## the quantities of interest
+
+    ## Names of the variables associated with structured effects
+    rand.effs <- names(model$marginals.hyperpar)
+    for (i in 1:length(rand.effs)) {
+        cmd <- paste("prec.marg.",i,"<-model$marginals.hyperpar$'",rand.effs[i],"'",sep="")
+        eval(parse(text=cmd)) # marginal distribution of the precision, tau
+        ## Simulation from the posterior marginal distribution for sigma = 1/sqrt(tau)
+        cmd <- paste("sigma.", i,
+                     "<- inla.rmarginal(nsamples,inla.marginal.transform(function(x) 1/sqrt(x), prec.marg.",
+                     i,"))",sep="")
+        eval(parse(text=cmd))
+    }
+
+    ## Outputs of the function
+    mat <- matrix(NA, nsamples, length(rand.effs))
+    for (i in 1:length(rand.effs)) {
+        cmd <- paste("mat[,i] <- sigma.",i,sep="")
+        eval(parse(text=cmd)) 
+    }
+    names2 <- gsub("Precision","sd",rand.effs)
+    colnames(mat) <- names2
+
+    tab <- matrix(NA,length(rand.effs),4)
+    for (i in 1:length(rand.effs)) {
+        tab[i,] <- c(mean(mat[,i]),sd(mat[,i]),quantile(mat[,i],.025),quantile(mat[,i],.975))
+    }
+    rownames(tab) <- names2
+    colnames(tab) <- c("mean","sd","2.5%","97.5%")
+
+    return (list(samples=mat, hyper=tab))
+  }
+
   # If the original model(s) have been fitted using INLA, then use the (summaries of the) posterior distributions to compute the survival curves
   if(fit$method=="inla") {
     # A function to rescale the parameters of a given model and then computes the survival curve
