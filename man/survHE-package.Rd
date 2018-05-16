@@ -13,8 +13,8 @@ in health economic modelling (extrapolation, model checking and PSA)
 \tabular{ll}{
 Package: \tab survHE\cr
 Type: \tab Package\cr
-Version: \tab 1.0.4\cr
-Date: \tab 2016-21-14\cr
+Version: \tab 1.0.62\cr
+Date: \tab 2018-05-17\cr
 License: \tab GPL2 \cr
 LazyLoad: \tab yes\cr
 }
