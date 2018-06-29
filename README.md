@@ -9,7 +9,7 @@ There are two ways of installing `survHE`. A "stable" version is packaged and bi
 install.packages("survHE",
 	repos=c("http://www.statistica.it/gianluca/R",
 		"https://cran.rstudio.org",
-		"https://www.math.ntnu.no/inla/R/stable"),
+                "https://inla.r-inla-download.org/R/stable"),
 	dependencies=TRUE
 )
 ```
@@ -20,7 +20,7 @@ To install from source (e.g. on a Linux machine), run
 install.packages("survHE",
 	repos=c("http://www.statistica.it/gianluca/R",
 		"https://cran.rstudio.org",
-		"https://www.math.ntnu.no/inla/R/stable"),
+		"https://inla.r-inla-download.org/R/stable"),
 	type="source",
 	dependencies=TRUE
 )
@@ -29,7 +29,7 @@ install.packages("survHE",
 The second way involves using the "development" version of `survHE` - this will usually be updated more frequently and may be continuously tested. On Windows machines, you need to install a few dependencies, including [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first, e.g. by running
 ```R
 pkgs <- c("flexsurv","Rcpp","rms","xlsx","rstan","INLA","Rtools","devtools")
-repos <- c("https://cran.rstudio.com", "https://www.math.ntnu.no/inla/R/stable") 
+repos <- c("https://cran.rstudio.com", "https://inla.r-inla-download.org/R/stable") 
 install.packages(pkgs,repos=repos,dependencies = "Depends")
 ```
 before installing the package using `devtools`:
