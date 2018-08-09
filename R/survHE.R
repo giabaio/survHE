@@ -430,7 +430,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     if(exists("warmup",where=exArgs)) {warmup <- exArgs$warmup} else {warmup <- floor(iter/2)}
     if(exists("thin",where=exArgs)) {thin <- exArgs$thin} else {thin <- 1}
     if(exists("control",where=exArgs)) {
-        check <- unlist(lapply(1:length(control),function(i) class(control[[i]])))
+        check <- unlist(lapply(1:length(exArgs$control),function(i) class(exArgs$control[[i]])))
         nlists <- length(check)
         if (nlists==length(distr)) {
            control <- ifelse(nlists==1,list(exArgs$control),exArgs$control)
