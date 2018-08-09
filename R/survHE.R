@@ -453,6 +453,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     if(exists("include",where=exArgs)) {include <- exArgs$include} else {include <- FALSE}
     if(exists("k",where=exArgs)) {k <- exArgs$k} else {k <- 0}
     if(exists("cores",where=exArgs)) {cores <- exArgs$cores} else {cores <- 1}
+    if(exists("init",where=exArgs)) {init <- exArgs$init} else {init="random"}
 
     non.on.log.scale <- c("genf","gengamma","lognormal")
     
@@ -645,7 +646,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       # Now runs Stan to sample from the posterior distributions
       tic <- proc.time()
       out <- rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
-                      pars=pars,include=include,cores=cores)
+                      pars=pars,include=include,cores=cores,init=init)
       toc <- proc.time()-tic
       time2run <- toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
@@ -709,8 +710,8 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
 	      shape.hat=median(shape)
 	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hgompertz(data.stan$t,shape[i],exp(linpred[i,]))) + 
-	          log(1-pgompertz(data.stan$t,shape[i],exp(linpred[i,])))
+	        data.stan$d*log(hgompertz(data.stan$t,shape=shape[i],rate=exp(linpred[i,]))) + 
+	          log(1-pgompertz(shape=data.stan$t,shape[i],rate=exp(linpred[i,])))
 	      })),nrow=nrow(linpred),byrow=T)
 	      logf.hat <- matrix(data.stan$d*log(hgompertz(data.stan$t,shape.hat,exp(linpred.hat)))+
 	                          log(1-pgompertz(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
