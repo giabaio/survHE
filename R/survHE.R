@@ -431,7 +431,6 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     if(exists("thin",where=exArgs)) {thin <- exArgs$thin} else {thin <- 1}
     if(exists("control",where=exArgs)) {
         check <- unlist(lapply(1:length(control),function(i) class(control[[i]])))
-        print(check)
         nlists <- length(check)
         if (nlists==length(distr)) {
            control <- ifelse(nlists==1,list(exArgs$control),exArgs$control)
