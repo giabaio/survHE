@@ -424,16 +424,17 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 
     # Now runs the model
     ## Stan options (the defaults are set in line with Stan's original)
-    nlist <- NULL
+    #nlist <- NULL
     if(exists("chains",where=exArgs)) {chains <- exArgs$chains} else {chains <- 2} # DO WE WANT 4???
     if(exists("iter",where=exArgs)) {iter <- exArgs$iter} else {iter <- 2000}
     if(exists("warmup",where=exArgs)) {warmup <- exArgs$warmup} else {warmup <- floor(iter/2)}
     if(exists("thin",where=exArgs)) {thin <- exArgs$thin} else {thin <- 1}
     if(exists("control",where=exArgs)) {
         check <- unlist(lapply(1:length(control),function(i) class(control[[i]])))
+        print(check)
         nlists <- length(check)
         if (nlists==length(distr)) {
-            control <- ifelse(nlist==1,list(exArgs$control),exArgs$control)
+           control <- ifelse(nlists==1,list(exArgs$control),exArgs$control)
         } 
         if (nlists<length(check)) {
             control <- list(exArgs$control,replicate((nlists-1),list(NULL)))
