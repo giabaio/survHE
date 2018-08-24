@@ -167,7 +167,7 @@ plot.survHE <- function(...) {
   # Now plots the KM curve using "rms" if add.km is set to TRUE
   if (add.km==TRUE & is.null(newdata)) {
     rms::survplot(x$misc$km,                                     # Specialised plot from "rms" 
-                  xlab=xl,ylab=yl,		                           # x- and y- labels
+                  xlab=xl,ylab=yl,		                          # x- and y- labels
                   label.curves=list(labels=lab.trt,cex=cex.trt), # specifies curve labels
                   n.risk=nrisk,   	                             # tells R to show number at risk 
                   lwd=2,xlim=xlm  	                             # defines the size of the lines (2 pts)

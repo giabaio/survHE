@@ -95,14 +95,16 @@ psa.plot <- function(psa,...) {
   }
   axis(2)
   if (class(labs)=="logical") {
-    txt1 <- lapply(1:ncol(psa$des.mat),function(i) {
-      text(xpos,ypos-(i-1)/40,paste0(colnames(psa$des.mat)[i]," :  "),cex=cex.txt,pos=2,col="black")
-    })
-    txt2 <- lapply(1:ncol(psa$des.mat),function(i) {
-      lapply(1:nrow(psa$des.mat),function(j) {
-        text(xpos+off[j],ypos-(i-1)/40,format(psa$des.mat[j,i],nsmall=nsmall,digits=digits),cex=cex.txt,pos=2,col=col[j])
-      })
-    })
+    if(labs){ 
+       txt1 <- lapply(1:ncol(psa$des.mat),function(i) {
+          text(xpos,ypos-(i-1)/40,paste0(colnames(psa$des.mat)[i]," :  "),cex=cex.txt,pos=2,col="black")
+       })
+       txt2 <- lapply(1:ncol(psa$des.mat),function(i) {
+          lapply(1:nrow(psa$des.mat),function(j) {
+             text(xpos+off[j],ypos-(i-1)/40,format(psa$des.mat[j,i],nsmall=nsmall,digits=digits),cex=cex.txt,pos=2,col=col[j])
+          })
+       })
+    }
   } else {
      legend("topright",legend=labs,col=col,bty="n",lty=1,cex=cex.txt)
   }
