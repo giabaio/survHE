@@ -68,8 +68,16 @@ print.survHE <- function(x,mod=1,...) {
   if(!exists("digits",where=exArgs)){digits=6} else {digits=exArgs$digits}
   
   if(x$method =="mle") {
-    res <- x$models[[mod]]$res[,c(1,4,2,3)]
-    if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
+    # Adding the option 'drop=FALSE' works for the Exponential model, which when no covariates are included 
+    # only has one value (eg the rate) and so the resulting table doesn't print the name 'rate'
+    res=x$models[[mod]]$res[,c(1,4,2,3),drop=FALSE]
+    # res <- x$models[[mod]]$res[,c(1,4,2,3)]
+    # if (is.null(dim(res))) {
+    #   names(res) <- c("mean","se","L95%","U95%")
+    # } else {
+    #   colnames(res) <- c("mean","se","L95%","U95%")
+    # }
+    colnames(res)=c("mean","se","L95%","U95%")
   }
   if(x$method=="inla" & original==FALSE) {
     # Rescales the parameters to make the estimates comparable with flexsurvreg
@@ -83,18 +91,18 @@ print.survHE <- function(x,mod=1,...) {
       pos <- pmatch(rownames(x$models[[mod]]$summary.fixed),rownames(jpost[[1]]$latent))
       
       if(x$models[[mod]]$dlist=="weibull") {
-	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
-	names(shape) <- NULL
-	## NB: As of Jan 11 2017, there's a mistake in INLA and so needs to minus the argument of the exp here!
-	scale <- exp(-unlist(lapply(jpost,function(x) x$latent[pos[1],])))
-	effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
-	if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
-	  for (j in 2:length(pos)) {
-	    effects[(j-1),] <- log(exp(-unlist(lapply(jpost,function(x) x$latent[pos[j],]))))
-	  }
-	  rownames(effects) <- x$models[[mod]]$names.fixed[-1]
-	}
-	tab <- rbind(shape,scale,effects)
+      	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
+      	names(shape) <- NULL
+      	## NB: As of Jan 11 2017, there's a mistake in INLA and so needs to minus the argument of the exp here!
+      	scale <- exp(-unlist(lapply(jpost,function(x) x$latent[pos[1],])))
+      	effects <- matrix(NA,nrow=(length(pos)-1),ncol=nsim)
+      	if(length(attributes(terms(x$misc$formula))$term.labels)>0) {
+      	  for (j in 2:length(pos)) {
+      	    effects[(j-1),] <- log(exp(-unlist(lapply(jpost,function(x) x$latent[pos[j],]))))
+      	  }
+      	  rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+      	}
+      	tab <- rbind(shape,scale,effects)
     }
     if(x$models[[mod]]$dlist=="weibullPH") {
 	shape <- unlist(lapply(jpost,function(x) x$hyperpar))
