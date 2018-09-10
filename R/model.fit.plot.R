@@ -96,13 +96,13 @@ model.fit.plot <- function(...,type="aic",scale="absolute") {
   # Defines the data to be plotted
   if (type=="aic" | type=="AIC" | type=="a" | type=="A") {
     mf <- data.frame(model=models,AIC=fit$model.fitting$aic,AIC=fit$model.fitting$aic)
-    lab.type <- "AIC"
+    lab.type=lab.type1="AIC"
   } else if (type=="bic" | type=="BIC" | type=="b" | type=="B") {
     mf <- data.frame(model=models,BIC=fit$model.fitting$bic,BIC=fit$model.fitting$bic)
-    lab.type <- "BIC"
+    lab.type=lab.type1="BIC"
   } else if (type=="dic" | type=="DIC" | type=="d" | type=="D") {
     mf <- data.frame(model=models,DIC=fit$model.fitting$dic,DIC=fit$model.fitting$dic)
-    lab.type <- "DIC"
+    lab.type=lab.type1="DIC"
   }
   if(scale=="rel" | scale=="relative") {
     # Version of the plot with percentage increase in *IC in comparison to the best fitting model
