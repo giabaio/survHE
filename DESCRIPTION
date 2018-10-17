@@ -1,19 +1,39 @@
 Package: survHE
-Type: Package
 Title: Survival Analysis in Health Economic Evaluation
 Version: 1.0.64
-Date: 2018-10-16
-Author: Gianluca Baio
-Maintainer: Gianluca Baio <gianluca@stats.ucl.ac.uk>
+Date: 2018-10-17
+Authors@R: 
+    person(given = "Gianluca",
+           family = "Baio",
+           role = c("aut", "cre"),
+           email = "gianluca@stats.ucl.ac.uk")
 URL: https://github.com/giabaio/survHE, http://www.statistica.it/gianluca
 BugReports: https://github.com/giabaio/survHE/issues
-Depends: R (>= 3.0.2), flexsurv, Rcpp (>= 0.11.0)
-Imports: rms, xlsx, tools, rstan(>= 2.8.1), methods
-Suggests: shinystan, INLA
-LinkingTo: StanHeaders (>= 2.18.0), rstan (>= 2.18.1), BH (>= 1.66.0),
-        Rcpp (>= 0.12.0), RcppEigen
-Additional_repositories: https://inla.r-inla-download.org/R/stable
 Description: Contains a suite of functions for survival analysis in health economics. These can be used to run survival models under a frequentist (based on maximum likelihood) or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian Monte Carlo). The user can specify a set of parametric models using a common notation and select the preferred mode of inference. The results can also be post-processed to produce probabilistic sensitivity analysis and can be used to export the output to an Excel file (e.g. for a Markov model, as often done by modellers and practitioners).
-License: GPL (>=2)
-NeedsCompilation: no
+License: GPL (>=3)
+Depends: 
+    methods,
+    R (>= 3.4.0),
+    Rcpp (>= 0.12.19),
+    flexsurv
+Imports: 
+    rms,
+    xlsx,
+    tools,
+    rstan (>= 2.18.1),
+Suggests: 
+    shinystan, 
+    INLA
+LinkingTo: 
+    BH (>= 1.66.0-1),
+    Rcpp (>= 0.12.19),
+    RcppEigen (>= 0.3.3.4.0),
+    rstan (>= 2.18.1),
+    StanHeaders (>= 2.18.0)
+Additional_repositories: https://inla.r-inla-download.org/R/stable
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+SystemRequirements: GNU make
 RoxygenNote: 6.1.0
+
