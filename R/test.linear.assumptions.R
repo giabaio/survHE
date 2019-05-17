@@ -57,7 +57,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
     ylab <- "log(S(t)/(1-S(t)))"
     legend_text <- "log-Logistic distributional assumption"
     x <- lapply(times, log)
-    y <- lapply(survs, function(x) log(x) / (1 - log(x)))
+    y <- lapply(survs, function(x) log(x/(1 - x)))
   }
   
   if (dist %in% c("lognormal", "lnorm")) {
