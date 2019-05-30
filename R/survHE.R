@@ -382,8 +382,8 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       mod <- lapply(1:length(distr), function(x) {
       	# As of 9 Jan 2017, INLA is creating new distribution names for survival models
       	# so needs to update the name
-      	if(distr[x] %in% c("exponential","lognormal")) {distr[x]=paste0(distr[x],"surv")}
-        if(distr[x]=="weibullPH") {
+      	if(distr[x] %in% c("exponential","lognormal","loglogistic")) {distr[x]=paste0(distr[x],"surv")}
+         if(distr[x]=="weibullPH") {
       		distr[x]="weibullsurv"
       		control.family[[x]]$variant=0
       	}
