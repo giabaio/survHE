@@ -182,8 +182,8 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 
   # Standardises labels for model names
   labs <- distr
-  labs[pmatch("weibull",labs)] <- "Weibull (AFT)"
   labs[pmatch("weibullPH",labs)] <- "Weibull (PH)"
+  labs[pmatch("weibull",labs)] <- "Weibull (AFT)"
   labs[pmatch("exp",labs)] <- "Exponential"
   labs[pmatch("exponential",labs)] <- "Exponential"
   labs[pmatch("gamma",labs)] <- "Gamma"
