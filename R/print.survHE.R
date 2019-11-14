@@ -325,7 +325,7 @@ print.survHE <- function(x,mod=1,...) {
       }
       
       if (x$models[[mod]]@model_name=="GenGamma") {
-        mu <- matrix(table[grep("beta",rownames(table)),][1,],ncol=4,nrow=1)
+        mu <- matrix(table[grep("beta",rownames(table)),,drop=FALSE][1,],ncol=4,nrow=1)
         rownames(mu) <- "mu"
         sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
         rownames(sigma) <- "sigma"
