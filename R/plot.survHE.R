@@ -21,7 +21,8 @@
 #' \code{colors} = a vector of characters defining the colours in which to plot
 #' the different survival curves \code{labs} = a vector of characters defining
 #' the names of the models fitted \code{add.km} = TRUE (whether to also add the
-#' Kaplan Meier estimates of the data)
+#' Kaplan Meier estimates of the data) \code{legend} = TRUE (whether to also 
+#' add the legend to the graph)
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso Something will go here
@@ -129,6 +130,7 @@ plot.survHE <- function(...) {
   if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
   if (is.null(exArgs$newdata)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (is.null(exArgs$cex.lab)) {cex.lab <- 0.8} else {cex.lab <- exArgs$cex.lab}
+  if (is.null(exArgs$legend)) {legend=TRUE} else (legend=FALSE)
   
   if (is.null(exArgs$xlim) & is.null(exArgs$t)) {
     xlm <- range(pretty(x$misc$km$time))
@@ -212,7 +214,7 @@ plot.survHE <- function(...) {
         leg.txt[j] <- paste0(names(newdata[[j]]),"=",prettyNum(newdata[[j]],format="fg"),collapse=", ")
       }
     }
-    legend("topright",legend=leg.txt,bty="n",lty=1:length(newdata),cex=cex.lab)
+    if (legend) {legend("topright",legend=leg.txt,bty="n",lty=1:length(newdata),cex=cex.lab)}
   }
   if(is.null(newdata)) {
     # With no newdata this works!
@@ -220,6 +222,6 @@ plot.survHE <- function(...) {
       pts <- lapply(res[[i]]$S[[1]],function(m) cbind(m[,1],m[,2]))
       lapply(1:length(pts), function(x) points(pts[[x]],t="l",col=colors[i],lty=x))
     }
-    legend(x="topright",legend=labs,lwd=2,bty="n",col=col,cex=cex.lab)
+    if(legend) {legend(x="topright",legend=labs,lwd=2,bty="n",col=col,cex=cex.lab)}
   }
 }
