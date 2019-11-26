@@ -123,7 +123,7 @@ plot.survHE <- function(...) {
   if (is.null(exArgs$t)) {t <- sort(unique(x$misc$km$time))} else {t <- exArgs$t}
   if (is.null(exArgs$xlab)) {xl <- "time"} else {xl <- exArgs$xlab}
   if (is.null(exArgs$ylab)) {yl <- "Survival"} else {yl <- exArgs$ylab}
-  if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<- names(x$km$strata)<-exArgs$lab.trt}
+  if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<-exArgs$lab.trt}
   if (is.null(exArgs$cex.trt)) {cex.trt <- 0.8} else {cex.trt <- exArgs$cex.trt}
   if (is.null(exArgs$n.risk)) {nrisk <- FALSE} else {nrisk <- exArgs$n.risk}
   if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
