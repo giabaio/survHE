@@ -119,7 +119,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   ##           inla.surv(time,event)~treatment[+covariates] for INLA
   ## data = a data frame containing the data to be used
   ## distr = a (vector of) string(s) containing the name(s) of the model(s) to be fitted
-  ## method = a string specifying the inferential method ("mle", "inla" or "hmc) 
+  ## method = a string specifying the inferential method ("mle", "inla" or "hmc") 
   ## 
   ## ... additional options (mainly to do with INLA & MCMC)
   ##
