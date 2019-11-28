@@ -198,18 +198,17 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
     "rps" = "Royston-Parmar",
     "pow" = "Poly-Weibull")
   
+  distr = gsub("[ ]*[-]*", "", tolower(distr))
   isDistrUnmatched = which(!sapply(
     1:length(distr),
     '%in%',
-    unname(unlist(sapply(matchTable, match, gsub("[ ]*[-]*", "", tolower(distr)))))))
+    unname(unlist(sapply(matchTable, match, distr)))))
   if (length(isDistrUnmatched) > 0) {
     stop(paste0("Distribution ", paste(distr[isDistrUnmatched], collapse = ", "), " could not be matched."))
   }
   
   distr3 = names(which(sapply(
-    sapply(matchTable, '%in%', 
-           gsub("[ ]*[-]*", "", tolower(distr))
-    ), any)))
+    sapply(matchTable, '%in%', distr), any)))
   
   labs = unname(labelTable[distr3])
   
