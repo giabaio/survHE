@@ -112,14 +112,14 @@
 #' }
 #' 
 #' @export fit.models
-fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
+fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...) {
   ## Main function - runs the survival analysis with several useful options
   ## formula = a formula specifying the model to be used, in the form
   ##           Surv(time,event)~treatment[+covariates] for flexsurv
   ##           inla.surv(time,event)~treatment[+covariates] for INLA
   ## data = a data frame containing the data to be used
   ## distr = a (vector of) string(s) containing the name(s) of the model(s) to be fitted
-  ## method = a string specifying the inferential method ("mle", "inla" or "hmc) 
+  ## method = a string specifying the inferential method ("mle", "inla" or "hmc") 
   ## 
   ## ... additional options (mainly to do with INLA & MCMC)
   ##
@@ -170,53 +170,116 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   if(!method %in% c("hmc","inla","mle")) {
     stop("Methods available for use are 'mle', 'hmc' or 'inla'")
   }
-  # INLA can only do a limited set of models (for now) so if user has selected
-  # one that is not available, then falls back on MLE analysis
-  availables.mle <- c("genf", "genf.orig", "gengamma", "gengamma.orig", "exp", 
-                      "weibull", "weibullPH", "lnorm", "gamma", "gompertz", 
-                      "llogis", "exponential", "lognormal","rps")
-  availables.inla <- c("exponential","weibull","weibullPH","lognormal","loglogistic")
-  availables.hmc <- c("exponential","gamma","genf","gengamma","gompertz","polyweibull","rps",
-                      "weibull","weibullPH","loglogistic","lognormal")
-  ### NB: The Poly-Weibull model does work, but it needs some special function
-
-  # Standardises labels for model names
-  labs <- distr
-  labs[pmatch("weibullPH",labs)] <- "Weibull (PH)"
-  labs[pmatch("weibull",labs)] <- "Weibull (AFT)"
-  labs[pmatch("exp",labs)] <- "Exponential"
-  labs[pmatch("exponential",labs)] <- "Exponential"
-  labs[pmatch("gamma",labs)] <- "Gamma"
-  labs[pmatch("lnorm",labs)] <- "log-Normal"
-  labs[pmatch("lognormal",labs)] <- "log-Normal"
-  labs[pmatch("llogis",labs)] <- "log-Logistic"
-  labs[pmatch("loglogistic",labs)] <- "log-Logistic"
-  labs[pmatch("gengamma",labs)] <- "Gen. Gamma"
-  labs[pmatch("genf",labs)] <- "Gen. F"
-  labs[pmatch("gompz",labs)] <- "Gompertz"
-  labs[pmatch("dloglogis",labs)] <- "log-Logistic"
-  labs[pmatch("rps",labs)] <- "Royston-Parmar"
   
-  if(method=="inla") {
+  # selected model checks -----
+  matchTable = list(
+    "exp" = c("exponential", "exp"),
+    "wei" = c("weibull", "weibullaft", "weiaft", "waft", "weibullaf", "weiaf", "waf", "wei"),
+    "wph" = c("weibullph", "weiph", "wph"),
+    "gam" = c("gamma", "gam", "gma"),
+    "lno" = c("lognormal", "lnormal", "lnorm", "lognorm", "lno"),
+    "llo" = c("loglogistic", "loglog", "llogistic", "llogis", "llo", "llogist"),
+    "gga" = c("generalisedgamma", "generalizedgamma", "ggamma", "gengamma", "gga", "ggam"),
+    "ggo" = c("gengamma.orig", "ggo"),
+    "gef" = c("generalisedf", "generalizedf", "genf", "gef"),
+    "gof" = c("genf.orig", "gof"),
+    "gom" = c("gompertz", "gpz", "gomp", "gompz", "gom"),
+    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps"))
+  labelTable = c(
+    "exp" = "Exponential",
+    "wei" = "Weibull (AFT)",
+    "wph" = "Weibull (PH)",
+    "gam" = "Gamma",
+    "lno" = "log-Normal", 
+    "llo" = "log-Logistic",
+    "gga" = "Gen. Gamma", "ggo" = "Gen. Gamma (orig parametrisation)",
+    "gef" = "Gen. F", "gof" = "Gen. F (orig parametrisation)",
+    "gom" = "Gompertz",
+    "rps" = "Royston-Parmar",
+    "pow" = "Poly-Weibull")
+  
+  distr = gsub("[ ]*[-]*", "", tolower(distr))
+  isDistrUnmatched = which(!sapply(
+    1:length(distr),
+    '%in%',
+    unname(unlist(sapply(matchTable, match, distr)))))
+  if (length(isDistrUnmatched) > 0) {
+    stop(paste0("Distribution ", paste(distr[isDistrUnmatched], collapse = ", "), " could not be matched."))
+  }
+  
+  distr3 = names(which(sapply(
+    sapply(matchTable, '%in%', distr), any)))
+  
+  labs = unname(labelTable[distr3])
+  
+  # INLA can only do a limited set of models (for now) so if user has selected
+    # one that is not available, then falls back on MLE analysis
+  availables.mle = c(
+    "genf" = "gef",
+    "genf.orig" = "gof",
+    "gengamma" = "gga",
+    "gengamma.orig" = "ggo",
+    "exp" = "exp",
+    "weibull" = "wei",
+    "weibullPH" = "wph",
+    "lnorm" = "lno",
+    "gamma" = "gam",
+    "gompertz" = "gom",
+    "llogis" = "llo",
+    "lognormal" = "lno"
+  )
+  availables.inla = c(
+    "exponential" = "exp",
+    "weibull" = "wei",
+    "weibullPH" = "wph",
+    "lognormal" = "lno",
+    "loglogistic" = "llo"
+  )
+  availables.hmc = c(
+    "Exponential" = "exp",
+    "Gamma" = "gam",
+    "GenF" = "gef",
+    "GenGamma" = "gga",
+    "Gompertz" = "gom",
+    "PolyWeibull" = "pow",
+    "RP" = "rps",
+    "WeibullAF" = "wei",
+    "WeibullPH" = "wph",
+    "logLogistic" = "llo",
+    "logNormal" = "lno"
+  )
+  ### NB: The Poly-Weibull model does work, but it needs some special function
+  
+  if (method == "inla") {
     # Checks that the distribution name(s) are consistent with INLA
-    user.distr <- distr
-    distr[pmatch("llogis",user.distr)] <- "loglogistic"
-    distr[pmatch("exp",user.distr)] <- "exponential"
-    distr[pmatch("lnorm",user.distr)] <- "lognormal"
-    # But if there still are some that are just not available then falls back on MLE
-    if (any(is.na(pmatch(distr,availables.inla)))) {
+    if (!all(distr3 %in% availables.inla)) {
       method <- "mle"
-      message("NB: INLA can only fit Exponential, Weibull, log-Logistic or log-Normal parametric survival models. Falling back on MLE analysis")
+      modelsString = unname(labelTable[availables.inla])
+      modelsString[length(modelsString)] = paste0("or ", modelsString[length(modelsString)])
+      message(paste0(
+        "NB: INLA can only fit ",
+        paste(modelsString, collapse = ", "),
+        " parametric survival models. Falling back on MLE analysis")
+      )
     }
+  } else if (method == "hmc") {
+	  if (!all(distr3 %in% availables.hmc)) {
+	    method = "mle"
+	    modelsString = unname(labelTable[availables.mle])
+	    modelsString[length(modelsString)] = paste0("or ", modelsString[length(modelsString)])
+	    message(paste0(
+	      "NB: HMC can fit ",
+	      paste(modelsString, collapse = ", "),
+	      " parametric survival models. Falling back on MLE analysis")
+	    )
+	  }
   }
- 
-  if (method=="hmc") {
-	 # Fixes the way in which the distribution is written up so it's consistent with flexsurv
-	user.distr <- distr
-    distr[pmatch("exp",user.distr)] <- "exponential"
-    distr[pmatch("lnorm",user.distr)] <- "lognormal"
-    distr[pmatch("llogis",user.distr)] <- "loglogistic"
-  }
+  
+  if (method == "mle")
+    # this should be unnecessary as unmatched distributions are checked above
+    # added for future-proofing if distributions are not included in flexsurv, e.g. poly-weibull
+    if (!all(distr3 %in% availables.mle))
+      stop(paste0("Not all distributions could be recognized."))
 
   # Reconstructs the vars list based on the formula
   test <- attributes(terms(formula))$term.labels
@@ -283,11 +346,12 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     }
   }
   # Computes the Kaplan Meier curve using the package "rms"
-  ObjSurvfit <- rms::npsurv(        # Uses the function "npsurv" from the package "rms"
-    formula = km.formula,          # to fit the model specified in the "formula" object
-    data = data                    # to the dataset named "data"
+  ObjSurvfit <- rms::npsurv(      # Uses the function "npsurv" from the package "rms"
+    formula = km.formula,         # to fit the model specified in the "formula" object
+    data = data                   # to the dataset named "data"
   )
   
+  # MLE -----
   # If method = MLE, then fits the model(s) using flexsurvreg
   if (method=="mle") {
     if(!isTRUE(requireNamespace("flexsurv",quietly=TRUE))) {
@@ -295,8 +359,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     }
     # Checks that the distribution name(s) are consistent with flexsurv
     # The only problem here is if the user has specified a log-Logistic in INLA terminology
-    user.distr <- distr
-    distr[pmatch("loglogistic",user.distr)] <- "llogis"
+    distr = names(availables.mle[match(distr3, availables.mle)])
     # Then run the model(s)
     runMLE <- function(distr) {
       tic <- proc.time()
@@ -327,6 +390,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     dic <- rep(NA,length(distr))
   }
   
+  # INLA -----
   # If method = INLA, then fits model(s) using inla
   if (method=="inla") {
     # If INLA is not installed, then asks for it
@@ -379,18 +443,19 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       if(exists("verbose",where=exArgs)) {verbose <- exArgs$verbose} else {verbose <- FALSE}
       
       # 4. Finally runs INLA
+      distr = names(availables.inla[match(distr3, availables.inla)])
       mod <- lapply(1:length(distr), function(x) {
       	# As of 9 Jan 2017, INLA is creating new distribution names for survival models
       	# so needs to update the name
-      	if(distr[x] %in% c("exponential","lognormal","loglogistic")) {distr[x]=paste0(distr[x],"surv")}
-         if(distr[x]=="weibullPH") {
-      		distr[x]="weibullsurv"
-      		control.family[[x]]$variant=0
-      	}
-      	if(distr[x]=="weibull") {
-      		distr[x]="weibullsurv"
-      		control.family[[x]]$variant=1
-      	}
+        if (distr3[x] %in% c("exp", "lno", "llo")) {
+          distr[x] = paste0(distr[x], "surv")
+        } else if (distr3[x] == "wph") {
+          distr[x] = "weibullsurv"
+          control.family[[x]]$variant = 0
+        } else if (distr3[x] == "wei") {
+          distr[x] = "weibullsurv"
+          control.family[[x]]$variant = 1
+        }
       	####
       	## Workaround to load the libraries (needed in LINUX????)
       	## INLA:::inla.dynload.workaround()
@@ -417,58 +482,55 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
     }
   }
     
-  if(method=="hmc") {
-    if(!isTRUE(requireNamespace("rstan",quietly=TRUE))) {
+  # HMC -----
+  if (method == "hmc") {
+    if (!isTRUE(requireNamespace("rstan", quietly = TRUE))) {
       stop("You need to install the R package 'rstan'. Please run in your R terminal:\n install.packages('rstan')")
     }
 
     # Now runs the model
     ## Stan options (the defaults are set in line with Stan's original)
     #nlist <- NULL
-    if(exists("chains",where=exArgs)) {chains <- exArgs$chains} else {chains <- 2} # DO WE WANT 4???
-    if(exists("iter",where=exArgs)) {iter <- exArgs$iter} else {iter <- 2000}
-    if(exists("warmup",where=exArgs)) {warmup <- exArgs$warmup} else {warmup <- floor(iter/2)}
-    if(exists("thin",where=exArgs)) {thin <- exArgs$thin} else {thin <- 1}
-    if(exists("control",where=exArgs)) {
+    if (exists("chains", where = exArgs)) {chains <- exArgs$chains} else {chains <- 2} # DO WE WANT 4???
+    if (exists("iter", where = exArgs)) {iter <- exArgs$iter} else {iter <- 2000}
+    if (exists("warmup", where = exArgs)) {warmup <- exArgs$warmup} else {warmup <- floor(iter/2)}
+    if (exists("thin", where = exArgs)) {thin <- exArgs$thin} else {thin <- 1}
+    if (exists("control", where = exArgs)) {
         check <- unlist(lapply(1:length(exArgs$control),function(i) class(exArgs$control[[i]])))
         nlists <- length(check)
-        if (nlists==length(distr)) {
-           control <- ifelse(nlists==1,list(exArgs$control),exArgs$control)
-        } 
-        if (nlists<length(check)) {
-            control <- list(exArgs$control,replicate((nlists-1),list(NULL)))
+        if (nlists == length(distr)) {
+          control <- ifelse(nlists == 1, list(exArgs$control), exArgs$control)
         }
-        if (nlists>length(check)) {
-            msg <- paste0("Please provide at most ",length(distr)," lists in the 'control' argument")
-            stop(msg)
+        if (nlists < length(check)) {
+          control <- list(exArgs$control, replicate((nlists - 1), list(NULL)))
         }
-        control <- ifelse(class(exArgs$control[[1]])!="list",list(exArgs$control),exArgs$control)
+        if (nlists > length(check)) {
+          msg <- paste0("Please provide at most ", length(distr), " lists in the 'control' argument")
+          stop(msg)
+        }
+        control <- ifelse(class(exArgs$control[[1]]) != "list",list(exArgs$control),exArgs$control)
     } else {
         control <- replicate(length(distr),list(NULL))
     }
-    if(exists("seed",where=exArgs)) {seed <- exArgs$seed} else {seed <- sample.int(.Machine$integer.max, 1)}
-    if(exists("pars",where=exArgs)) {pars <- exArgs$pars} else {
+    if (exists("seed",where = exArgs)) {seed <- exArgs$seed} else {seed <- sample.int(.Machine$integer.max, 1)}
+    if (exists("pars",where = exArgs)) {pars <- exArgs$pars} else {
       pars <- c("lambda_cens","lambda_obs","cens","d","lp__","loglambda_cens","loglambda_obs","mu","logP","linpred")
     }
-    if(exists("include",where=exArgs)) {include <- exArgs$include} else {include <- FALSE}
-    if(exists("k",where=exArgs)) {k <- exArgs$k} else {k <- 0}
-    if(exists("cores",where=exArgs)) {cores <- exArgs$cores} else {cores <- 1}
-    if(exists("init",where=exArgs)) {init <- exArgs$init} else {init="random"}
-
-    non.on.log.scale <- c("genf","gengamma","lognormal")
+    if (exists("include",where = exArgs)) {include <- exArgs$include} else {include <- FALSE}
+    if (exists("k",where = exArgs)) {k <- exArgs$k} else {k <- 0}
+    if (exists("cores",where = exArgs)) {cores <- exArgs$cores} else {cores <- 1}
+    if (exists("init",where = exArgs)) {init <- exArgs$init} else {init="random"}
+    
+    distr = names(availables.hmc[match(distr3, availables.hmc)])
+    non.on.log.scale <- c("gef","gga","lno")
     
     # Loads the pre-compiled models
-    dso <- stanmodels
+    dso <- stanmodels[distr]
+    time2run <- numeric()
     
-    touse <- time2run <- numeric()
-    for (i in 1:length(distr)) {
-      touse[i] <- match(distr[i],availables.hmc)
-    }
-    dso <- lapply(touse,function(x) dso[[x]])
-
     mod <- lapply(1:length(distr), function(x) {
       # First makes the data list
-      if (distr[x] %in% c("gamma","gengamma","genf")) {
+      if (distr3[x] %in% c("gam","gga","gef")) {
         # If model is Gamma, GenGamma or GenF, then use the "obs vs" censored format
         data.stan <- list(t=data[data[,vars$event]==1,vars$time],d=data[data[,vars$event]==0,vars$time])
         data.stan$n_obs <- length(data.stan$t)
@@ -476,17 +538,14 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         data.stan$X_obs <- matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
         data.stan$X_cens <- matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
         data.stan$H=ncol(data.stan$X_obs)
-        # data.stan$n <- length(data[,vars$time])
-        # data.stan$X <- model.matrix(formula,data)
         # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
         if (data.stan$H==1) {
           data.stan$X_obs <- cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
           data.stan$X_cens <- cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
           data.stan$H <- ncol(data.stan$X_obs)
-#          data.stan$X <- cbind(data.stan$X,rep(0,data.stan$n))
         }
-      } 
-      if (distr[x] %in% c("exponential","gompertz","weibull","weibullPH","loglogistic","lognormal")) {
+      }
+      if (distr3[x] %in% c("exp", "gom", "wei", "wph", "llo", "lno")) {
         # If it's one of the others (except polyweibull), use the "h,S" format
         data.stan <- list(t=data[,vars$time], d=data[,vars$event])
         data.stan$n <- length(data.stan$t) 
@@ -498,12 +557,12 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
           data.stan$H <- ncol(data.stan$X)
         }
       }
-      if (distr[x]=="rps"){
+      if (distr3[x]=="rps"){
         # If it's Royston-Parmar splines, then gets the correct data 
         knots <- quantile(log(data[data[,vars$event]==1,vars$time]), seq(0, 1, length = k+2))
         # Uses flexsurv to compute the basis and derivatives of the basis
         ######################################
-        basis <- function (knots, x) {
+        basis <- function(knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 
             knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
@@ -522,7 +581,7 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
           }
           b
         }
-        dbasis <- function (knots, x) {
+        dbasis <- function(knots, x) {
           nx <- length(x)
           if (!is.matrix(knots)) 
             knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
@@ -584,31 +643,30 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
       #   data.stan$mu_beta=matrix(0,nrow=data.stan$H,ncol=data.stan$M) 
       #   data.stan$sigma_beta=matrix(5,nrow=data.stan$H,ncol=data.stan$M)
       # } else {
-      data.stan$mu_beta=rep(0,data.stan$H)
-      if (distr[x]%in%non.on.log.scale) {
-        data.stan$sigma_beta <- rep(100,data.stan$H)
+      data.stan$mu_beta = rep(0, data.stan$H)
+      if (distr3[x] %in% non.on.log.scale) {
+        data.stan$sigma_beta <- rep(100, data.stan$H)
       } else {
-        data.stan$sigma_beta <- rep(5,data.stan$H)
+        data.stan$sigma_beta <- rep(5, data.stan$H)
       }
       # }
       # Ancillary parameters
-      if (distr[x]=="gamma") {data.stan$a_alpha=data.stan$b_alpha <- 0.1}
-      if (distr[x]=="genf") {
-        data.stan$a_sigma=data.stan$b_sigma=0.1
-        data.stan$mu_P=0
-        data.stan$sigma_P=0.5
-        data.stan$mu_Q=0
-        data.stan$sigma_Q=2.5
+      if (distr3[x] == "gef") {
+        data.stan$a_sigma = data.stan$b_sigma = 0.1
+        data.stan$mu_P = 0
+        data.stan$sigma_P = 0.5
+        data.stan$mu_Q = 0
+        data.stan$sigma_Q = 2.5
+      } else if (distr3[x] == "gga") {
+        data.stan$a_sigma = data.stan$b_sigma = 0.1
+        data.stan$mu_Q = 0
+        data.stan$sigma_Q = 100
+      } else if (distr3[x] %in% c("gam", "llo", "wei", "wph")) {
+        data.stan$a_alpha = data.stan$b_alpha = 0.1
+      } else if (distr3[x] %in% c("lno", "gom")) {
+        data.stan$a_alpha = 0
+        data.stan$b_alpha = 5
       }
-      if (distr[x]=="gengamma") {
-        data.stan$a_sigma=data.stan$b_sigma=0.1
-        data.stan$mu_Q=0
-        data.stan$sigma_Q=100
-      }
-      if (distr[x] %in% c("gompertz","loglogistic","weibull","weibullPH")) {data.stan$a_alpha=data.stan$b_alpha=0.1}
-      if (distr[x]=="lognormal") {
-        data.stan$a_alpha=0
-        data.stan$b_alpha=5}
 
       # These are modified if the user gives values in the call to fit.models
       if(exists("priors",where=exArgs)) {
@@ -626,10 +684,10 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
         if(!is.null(priors[[x]]$sigma_beta)) {
           data.stan$sigma_beta <- priors[[x]]$sigma_beta
         }
-        if(!is.null(priors[[x]]$mu_gamma) & distr[x]=="rps") {
+        if(!is.null(priors[[x]]$mu_gamma) & distr3[x]=="rps") {
           data.stan$mu_gamma <- priors[[x]]$mu_gamma
         }
-        if(!is.null(priors[[x]]$sigma_gamma) & distr[x]=="rps") {
+        if(!is.null(priors[[x]]$sigma_gamma) & distr3[x]=="rps") {
             data.stan$sigma_gamma <- priors[[x]]$sigma_gamma
         }
         # Ancillary parameters
@@ -668,152 +726,208 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
 	    beta.hat <- apply(beta,2,median)
 	    data.stan=mod[[i]]$data.stan
 	    
-	    if (distr[i] %in% c("exponential","weibull","weibullPH","gompertz","lognormal","loglogistic")) {
+	    if (distr3[i] %in% c("exp", "wei", "wph", "gom", "lno", "llo")) {
 	      linpred <- beta%*%t(data.stan$X)
 	      linpred.hat <- beta.hat%*%t(data.stan$X)
 	    }
 
-	    if(distr[i]=="exponential") {
-	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hexp(data.stan$t,exp(linpred[i,]))) + log(1-pexp(data.stan$t,exp(linpred[i,])))
-	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat <- matrix(data.stan$d*log(hexp(data.stan$t,exp(linpred.hat))) + log(1-pexp(data.stan$t,exp(linpred.hat))),nrow=1)
+	    if (distr3[i] == "exp") {
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	          data.stan$d * log(hexp(data.stan$t, exp(linpred[i,]))) +
+	            log(1 - pexp(data.stan$t, exp(linpred[i,])))
+	        })),
+	        nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hexp(data.stan$t, exp(linpred.hat))) +
+	          log(1 - pexp(data.stan$t, exp(linpred.hat))),
+	        nrow = 1)
 	      # Number of parameters (for AIC): rate + covariates
-	      npars <- 1+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }
-
-	    if (distr[i]=="weibull") {
-	        shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.hat <- median(shape)
-	        logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	          data.stan$d*log(hweibull(data.stan$t,shape[i],exp(linpred[i,]))) + log(1-pweibull(data.stan$t,shape[i],exp(linpred[i,])))
-	        })),nrow=nrow(linpred),byrow=T)
-	        logf.hat <- matrix(data.stan$d*log(hweibull(data.stan$t,shape.hat,exp(linpred.hat))) + log(1-pweibull(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
-	        # Number of parameters (for AIC): shape, scale + covariates
-	        npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }
-	    
-	    if (distr[i]=="weibullPH") {
+	      npars <- 1 + sum(1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "wei") {
 	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      shape.hat=median(shape)
-	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hweibullPH(data.stan$t,shape[i],exp(linpred[i,]))) + 
-	          log(1-pweibullPH(data.stan$t,shape[i],exp(linpred[i,])))
-	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat <- matrix(data.stan$d*log(hweibullPH(data.stan$t,shape.hat,exp(linpred.hat)))+
-	                          log(1-pweibullPH(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
+	      shape.hat <- median(shape)
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	          data.stan$d * log(hweibull(data.stan$t, shape[i], exp(linpred[i, ]))) + 
+	            log(1 - pweibull(data.stan$t, shape[i], exp(linpred[i, ])))
+	        })), 
+	        nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hweibull(data.stan$t, shape.hat, exp(linpred.hat))) + 
+	          log(1 - pweibull(data.stan$t, shape.hat, exp(linpred.hat))), 
+	        nrow = 1)
 	      # Number of parameters (for AIC): shape, scale + covariates
-	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }
-
-	    if (distr[i]=="gompertz") {
+	      npars <- 2 + sum(1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "wph") {
 	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      shape.hat=median(shape)
-	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hgompertz(data.stan$t,shape=shape[i],rate=exp(linpred[i,]))) + 
-	          log(1-pgompertz(shape=data.stan$t,shape[i],rate=exp(linpred[i,])))
-	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat <- matrix(data.stan$d*log(hgompertz(data.stan$t,shape.hat,exp(linpred.hat)))+
-	                          log(1-pgompertz(data.stan$t,shape.hat,exp(linpred.hat))),nrow=1)
+	      shape.hat = median(shape)
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	        data.stan$d * log(hweibullPH(data.stan$t, shape[i], exp(linpred[i, ]))) +
+	          log(1 - pweibullPH(data.stan$t, shape[i], exp(linpred[i, ])))
+	      })), nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hweibullPH(data.stan$t, shape.hat, exp(linpred.hat))) +
+	          log(1 - pweibullPH(data.stan$t, shape.hat, exp(linpred.hat))), 
+	        nrow = 1)
+	      # Number of parameters (for AIC): shape, scale + covariates
+	      npars <- 2 + sum(1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "gom") {
+	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      shape.hat = median(shape)
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	          data.stan$d * log(hgompertz(data.stan$t, shape = shape[i], rate = exp(linpred[i, ]))) +
+	            log(1 - pgompertz(shape = data.stan$t, shape[i], rate = exp(linpred[i, ])))
+	        })), 
+	        nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hgompertz(data.stan$t, shape.hat, exp(linpred.hat))) +
+	          log(1 - pgompertz(data.stan$t, shape.hat, exp(linpred.hat))),
+	        nrow = 1)
 	      # Number of parameters (for AIC): shape, rate + covariates
-	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }
-	    
-	    if (distr[i]=="gamma") {
-	        shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	        shape.bar <- median(shape)
-	        lo <- exp(beta%*%t(data.stan$X_obs))
-	        lc <- exp(beta%*%t(data.stan$X_cens))
-	        lo.bar <- exp(beta.hat%*%t(data.stan$X_obs))
-	        lc.bar <- exp(beta.hat%*%t(data.stan$X_cens))
-	        f=matrix(unlist(lapply(1:nrow(lo),function(i) dgamma(data.stan$t,shape[i],lo[i,]))),nrow=nrow(lo),byrow=T)
-	        f.bar=matrix(unlist(lapply(1:nrow(lo.bar),function(i) dgamma(data.stan$t,shape.bar,lo.bar[i,]))),nrow=1,byrow=T)
-	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgamma(data.stan$d,shape[i],lc[i,]))),nrow=nrow(lc),byrow=T)
-	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgamma(data.stan$d,shape.bar,lc.bar[i,]))),nrow=1,byrow=T)
-	        # Number of parameters (for AIC): shape, rate + covariates
-	        npars <- 2+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
-	    }
-	    
-	    if (distr[i]=="gengamma") {
-	        q=as.numeric(rstan::extract(mod[[i]]$out)$Q)
-	        q.bar=median(q)
-	        scale=as.numeric(rstan::extract(mod[[i]]$out)$sigma)
-	        scale.bar=median(scale)
-	        lo=(beta%*%t(data.stan$X_obs))
-	        lc=(beta%*%t(data.stan$X_cens))
-	        lo.bar=(beta.hat%*%t(data.stan$X_obs))
-	        lc.bar=(beta.hat%*%t(data.stan$X_cens))
-	        f=matrix(unlist(lapply(1:nrow(lo),function(i) dgengamma(data.stan$t,lo[i,],scale[i],q[i]))),nrow=nrow(lo),byrow=T)
-	        f.bar=matrix(unlist(lapply(1:nrow(lo.bar),function(i) dgengamma(data.stan$t,lo.bar[i,],scale.bar,q.bar))),nrow=1,byrow=T)
-	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgengamma(data.stan$d,lc[i,],scale[i],q[i]))),nrow=nrow(lc),byrow=T)
-	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgengamma(data.stan$d,lc.bar[i,],scale.bar,q.bar))),nrow=1,byrow=T)
-	        # Number of parameters (for AIC): mu, sigma, Q + covariates
-	        npars <- 3+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
-	    }
-	    
-	    if (distr[i]=="genf") {
-	        Q=as.numeric(rstan::extract(mod[[i]]$out)$Q)
-	        Q.bar=median(Q)
-	        P=as.numeric(rstan::extract(mod[[i]]$out)$P)
-	        P.bar=median(P)
-	        sigma=as.numeric(rstan::extract(mod[[i]]$out)$sigma)
-	        sigma.bar=mean(sigma)
-	        lo=(beta%*%t(data.stan$X_obs))
-	        lc=(beta%*%t(data.stan$X_cens))
-	        lo.bar=(beta.hat%*%t(data.stan$X_obs))
-	        lc.bar=(beta.hat%*%t(data.stan$X_cens))
-	        f=matrix(unlist(lapply(1:nrow(lo),function(i) dgenf(data.stan$t,lo[i,],sigma[i],Q[i],P[i]))),nrow=nrow(lo),byrow=T)
-	        f.bar=matrix(unlist(lapply(1:nrow(lo.bar),function(i) dgenf(data.stan$t,lo.bar[i,],sigma.bar,Q.bar,P.bar))),nrow=1,byrow=T)
-	        s=matrix(unlist(lapply(1:nrow(lc),function(i) 1-pgenf(data.stan$d,lc[i,],sigma[i],Q[i],P[i]))),nrow=nrow(lc),byrow=T)
-	        s.bar=matrix(unlist(lapply(1:nrow(lc.bar),function(i) 1-pgenf(data.stan$d,lc.bar[i,],sigma.bar,Q.bar,P.bar))),nrow=1,byrow=T)
-	        # Number of parameters (for AIC): mu, sigma, Q, P + covariates
-	        npars <- 4+sum(1-apply(data.stan$X_obs,2,function(x) all(x==0)))
-	    }
-	    
-	    if (distr[i]=="lognormal") {
-	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      sigma.hat=median(sigma)
-	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hlnorm(data.stan$t,(linpred[i,]),sigma[i])) + 
-	          log(1-plnorm(data.stan$t,(linpred[i,]),sigma[i]))
-	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat <- matrix(data.stan$d*log(hlnorm(data.stan$t,(linpred.hat),sigma.hat))+
-	                          log(1-plnorm(data.stan$t,(linpred.hat),sigma.hat)),nrow=1)
+	      npars <- 2 + sum(1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "gam") {
+	      shape <- as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      shape.bar <- median(shape)
+	      lo <- exp(beta %*% t(data.stan$X_obs))
+	      lc <- exp(beta %*% t(data.stan$X_cens))
+	      lo.bar <- exp(beta.hat %*% t(data.stan$X_obs))
+	      lc.bar <- exp(beta.hat %*% t(data.stan$X_cens))
+	      f = matrix(
+	        unlist(lapply(1:nrow(lo), function(i) 
+	          dgamma(data.stan$t, shape[i], lo[i, ]))),
+	        nrow = nrow(lo), byrow = T)
+	      f.bar = matrix(
+	        unlist(lapply(1:nrow(lo.bar), function(i)
+	          dgamma(data.stan$t, shape.bar, lo.bar[i, ]))), 
+	        nrow = 1, byrow = T)
+	      s = matrix(
+	        unlist(lapply(1:nrow(lc), function(i) 
+	          1 - pgamma(data.stan$d, shape[i], lc[i, ]))),
+	        nrow = nrow(lc), byrow = T)
+	      s.bar = matrix(
+	        unlist(lapply(1:nrow(lc.bar), function(i) 
+	          1 - pgamma(data.stan$d, shape.bar, lc.bar[i, ]))),
+	        nrow = 1, byrow = T)
+	      # Number of parameters (for AIC): shape, rate + covariates
+	      npars <- 2 + sum(1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "gga") {
+	      q = as.numeric(rstan::extract(mod[[i]]$out)$Q)
+	      q.bar = median(q)
+	      scale = as.numeric(rstan::extract(mod[[i]]$out)$sigma)
+	      scale.bar = median(scale)
+	      lo = (beta %*% t(data.stan$X_obs))
+	      lc = (beta %*% t(data.stan$X_cens))
+	      lo.bar = (beta.hat %*% t(data.stan$X_obs))
+	      lc.bar = (beta.hat %*% t(data.stan$X_cens))
+	      f = matrix(
+	        unlist(lapply(1:nrow(lo), function(i)
+	          dgengamma(data.stan$t, lo[i, ], scale[i], q[i]))), 
+	        nrow = nrow(lo), byrow = T)
+	      f.bar = matrix(
+	        unlist(lapply(1:nrow(lo.bar), function(i)
+	          dgengamma(data.stan$t, lo.bar[i, ], scale.bar, q.bar))), 
+	        nrow = 1, byrow = T)
+	      s = matrix(
+	        unlist(lapply(1:nrow(lc), function(i)
+	          1 - pgengamma(data.stan$d, lc[i, ], scale[i], q[i]))), 
+	        nrow = nrow(lc), byrow = T)
+	      s.bar = matrix(
+	        unlist(lapply(1:nrow(lc.bar), function(i) 
+	          1 - pgengamma(data.stan$d, lc.bar[i, ], scale.bar, q.bar))), 
+	        nrow = 1, byrow = T)
+	      # Number of parameters (for AIC): mu, sigma, Q + covariates
+	      npars <- 3 + sum(
+	        1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "gef") {
+	      Q = as.numeric(rstan::extract(mod[[i]]$out)$Q)
+	      Q.bar = median(Q)
+	      P = as.numeric(rstan::extract(mod[[i]]$out)$P)
+	      P.bar = median(P)
+	      sigma = as.numeric(rstan::extract(mod[[i]]$out)$sigma)
+	      sigma.bar = mean(sigma)
+	      lo = (beta %*% t(data.stan$X_obs))
+	      lc = (beta %*% t(data.stan$X_cens))
+	      lo.bar = (beta.hat %*% t(data.stan$X_obs))
+	      lc.bar = (beta.hat %*% t(data.stan$X_cens))
+	      f = matrix(
+	        unlist(lapply(1:nrow(lo), function(i) 
+	          dgenf(data.stan$t, lo[i, ], sigma[i], Q[i], P[i]))), 
+	        nrow = nrow(lo), byrow = T)
+	      f.bar = matrix(
+	        unlist(lapply(1:nrow(lo.bar), function(i) 
+	          dgenf(data.stan$t, lo.bar[i, ], sigma.bar, Q.bar, P.bar))), 
+	        nrow = 1, byrow = T)
+	      s = matrix(
+	        unlist(lapply(1:nrow(lc), function(i)
+	          1 - pgenf(data.stan$d, lc[i, ], sigma[i], Q[i], P[i]))),
+	        nrow = nrow(lc), byrow = T)
+	      s.bar = matrix(
+	        unlist(lapply(1:nrow(lc.bar), function(i) 
+	          1 - pgenf(data.stan$d, lc.bar[i, ], sigma.bar, Q.bar, P.bar))),
+	        nrow = 1, byrow = T)
+	      # Number of parameters (for AIC): mu, sigma, Q, P + covariates
+	      npars <- 4 + sum(
+	        1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "lno") {
+	      sigma = as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      sigma.hat = median(sigma)
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	          data.stan$d * log(hlnorm(data.stan$t, (linpred[i, ]), sigma[i])) +
+	            log(1 - plnorm(data.stan$t, (linpred[i, ]), sigma[i]))
+	        })), nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hlnorm(data.stan$t, (linpred.hat), sigma.hat)) +
+	          log(1 - plnorm(data.stan$t, (linpred.hat), sigma.hat)),
+	        nrow = 1)
 	      # Number of parameters (for AIC): meanlog, sdlog + covariates
-	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }
-
-	    if (distr[i]=="loglogistic") {
-	      sigma=as.numeric(rstan::extract(mod[[i]]$out)$alpha)
-	      sigma.hat=median(sigma)
-	      logf <- matrix(unlist(lapply(1:nrow(linpred),function(i) {
-	        data.stan$d*log(hllogis(data.stan$t,sigma[i],exp(linpred[i,]))) + 
-	          log(1-pllogis(data.stan$t,sigma[i],exp(linpred[i,])))
-	      })),nrow=nrow(linpred),byrow=T)
-	      logf.hat <- matrix(data.stan$d*log(hllogis(data.stan$t,sigma.hat,exp(linpred.hat)))+
-	                          log(1-pllogis(data.stan$t,sigma.hat,exp(linpred.hat))),nrow=1)
+	      npars <- 2 + sum(
+	        1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "llo") {
+	      sigma = as.numeric(rstan::extract(mod[[i]]$out)$alpha)
+	      sigma.hat = median(sigma)
+	      logf <- matrix(
+	        unlist(lapply(1:nrow(linpred), function(i) {
+	          data.stan$d * log(hllogis(data.stan$t, sigma[i], exp(linpred[i, ]))) +
+	          log(1 - pllogis(data.stan$t, sigma[i], exp(linpred[i, ])))
+	      })), nrow = nrow(linpred), byrow = T)
+	      logf.hat <- matrix(
+	        data.stan$d * log(hllogis(data.stan$t, sigma.hat, exp(linpred.hat))) +
+	          log(1 - pllogis(data.stan$t, sigma.hat, exp(linpred.hat))),
+	        nrow = 1)
 	      # Number of parameters (for AIC): shape, scale + covariates
-	      npars <- 2+sum(1-apply(data.stan$X,2,function(x) all(x==0)))
-	    }	      
-
-	    if (distr[i]=="rps") {
-	        gamma <- rstan::extract(mod[[i]]$out)$gamma
-	        gamma.hat <- apply(gamma,2,median)
-	        logf <- data.stan$d*(-log(data.stan$t)+log(gamma%*%t(data.stan$DB)) + gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X)) -
-	                     exp(gamma%*%t(data.stan$B)+ beta%*%t(data.stan$X))
-	        logf.hat <- t(data.stan$d*(-log(data.stan$t)+log(data.stan$DB%*%gamma.hat)+data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat) - 
-	            exp(data.stan$B%*%gamma.hat + data.stan$X%*%beta.hat))
-	        # Number of parameters (for AIC): gamma + covariates
-	        npars <- length(gamma.hat)+sum(apply(data.stan$X,2,function(x) 1-all(x==0)))
-	    }	  
+	      npars <- 2 + sum(
+	        1 - apply(data.stan$X, 2, function(x) all(x == 0)))
+	    } else if (distr3[i] == "rps") {
+	      gamma <- rstan::extract(mod[[i]]$out)$gamma
+	      gamma.hat <- apply(gamma, 2, median)
+	      logf <- data.stan$d * (
+	        -log(data.stan$t) + log(gamma %*% t(data.stan$DB)) + 
+	          gamma %*% t(data.stan$B) +
+	          beta %*% t(data.stan$X)) -
+	        exp(gamma %*% t(data.stan$B) + beta %*% t(data.stan$X))
+	      logf.hat <- t(
+	        data.stan$d * (
+	          -log(data.stan$t) + log(data.stan$DB %*% gamma.hat) + 
+	            data.stan$B %*% gamma.hat + 
+	            data.stan$X %*% beta.hat) -
+	          exp(data.stan$B %*% gamma.hat + data.stan$X %*% beta.hat))
+	      # Number of parameters (for AIC): gamma + covariates
+	      npars <- length(gamma.hat) + sum(
+	        apply(data.stan$X, 2, function(x) 1 - all(x == 0)))
+	    }
 	    
 	    # Now computes the log-likelihood and then deviance and DIC, AIC, BIC
 	    # Little function to compute the log-likelihood (for the obs vs censored cases)
 	    compute.loglik <- function(f,s) {
-	      loglik <- (apply(log(f),1,sum)+apply(log(s),1,sum))
+	      loglik <- (apply(log(f),1,sum) + apply(log(s),1,sum))
 	      return(loglik)
 	    }
-	    if (distr[i] %in% c("gamma","gengamma","genf")) {
+	    
+	    if (distr3[i] %in% c("gam","gga","gef")) {
 	      loglik <- compute.loglik(f,s)
 	      D.theta <- -2*loglik 
 	      loglik.bar <- compute.loglik(f.bar,s.bar)
@@ -838,16 +952,16 @@ fit.models <- function(formula=NULL,data,distr=NULL,method="mle",...) {
   # Now defines the outputs of the function
   model.fitting <- list(aic=aic,bic=bic,dic=dic)
   misc <- list(time2run=time2run,formula=formula,km=ObjSurvfit,data=data)
-  if(method=="hmc") {
+  if (method == "hmc") {
     misc$vars <- vars
-    misc$data.stan=lapply(1:length(mod),function(x) mod[[x]]$data.stan)
-    model.fitting$dic2=dic2
+    misc$data.stan = lapply(1:length(mod),function(x) mod[[x]]$data.stan)
+    model.fitting$dic2 = dic2
     # If save.stan is set to TRUE, then saves the Stan model file(s) & data
-    if(save.stan==TRUE) {
+    if (save.stan == TRUE) {
       write_model <- lapply(1:length(distr),function(i) {
         model_code <- attr(mod[[i]]$out@stanmodel,"model_code")
         con <- paste0(distr[i],".stan")
-        writeLines(model_code, con=con)
+        writeLines(model_code, con = con)
         txt <- paste0("Model code saved to the file: ",con,"\n")
         cat(txt)
       })
