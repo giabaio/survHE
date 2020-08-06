@@ -22,7 +22,8 @@ and PSA)
 
 }
 \references{
-Something will go here
+G Baio.(2020). survHE: Survival analysis for health economic evaluation and 
+cost-effectiveness modelling. Journal of Statistical Software. To appear 
 }
 \seealso{
 Something will go here
@@ -32,3 +33,6 @@ Gianluca Baio
 
 Maintainer: Gianluca Baio
 }
+\keyword{survival analysis}
+\keyword{health economics}
+
