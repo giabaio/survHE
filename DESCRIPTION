@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 1.0.66
-Date: 2019-09-12
+Version: 1.1
+Date: 2020-08-07
 Authors@R: 
     person(given = "Gianluca",
            family = "Baio",
