@@ -226,7 +226,8 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
     "gamma" = "gam",
     "gompertz" = "gom",
     "llogis" = "llo",
-    "lognormal" = "lno"
+    "lognormal" = "lno",
+    "RP" = "rps"
   )
   availables.inla = c(
     "exponential" = "exp",
