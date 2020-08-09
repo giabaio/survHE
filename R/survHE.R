@@ -1,8 +1,5 @@
 ## SET OF UTILITY FUNCTIONS TO INCLUDE SURVIVAL ANALYSIS RESULTS INTO A HEALTH ECONOMIC MODEL
 ## Gianluca Baio + Will Browne + Peter Konings (10 Jan 2017)
-##
-
-
 #' Fit parametric survival analysis for health economic evaluations
 #' 
 #' Runs the survival analysis with several useful options, using either MLE
@@ -282,49 +279,6 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
     if (!all(distr3 %in% availables.mle))
       stop(paste0("Not all distributions could be recognized."))
 
-  # Reconstructs the vars list based on the formula
-  test <- attributes(terms(formula))$term.labels
-  ncovs <- length(test)
-  formula.temp <- as.formula(gsub("inla.surv","Surv",deparse(formula)))
-  time <- all.vars(formula.temp,data)[1]
-  event <- all.vars(formula.temp,data)[2]
-  if (ncovs>0) {
-    Xraw <- model.frame(formula.temp,data)
-    w <- (which(sapply(Xraw,is.factor)==1))-1
-    if (length(w)>=1) {
-      factors <- gsub("as.factor[( )]","",test[w]) 
-      factors <- gsub("[( )]","",factors)
-      covs <- test[-w]
-      if (length(covs)==0) {
-        covs <- NULL
-      }
-    } else {
-      factors <- NULL
-      covs <- test
-    }
-  } else {
-    covs <- factors <- NULL
-  }
-  # If there are covariates, creates a matrix and sets the dimension
-  if(!is.null(covs)) {
-    X <- data[,pmatch(covs,colnames(data))]
-    K <- ifelse(!is.null(dim(X)[2]),dim(X)[2],1)
-  }
-  # If there are categorical covariates (in the vector 'factors'), makes sure they have the right form
-  if(!is.null(factors)) {
-    cols <- pmatch(factors,colnames(data))
-    H <- length(cols)
-    D <- numeric()
-    for (i in 1:H) {
-      data[,cols[i]] <- as.factor(data[,cols[i]])
-      nlevs <- length(levels(data[,cols[i]]))
-      D[i] <- nlevs
-    } 
-  } else {
-    D <- 0
-  }
-  vars <- list(time=time,event=event,factors=factors,covs=covs,nlevs=D)
-  
   # Need to create a formula for the KM that is in the right format (flexsurv-like)
   chk <- is.na(pmatch("Surv",attributes(terms(formula))$variables[[2]][1])) # If TRUE, then it's in inla.surv() terms
   # If FALSE, then formula is in Surv() terms
@@ -374,7 +328,8 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
           if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
           if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
           if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
-          model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,timescale=timescale)
+          model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
+                   timescale=timescale)
       } else {
           model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=distr)
       }
@@ -530,120 +485,11 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
     time2run <- numeric()
     
     mod <- lapply(1:length(distr), function(x) {
-      # First makes the data list
-      if (distr3[x] %in% c("gam","gga","gef")) {
-        # If model is Gamma, GenGamma or GenF, then use the "obs vs" censored format
-        data.stan <- list(t=data[data[,vars$event]==1,vars$time],d=data[data[,vars$event]==0,vars$time])
-        data.stan$n_obs <- length(data.stan$t)
-        data.stan$n_cens <- length(data.stan$d)
-        data.stan$X_obs <- matrix(model.matrix(formula,data)[data[,vars$event]==1,],nrow=data.stan$n_obs,byrow=F)
-        data.stan$X_cens <- matrix(model.matrix(formula,data)[data[,vars$event]==0,],nrow=data.stan$n_cens,byrow=F)
-        data.stan$H=ncol(data.stan$X_obs)
-        # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
-        if (data.stan$H==1) {
-          data.stan$X_obs <- cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
-          data.stan$X_cens <- cbind(data.stan$X_cens,rep(0,data.stan$n_cens))
-          data.stan$H <- ncol(data.stan$X_obs)
-        }
-      }
-      if (distr3[x] %in% c("exp", "gom", "wei", "wph", "llo", "lno")) {
-        # If it's one of the others (except polyweibull), use the "h,S" format
-        data.stan <- list(t=data[,vars$time], d=data[,vars$event])
-        data.stan$n <- length(data.stan$t) 
-        data.stan$X <- model.matrix(formula,data)
-        data.stan$H <- ncol(data.stan$X)
-        # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
-        if (data.stan$H==1) {
-          data.stan$X <- cbind(data.stan$X,rep(0,data.stan$n))
-          data.stan$H <- ncol(data.stan$X)
-        }
-      }
-      if (distr3[x]=="rps"){
-        # If it's Royston-Parmar splines, then gets the correct data 
-        knots <- quantile(log(data[data[,vars$event]==1,vars$time]), seq(0, 1, length = k+2))
-        # Uses flexsurv to compute the basis and derivatives of the basis
-        ######################################
-        basis <- function(knots, x) {
-          nx <- length(x)
-          if (!is.matrix(knots)) 
-            knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
-          nk <- ncol(knots)
-          b <- matrix(nrow = length(x), ncol = nk)
-          if (nk > 0) {
-            b[, 1] <- 1
-            b[, 2] <- x
-          }
-          if (nk > 2) {
-            lam <- (knots[, nk] - knots)/(knots[, nk] - knots[, 1])
-            for (j in 1:(nk - 2)) {
-              b[, j + 2] <- pmax(x - knots[, j + 1], 0)^3 - lam[,j + 1] * pmax(x - knots[, 1], 0)^3 - 
-                (1 - lam[,j + 1]) * pmax(x - knots[, nk], 0)^3
-            }
-          }
-          b
-        }
-        dbasis <- function(knots, x) {
-          nx <- length(x)
-          if (!is.matrix(knots)) 
-            knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
-          nk <- ncol(knots)
-          b <- matrix(nrow = length(x), ncol = nk)
-          if (nk > 0) {
-            b[, 1] <- 0
-            b[, 2] <- 1
-          }
-          if (nk > 2) {
-            lam <- (knots[, nk] - knots)/(knots[, nk] - knots[, 1])
-            for (j in 3:nk) {
-              b[, j] <- 3 * pmax(x - knots[, j - 1], 0)^2 - 3 * 
-                lam[, j - 1] * pmax(x - knots[, 1], 0)^2 - 3 * 
-                (1 - lam[, j - 1]) * pmax(x - knots[, nk], 0)^2
-            }
-          }
-          b
-        }
-        ######################################
-        B <- basis(knots,log(data[,vars$time]))
-        DB <- dbasis(knots,log(data[,vars$time]))
-        # Now checks to see whether the user wants to specify covariates and removes the intercept from the formula (for identifiability)
-        mm <- model.matrix(formula,data)[,-1]
-        # a. if the formula is ~ 1, then adds two fictional covariates of all 0s
-        if (length(mm)<1) {
-            mm <- matrix(rep(0,nrow(data)),nrow=nrow(data),ncol=2)
-        }
-        # b. in case there's only one covariate, then adds another fake covariate of all 0s
-        if (is.null(dim(mm))) {
-         mm <- cbind(mm,rep(0,length(mm)))
-        }
-        data.stan=list(t=data[,vars$time], d=data[,vars$event], n=nrow(data),M=k,X=mm,H=ncol(mm),B=B,DB=DB,
-                       mu_gamma=rep(0,k+2),sigma_gamma=rep(5,k+2),knots=knots) 
-      }
+      #### THIS USES THE NEW HELPER FUNCTION TO CREATE THE DATA!!!
+      #### NB: Now need to add dependencies on 'dplyr' and 'tibble'
+      data.stan=make_data_stan(formula,data,distr3[x])
       
-      ## Needs to make sure that data.stan contains both X and (X_obs,X_cens)
-      
-      
-      # ###########################################################################################################################
-      # ### Poly-Weibull is in theory possible and pre-compiled, but it poses problems if the formula is a list
-      # if (distr[x]=="polyweibull") {
-      #   data.stan <- list(t=data[,vars$time], d=data[,vars$event]); data.stan$n <- length(data.stan$t); 
-      #   data.stan$M <- length(formula)
-      #   X <- lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
-      #   data.stan$H <- max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
-      #   X <- lapply(1:data.stan$M,function(i) {
-      #     if(ncol(X[[i]]<data.stan$H)) {
-      #       X[[i]] <- cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
-      #     }
-      #   })
-      #   data.stan$X=array(NA,c(data.stan$M,data.stan$n,data.stan$H))
-      #   for (m in 1:data.stan$M) {
-      #     data.stan$X[m,,] <- X[[m]]
-      #   }
-      # }
-      # # Linear predictor coefficients
-      # if (distr[x]=="polyweibull") {
-      #   data.stan$mu_beta=matrix(0,nrow=data.stan$H,ncol=data.stan$M) 
-      #   data.stan$sigma_beta=matrix(5,nrow=data.stan$H,ncol=data.stan$M)
-      # } else {
+      #### NOW MAKE A HELPER FUNCTION TO SET DEFAULT VALUES
       data.stan$mu_beta = rep(0, data.stan$H)
       if (distr3[x] %in% non.on.log.scale) {
         data.stan$sigma_beta <- rep(100, data.stan$H)
@@ -704,8 +550,8 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
       
       # Now runs Stan to sample from the posterior distributions
       tic <- proc.time()
-      out <- rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control[[x]],
-                      pars=pars,include=include,cores=cores,init=init)
+      out <- rstan::sampling(dso[[x]],data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,
+                      control=control[[x]],pars=pars,include=include,cores=cores,init=init)
       toc <- proc.time()-tic
       time2run <- toc[3]
       list(out=out,data.stan=data.stan,time2run=time2run)
