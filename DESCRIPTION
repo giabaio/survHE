@@ -1,6 +1,6 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 1.1
+Version: 1.1.1
 Date: 2020-08-07
 Authors@R: 
     person(given = "Gianluca",
@@ -15,12 +15,14 @@ Depends:
     methods,
     R (>= 3.4.0),
     Rcpp (>= 0.12.19),
-    flexsurv
+    flexsurv,
+    dplyr
 Imports: 
     rms,
     xlsx,
     tools,
     rstan (>= 2.18.1),
+    tibble
 Suggests: 
     shinystan, 
     INLA
