@@ -62,8 +62,7 @@ runHMC <- function(x,exArgs) {
   time_stan <- sum(rstan::get_elapsed_time(model))
   
   # Uses the helper function to compute the *IC
-  #ics <- compute_ICs_stan()
-  ics <- list(aic=NULL,bic=NULL,dic=NULL)
+  ics <- compute_ICs_stan(model,d3,data.stan)
   
   # Finally returns the output
   list(
@@ -71,6 +70,7 @@ runHMC <- function(x,exArgs) {
     aic=ics$aic,
     bic=ics$bic,
     dic=ics$dic,
+    dic=ics$dic2,
     time2run=pmin(time_survHE,time_stan),
     data.stan=data.stan,
     save.stan=save.stan
