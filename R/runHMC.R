@@ -3,7 +3,7 @@
 #' 
 #' @param x a (vector of) string(s) containing the name(s) of the model(s)
 #' to be fitted
-#' #' @param exArgs a list of extra arguments passed from the main 'fit.models' 
+#' @param exArgs a list of extra arguments passed from the main 'fit.models' 
 #' function
 #' @note Something will go here
 #' @author Gianluca Baio
@@ -72,6 +72,7 @@ runHMC <- function(x,exArgs) {
     bic=ics$bic,
     dic=ics$dic,
     time2run=pmin(time_survHE,time_stan),
-    data.stan=data.stan
+    data.stan=data.stan,
+    save.stan=save.stan
   )
 }

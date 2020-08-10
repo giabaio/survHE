@@ -13,6 +13,7 @@
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 format_output_fit.models <- function(output,method,distr) {
+  
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
   labs <- manipulate_distributions(distr)$labs
   
@@ -38,7 +39,7 @@ format_output_fit.models <- function(output,method,distr) {
     misc$data.stan <- lapply(output,function(x) x$data.stan)
     model.fitting$dic2 <- unlist(lapply(output,function(x) x$dic2))
     # Also, if 'save.stan' is set to TRUE, then saves the Stan model file(s) & data
-    if (save.stan == TRUE) {
+    if (output[[1]]$save.stan == TRUE) {
       write_model <- lapply(output,function(i) {
         model_code <- attr(model[[i]]$out@stanmodel,"model_code")
         con <- paste0(distr[i],".stan")
