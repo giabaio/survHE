@@ -14,8 +14,12 @@
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo 
-make_data_stan=function(formula,data,distr3) {
-  # Modifies the original formula to separate 'time' and 'event'
+make_data_stan=function(formula,data,distr3,exArgs) {
+  # Loads in the available models in each method
+  availables <- load_availables()
+  method <- "hmc"
+
+    # Modifies the original formula to separate 'time' and 'event'
   formula_temp <- update(formula,paste(all.vars(formula,data)[1],"~",all.vars(formula,data)[2],"+."))
   # Creates a model.frame + renames the variables to conform with stan's expectations later
   mf <- as_tibble(model.frame(formula_temp,data)) %>% 

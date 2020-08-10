@@ -18,13 +18,14 @@
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Kaplan-Meier estimate 
-make_KM <- function(formula,method,data) {
+make_KM <- function(formula,data) {
   km.formula <- as.formula(gsub("inla.surv","Surv",deparse(formula)))
   # Computes the Kaplan Meier curve using the package "rms"
   ObjSurvfit <- rms::npsurv(      # Uses the function "npsurv" from the package "rms"
     formula = km.formula,         # to fit the model specified in the "formula" object
     data = data                   # to the dataset named "data"
   )
+  return(ObjSurvfit)
 }
 
 

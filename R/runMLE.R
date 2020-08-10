@@ -1,18 +1,23 @@
 #' Helper function to run the survival models using MLE and flexsurv
 #' 
 #' @param x a (vector of) string(s) containing the name(s) of the model(s)
-#' to be fitted#' 
+#' to be fitted
+#' #' @param exArgs a list of extra arguments passed from the main 'fit.models' 
+#' function
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Maximum likelihood estimation
-runMLE <- function(x) {
+runMLE <- function(x,exArgs) {
   ##### PROBABLY CAN REMOVE THIS ######
   # Checks that 'flexsurv' is loaded up. NB: ***Probably*** not needed, as 'flexsurv' is a primary dependency???
   if(!isTRUE(requireNamespace("flexsurv",quietly=TRUE))) {
     stop("You need to install the R package 'flexsurv'. Please run in your R terminal:\n install.packages('flexsurv')")
   }
+  # Loads in the available models in each method
+  availables <- load_availables()
+  
   tic <- proc.time()
   # If user selects RPS model, then could also provide some optional arguments - uses flexsurv defaults
   if(x=="rps") {
