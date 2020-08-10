@@ -2,13 +2,15 @@
 #' for a given formula and dataset
 #' 
 #' @param x a (vector of) string(s) containing the name(s) of the model(s)
-#' to be fitted#' 
+#' to be fitted
+#' @param exArgs a list of extra arguments passed from the main 'fit.models' 
+#' function
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Integrated Nested Laplace Approximation
-runINLA <- function(x) {
+runINLA <- function(x,exArgs) {
   # First checks whether INLA is installed (it's only a suggestion, not a full dependency)
   if (!isTRUE(requireNamespace("INLA", quietly = TRUE))) {
     stop("You need to install the packages 'INLA'. Please run in your R terminal:\n install.packages('INLA', repos='https://www.math.ntnu.no/inla/R/stable')")
@@ -19,6 +21,11 @@ runINLA <- function(x) {
   #     attachNamespace("INLA")
   #   }
   # }
+  # Loads in the available models in each method
+  availables <- load_availables()
+  # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
+  d3 <- manipulate_distributions(x)$distr3
+  method <- "inla"
   
   # Set up optional parameters to default values if the user hasn't done it themselves
   # 1. defines the step length for the grid search over the hyperparameters space
@@ -39,7 +46,6 @@ runINLA <- function(x) {
     control.fixed$prec <- control.fixed$prec.intercept <- 1/(5^2)
   }
   # Recomputes the three-letters code for the distributions and the INLA-specific name
-  d3 <- names(which(sapply(sapply(matchTable, "%in%", x),any)))
   d <- names(availables[[method]][match(d3, availables[[method]])])
   # If 'control.family' is specified for the distribution currently used, then use the values in
   # 'exArgs'. If not, or if specified but for another distribution, use INLA defaults

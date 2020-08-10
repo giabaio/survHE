@@ -126,112 +126,26 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
     stop("Methods available for use are 'mle', 'hmc' or 'inla'")
   }
   
-  # selected model checks -----
-  matchTable = list(
-    "exp" = c("exponential", "exp"),
-    "wei" = c("weibull", "weibullaft", "weiaft", "waft", "weibullaf", "weiaf", "waf", "wei"),
-    "wph" = c("weibullph", "weiph", "wph"),
-    "gam" = c("gamma", "gam", "gma"),
-    "lno" = c("lognormal", "lnormal", "lnorm", "lognorm", "lno"),
-    "llo" = c("loglogistic", "loglog", "llogistic", "llogis", "llo", "llogist"),
-    "gga" = c("generalisedgamma", "generalizedgamma", "ggamma", "gengamma", "gga", "ggam"),
-    "ggo" = c("gengamma.orig", "ggo"),
-    "gef" = c("generalisedf", "generalizedf", "genf", "gef"),
-    "gof" = c("genf.orig", "gof"),
-    "gom" = c("gompertz", "gpz", "gomp", "gompz", "gom"),
-    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps"))
-  labelTable = c(
-    "exp" = "Exponential",
-    "wei" = "Weibull (AFT)",
-    "wph" = "Weibull (PH)",
-    "gam" = "Gamma",
-    "lno" = "log-Normal", 
-    "llo" = "log-Logistic",
-    "gga" = "Gen. Gamma", "ggo" = "Gen. Gamma (orig parametrisation)",
-    "gef" = "Gen. F", "gof" = "Gen. F (orig parametrisation)",
-    "gom" = "Gompertz",
-    "rps" = "Royston-Parmar",
-    "pow" = "Poly-Weibull")
-  
-  distr = gsub("[ ]*[-]*", "", tolower(distr))
-  isDistrUnmatched = which(!sapply(
-    1:length(distr),
-    '%in%',
-    unname(unlist(sapply(matchTable, match, distr)))))
-  if (length(isDistrUnmatched) > 0) {
-    stop(paste0("Distribution ", paste(distr[isDistrUnmatched], collapse = ", "), " could not be matched."))
-  }
-  
-  ### CHECK 'Advanced R' to see how you do this with helper functions?...
-  distr3 = names(which(sapply(
-    sapply(matchTable, '%in%', distr), any)))
-  labs = unname(labelTable[distr3])
-  
-  # INLA can only do a limited set of models (for now) so if user has selected
-    # one that is not available, then falls back on MLE analysis
-  availables=list(
-    mle=c("genf" = "gef",
-          "genf.orig" = "gof",
-          "gengamma" = "gga",
-          "gengamma.orig" = "ggo",
-          "exp" = "exp",
-          "weibull" = "wei",
-          "weibullPH" = "wph",
-          "lnorm" = "lno",
-          "gamma" = "gam",
-          "gompertz" = "gom",
-          "llogis" = "llo",
-          "lognormal" = "lno",
-          "rps" = "rps"
-          ),
-    inla=c("exponential" = "exp",
-           "weibull" = "wei",
-           "weibullPH" = "wph",
-           "lognormal" = "lno",
-           "loglogistic" = "llo",
-           "rps" = "rps"
-          ),
-    hmc=c("Exponential" = "exp",
-          "Gamma" = "gam",
-          "GenF" = "gef",
-          "GenGamma" = "gga",
-          "Gompertz" = "gom",
-          "PolyWeibull" = "pow",
-          "RP" = "rps",
-          "WeibullAF" = "wei",
-          "WeibullPH" = "wph",
-          "logLogistic" = "llo",
-          "logNormal" = "lno"
-          )
-  )
-  
   # Check whether the selected distribution(s) can be implemented with the selected method
   # (and if not, falls back to 'mle')
-  check_distributions(method,distr3)
-  
-  # Computes the KM estimate from the model provided in the formula
-  km <- make_KM(formula,method,data)
-
-  # Checks that the distribution name(s) are consistent with the inferential engine used for the method
-  # If method="mle", the only problem here is if the user has specified a log-Logistic in INLA terminology
-  distr = names(availables[[method]][match(distr3, availables[[method]])])
+  check_distributions(method,distr)
   
   # MLE -----
   # If method = MLE, then fits the model(s) using flexsurvreg
   if (method=="mle") {
     # Runs the models using the helper 'runMLE' and use the helper 'format_output_fit.models 
-    res <- format_output_fit.models(lapply(distr,function(x) runMLE(x)))
+    res <- format_output_fit.models(lapply(distr,function(x) runMLE(x,exArgs)),method,distr)
   }
   
   # INLA -----
   # If method = INLA, then fits model(s) using inla
   if (method=="inla") {
-    res <- format_output_fit.models(lapply(distr,function(x) runINLA(x)))
+    res <- format_output_fit.models(lapply(distr,function(x) runINLA(x,exArgs)),method,distr)
   }
     
   # HMC -----
   if (method == "hmc") {
-    res <- format_output_fit.models(lapply(distr,function(x) runHMC(x)))
+    res <- format_output_fit.models(lapply(distr,function(x) runHMC(x,exArgs)),method,distr)
   }
 
   return(res)

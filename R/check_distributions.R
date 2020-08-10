@@ -7,12 +7,18 @@
 #' and then run the model.
 #' @param distr3 A vector of distribution labels (as created by 'fit.models'). 
 #' It's a 3-letters label to identify the distributions
+#' @param availables A list with the distributions available for each method.
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models 
-check_distributions <- function(method,distr3) {
+check_distributions <- function(method,distr) {
+  # Loads in the available models in each method
+  availables <- load_availables()
+  # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
+  distr3 <- manipulate_distributions(distr)$distr3
+  
   # If 'method' is either 'inla' or 'hmc but we're trying to run a model that is not available, then
   # falls back to 'mle'
   if(method %in% c("inla","hmc")) {
