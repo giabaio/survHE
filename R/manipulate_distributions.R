@@ -35,7 +35,10 @@ manipulate_distributions <- function(x){
     stop(paste0("Distribution ", paste(distr[isDistrUnmatched], collapse = ", "), " could not be matched."))
   }
   
-  distr3 = names(which(sapply(sapply(matchTable, '%in%', distr), any)))
+  distr3 <- numeric()
+  for (i in 1:length(distr)) {
+    distr3[i] <- names(which(unlist(lapply(matchTable,function(x) distr[i]%in%x))))  
+  }
   labs = unname(labelTable[distr3])
   
   list(distr=distr,distr3=distr3,labs=labs)
