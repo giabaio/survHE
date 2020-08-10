@@ -89,5 +89,68 @@ make_data_stan=function(formula,data,distr3) {
                       knots=knots
     )
   }
+  
+  # Adds the values for the parameters of the prior distributions
+  data.stan$mu_beta = rep(0, data.stan$H)
+  # For the models *not* on the log scale, needs higher values for the sd of the coefficients
+  if (distr3 %in% c("gef","gga","lno")) {
+    data.stan$sigma_beta <- rep(100, data.stan$H)
+  } else {
+    data.stan$sigma_beta <- rep(5, data.stan$H)
+  }
+  
+  # Ancillary parameters
+  if (distr3 == "gef") {
+    data.stan$a_sigma = data.stan$b_sigma = 0.1
+    data.stan$mu_P = 0
+    data.stan$sigma_P = 0.5
+    data.stan$mu_Q = 0
+    data.stan$sigma_Q = 2.5
+  } else if (distr3 == "gga") {
+    data.stan$a_sigma = data.stan$b_sigma = 0.1
+    data.stan$mu_Q = 0
+    data.stan$sigma_Q = 100
+  } else if (distr3 %in% c("gam", "llo", "wei", "wph")) {
+    data.stan$a_alpha = data.stan$b_alpha = 0.1
+  } else if (distr3 %in% c("lno", "gom")) {
+    data.stan$a_alpha = 0
+    data.stan$b_alpha = 5
+  }
+  
+  # Sets the default priors to an empty list, which gets modified if the user has specified some values
+  # NB: the user needs to specify a **named** list, where the names have to match the distributions in the
+  # correct order!
+  # recodes 
+  d <- names(availables[[method]][match(distr3, availables[[method]])])
+  priors <- list()
+  if(exists("priors",where=exArgs)) {
+    if(d==names(exArgs$priors)) {
+      priors <- exArgs$priors[[d]]
+    } 
+  }
+  # Linear predictor coefficients
+  if(!is.null(priors$mu_beta)) {
+    data.stan$mu_beta=priors$mu_beta
+  }
+  if(!is.null(priors$sigma_beta)) {
+    data.stan$sigma_beta <- priors$sigma_beta
+  }
+  if(!is.null(priors$mu_gamma) & distr3=="rps") {
+    data.stan$mu_gamma <- priors$mu_gamma
+  }
+  if(!is.null(priors$sigma_gamma) & distr3=="rps") {
+    data.stan$sigma_gamma <- priors$sigma_gamma
+  }
+  
+  # Ancillary parameters
+  if(!is.null(priors$a_sigma)) {a_sigma=priors$a_sigma}
+  if(!is.null(priors$b_sigma)) {b_sigma=priors$b_sigma}
+  if(!is.null(priors$mu_P)) {mu_P=priors$mu_P}
+  if(!is.null(priors$sigma_P)) {sigma_P=priors$sigma_P}
+  if(!is.null(priors$mu_Q)) {mu_Q=priors$mu_Q}
+  if(!is.null(priors$sigma_Q)) {sigma_Q=priors$sigma_Q}
+  if(!is.null(priors$a_alpha)) {a_alpha=priors$a_alpha}
+  if(!is.null(priors$b_alpha)) {b_alpha=priors$b_alpha}
+  
   data.stan
 }
