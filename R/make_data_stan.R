@@ -83,7 +83,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     }
     data.stan <- list(t=mf$time,
                       d=mf$event,
-                      n=nrow(df),
+                      n=nrow(mf),
                       M=k,
                       X=mm,
                       H=ncol(mm),
