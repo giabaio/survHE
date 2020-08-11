@@ -121,7 +121,7 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
   }
   # ensures method is lower case
   method <- tolower(method)
-  # ensures method is one of "mle","inla", "mcmc" or "splines"
+  # ensures method is one of "mle","inla", "mcmc"
   if(!method %in% c("hmc","inla","mle")) {
     stop("Methods available for use are 'mle', 'hmc' or 'inla'")
   }
