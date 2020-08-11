@@ -1,3 +1,17 @@
+#' Helper function to manipulate the strings of text defining the 
+#' distributions selected by the user so they are consistent with the
+#' various methods
+#' 
+#' @param x A string with the distribution name selected by the user.
+#' @return \item{list}{A list containing the modified name of the 
+#' distribution, the acronym (3-letters abbreviation), or the
+#' labels (humane-readable name)}.
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @seealso fit.models
+#' @references Baio (2020). survHE
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian
+#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 manipulate_distributions <- function(x){
   # selected model checks -----
   matchTable = list(

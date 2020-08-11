@@ -1,3 +1,20 @@
+#' Helper function to compute the information criteria statistics
+#' when using hmc as the inferential engine. 'rstan' does not do
+#' DIC automatically and AIC/BIC are also not standard for Bayesian
+#' models, so can compute them post-hoc by manipulating the 
+#' likelihood functions.
+#' 
+#' @param model The 'rstan' object with the model fit
+#' @param distr3 The 'rstan' object with the model fit
+#' @return \item{list}{A list containing the modified name of the 
+#' distribution, the acronym (3-letters abbreviation), or the
+#' labels (humane-readable name)}.
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @seealso fit.models
+#' @references Baio (2020). survHE
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian
+#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 compute_ICs_stan <- function(model,distr3,data.stan) {
   # Computes the log-likelihood 
   beta <- rstan::extract(model)$beta
