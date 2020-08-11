@@ -14,7 +14,7 @@
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 format_output_fit.models <- function(output,method,distr) {
   
-  # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
+  # Uses the helper 'manipulated_distributions' to create the vector labs
   labs <- manipulate_distributions(distr)$labs
   
   # Model output
@@ -38,16 +38,6 @@ format_output_fit.models <- function(output,method,distr) {
     # Completes the 'misc' and 'model.fitting' lists with additional output
     misc$data.stan <- lapply(output,function(x) x$data.stan)
     model.fitting$dic2 <- unlist(lapply(output,function(x) x$dic2))
-    # Also, if 'save.stan' is set to TRUE, then saves the Stan model file(s) & data
-    if (output[[1]]$save.stan == TRUE) {
-      write_model <- lapply(output,function(i) {
-        model_code <- attr(model[[i]]$out@stanmodel,"model_code")
-        con <- paste0(distr[i],".stan")
-        writeLines(model_code, con = con)
-        txt <- paste0("Model code saved to the file: ",con,"\n")
-        cat(txt)
-      })
-    }
   }
   
   # Names the elements of the list

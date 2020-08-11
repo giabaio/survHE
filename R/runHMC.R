@@ -64,6 +64,14 @@ runHMC <- function(x,exArgs) {
   # Uses the helper function to compute the *IC
   ics <- compute_ICs_stan(model,d3,data.stan)
   
+  # If 'save.stan' is set to TRUE, then saves the Stan model file(s) & data
+  if(save.stan) {
+    model_code <- attr(model@stanmodel,"model_code")
+    con <- paste0(d,".stan")
+    writeLines(model_code,con=con)
+    cat(paste0("Model code saved to the file: ",con,"\n"))
+  }
+
   # Finally returns the output
   list(
     model=model,
