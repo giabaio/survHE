@@ -39,18 +39,13 @@ print.survHE <- function(x,mod=1,...) {
   exArgs <- list(...)
   ##  if(exists("original",where=exArgs)) {original=exArgs$original} else {original=FALSE}
   
-  # Available models
-  availables.mle <- c("genf", "genf.orig", "gengamma", "gengamma.orig", "exp", 
-                      "weibull", "weibull.quiet","weibullPH", "lnorm", "gamma", "gompertz", 
-                      "llogis", "exponential", "lognormal","survspline")
-  availables.inla <- c("exponential","weibull","weibullPH","lognormal","loglogistic")
-  availables.hmc <- c("Exponential","Gamma","GenF","GenGamma","Gompertz","PolyWeibull","RP",
-                      "WeibullAF","WeibullPH","logLogistic","logNormal")
+  # Loads available models
+  availables <- load_availables()
   # If the distribution specified is not-standard (eg user-defined in MLE, or using random effects or non-standard
   # distributions in Stan), then sets original=TRUE and gives the original version of the print table.
   if (exists("original",where=exArgs)) {original=exArgs$original} else {
     if (x$method=="mle") {
-      if (x$models[[mod]]$dlist$name %in% availables.mle) {original=FALSE} else {original=TRUE}
+      if (x$models[[mod]]$dlist$name %in% availables$mle) {original=FALSE} else {original=TRUE}
     }
     if (x$method=="inla") {
       # Needs to attache the namespace as it uses a hidden function 
@@ -58,10 +53,10 @@ print.survHE <- function(x,mod=1,...) {
       if (!is.element("INLA", (.packages()))) {
         suppressPackageStartupMessages(attachNamespace("INLA"))
       }
-      if (x$models[[mod]]$dlist$name %in% availables.inla) {original=FALSE} else {original=TRUE}
+      if (x$models[[mod]]$dlist$name %in% availables$inla) {original=FALSE} else {original=TRUE}
     }
     if (x$method=="hmc") {
-      if (x$models[[mod]]@model_name %in% availables.hmc) {original=FALSE} else {original=TRUE}
+      if (x$models[[mod]]@model_name %in% availables$hmc) {original=FALSE} else {original=TRUE}
     }
   }
   # Can select the number of digits to be printed in the output table
