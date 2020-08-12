@@ -1,6 +1,6 @@
 #' Helper function to run the survival models using MLE and flexsurv
 #' 
-#' @param x a (vector of) string(s) containing the name(s) of the model(s)
+#' @param x a string containing the name of the model
 #' to be fitted
 #' #' @param exArgs a list of extra arguments passed from the main 'fit.models' 
 #' function
@@ -17,6 +17,8 @@ runMLE <- function(x,exArgs) {
   }
   # Loads in the available models in each method
   availables <- load_availables()
+  # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
+  d3 <- manipulate_distributions(x)$distr3
   
   tic <- proc.time()
   # If user selects RPS model, then could also provide some optional arguments - uses flexsurv defaults
@@ -37,6 +39,9 @@ runMLE <- function(x,exArgs) {
   }
   toc <- proc.time()-tic
 
+  # Replaces a field used in 'make.surv' to indicate the model used (standardised across models)
+  model$dlist$name <- d3
+  
   # Finally returns the output
   list(
     model=model,

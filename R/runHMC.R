@@ -71,6 +71,9 @@ runHMC <- function(x,exArgs) {
     writeLines(model_code,con=con)
     cat(paste0("Model code saved to the file: ",con,"\n"))
   }
+  
+  # Adds a field used in 'make.surv' to indicate the model used
+  model$dlist$name <- d3
 
   # Finally returns the output
   list(

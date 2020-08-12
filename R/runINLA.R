@@ -75,9 +75,9 @@ runINLA <- function(x,exArgs) {
   # Now re-writes the formula in general terms (without linking to INLA::inla.surv)
   formula <- as.formula(gsub("INLA::inla.surv","Surv",deparse(formula)))
   # Adds a field used in 'make.surv' to indicate the model used
-  model$dlist$name <- d
+  model$dlist$name <- d3
 
-    # Finally returns the output
+  # Finally returns the output
   list(
     model=model,
     aic=2*model$dic$p.eff+model$dic$deviance.mean,
