@@ -40,7 +40,7 @@ runMLE <- function(x,exArgs) {
   toc <- proc.time()-tic
 
   # Replaces a field used in 'make.surv' to indicate the model used (standardised across models)
-  model$dlist$name <- d3
+  model_name <- d3
   
   # Finally returns the output
   list(
@@ -48,6 +48,7 @@ runMLE <- function(x,exArgs) {
     aic=model$AIC,
     bic=-2*model$loglik+model$npars*log(model$N),
     dic=NULL,
-    time2run=toc[3]
+    time2run=toc[3],
+    model_name=model_name
   )
 }

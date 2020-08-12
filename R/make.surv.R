@@ -68,9 +68,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     t <- sort(unique(fit$misc$km$time))
   }
   # Makes sure the distribution name(s) vector is in a useable format
-  if (fit$method=="hmc") {dist <- m@model_name} else {dist <- fit$models[[mod]]$dlist$name}
-  # Needs to change the name of the distribution if underlying 'flexsurv' value is 'weibull.quiet'
-  dist <- ifelse(dist=="weibull.quiet","weibull",dist)
+  dist <- fit$misc$model_name
   
   # Now creates the profile of covariates for which to compute the survival curves
   X <- make_profile_surv(formula,data,newdata)

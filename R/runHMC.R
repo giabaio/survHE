@@ -73,7 +73,7 @@ runHMC <- function(x,exArgs) {
   }
   
   # Adds a field used in 'make.surv' to indicate the model used
-  ###model$dlist$name <- d3
+  model_name <- d3
 
   # Finally returns the output
   list(
@@ -84,6 +84,7 @@ runHMC <- function(x,exArgs) {
     dic=ics$dic2,
     time2run=pmin(time_survHE,time_stan),
     data.stan=data.stan,
-    save.stan=save.stan
+    save.stan=save.stan,
+    model_name=model_name
   )
 }
