@@ -24,9 +24,9 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
     linpred <- beta%*%t(data.stan$X)
     linpred.hat <- beta.hat%*%t(data.stan$X)
   }
-
+  
   # Now computes the densities using the helper functions
-  out=do.call(what=paste0("lik_",distr3),args=list(distr3,linpred,linpred.hat,data.stan))
+  out=do.call(what=paste0("lik_",distr3),args=list(distr3,linpred,linpred.hat,alpha,data.stan))
   # Extracts relevant variables from the list (See if there's a better way to do it!)
   logf=out$logf
   logf.hat=out$logf.hat
@@ -67,7 +67,7 @@ compute.loglik <- function(f,s) {
 }
 
 ### These are utility functions to compute the log-density for the models fitted by hmc
-lik_exp <- function(x,linpred,linpred.hat,data.stan) {
+lik_exp <- function(x,linpred,linpred.hat,model,data.stan) {
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
       data.stan$d * log(hexp(data.stan$t, exp(linpred[i,]))) +
@@ -83,8 +83,8 @@ lik_exp <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_wei <- function(x,linpred,linpred.hat,data.stan) {
-  shape <- as.numeric(rstan::extract(model)$alpha)
+lik_wei <- function(x,linpred,linpred.hat,model,data.stan) {
+  shape <- alpha <- as.numeric(rstan::extract(model)$alpha)
   shape.hat <- median(shape)
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
@@ -101,8 +101,8 @@ lik_wei <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_wph <- function(x,linpred,linpred.hat,data.stan) {
-  shape <- as.numeric(rstan::extract(model)$alpha)
+lik_wph <- function(x,linpred,linpred.hat,model,data.stan) {
+  shape <- alpha <- as.numeric(rstan::extract(model)$alpha)
   shape.hat = median(shape)
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
@@ -118,8 +118,8 @@ lik_wph <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_gom <- function(x,linpred,linpred.hat,data.stan) {
-  shape <- as.numeric(rstan::extract(model)$alpha)
+lik_gom <- function(x,linpred,linpred.hat,model,data.stan) {
+  shape <- alpha <- as.numeric(rstan::extract(model)$alpha)
   shape.hat = median(shape)
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
@@ -136,8 +136,8 @@ lik_gom <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_gam <- function(x,linpred,linpred.hat,data.stan) {
-  shape <- as.numeric(rstan::extract(model)$alpha)
+lik_gam <- function(x,linpred,linpred.hat,model,data.stan) {
+  shape <- alpha <- as.numeric(rstan::extract(model)$alpha)
   shape.bar <- median(shape)
   lo <- exp(beta %*% t(data.stan$X_obs))
   lc <- exp(beta %*% t(data.stan$X_cens))
@@ -164,7 +164,7 @@ lik_gam <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
 }
 
-lik_gga <- function(x,linpred,linpred.hat,data.stan) {
+lik_gga <- function(x,linpred,linpred.hat,model,data.stan) {
   q = as.numeric(rstan::extract(model)$Q)
   q.bar = median(q)
   scale = as.numeric(rstan::extract(model)$sigma)
@@ -194,7 +194,7 @@ lik_gga <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
 }
 
-lik_gef <- function(x,linpred,linpred.hat,data.stan) {
+lik_gef <- function(x,linpred,linpred.hat,model,data.stan) {
   Q = as.numeric(rstan::extract(model)$Q)
   Q.bar = median(Q)
   P = as.numeric(rstan::extract(model)$P)
@@ -227,7 +227,7 @@ lik_gef <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
 }
 
-lik_lno <- function(x,linpred,linpred.hat,data.stan) {
+lik_lno <- function(x,linpred,linpred.hat,model,data.stan) {
   sigma = as.numeric(rstan::extract(model)$alpha)
   sigma.hat = median(sigma)
   logf <- matrix(
@@ -245,7 +245,7 @@ lik_lno <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_llo <- function(x,linpred,linpred.hat,data.stan) {
+lik_llo <- function(x,linpred,linpred.hat,model,data.stan) {
   sigma = as.numeric(rstan::extract(model)$alpha)
   sigma.hat = median(sigma)
   logf <- matrix(
@@ -263,7 +263,7 @@ lik_llo <- function(x,linpred,linpred.hat,data.stan) {
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
-lik_rps <- function(x,linpred,linpred.hat,data.stan) {
+lik_rps <- function(x,linpred,linpred.hat,model,data.stan) {
   gamma <- rstan::extract(model)$gamma
   gamma.hat <- apply(gamma, 2, median)
   logf <- data.stan$d * (

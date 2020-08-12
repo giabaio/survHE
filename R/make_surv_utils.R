@@ -47,6 +47,241 @@ make_sim_inla <- function(fit,t,X,nsim,newdata) {
   return(sim)
 }
 
+make_sim_hmc <- function(fit,t,X,nsim,newdata) {
+  # Extracts the model object from the survHE output
+  m <- fit$models[[mod]]
+  
+  # 
+  
+  # And the ancillary parameters (which may or may not exist for a given model)
+  alpha <- as.numeric(rstan::extract(model)$alpha)
+  
+  return(sim)
+}
+
+#   if(fit$method=="hmc") {
+#     beta <- rstan::extract(m)$beta
+#     coefs <- beta
+#     if(fit$models[[mod]]@model_name%in%c("Gamma","GenGamma","GenF")) {
+#       covmat <- fit$misc$data.stan[[mod]]$X_obs
+#     } else {
+#       covmat <- fit$misc$data.stan[[mod]]$X
+#     }
+#     coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
+#     # if (is.null(fit$misc$vars$factors) & is.null(fit$misc$vars$covs)) {
+#     #   coefs <- matrix(beta[,1],nrow=nrow(beta),byrow=T)
+#     # }
+#     if(ncol(coefs)>0) {
+#       if(dist!="RP") {
+#         colnames(coefs) <- colnames(model.matrix(fit$misc$formula,fit$misc$data))
+#       } else {
+#         colnames(coefs) <- colnames(model.matrix(fit$misc$formula,fit$misc$data))[-1]
+#       } 
+#     }
+#     basis <- function (knots, x) {
+#       nx <- length(x)
+#       if (!is.matrix(knots)) 
+#         knots <- matrix(rep(knots, nx), byrow = TRUE, ncol = length(knots))
+#       nk <- ncol(knots)
+#       b <- matrix(nrow = length(x), ncol = nk)
+#       if (nk > 0) {
+#         b[, 1] <- 1
+#         b[, 2] <- x
+#       }
+#       if (nk > 2) {
+#         lam <- (knots[, nk] - knots)/(knots[, nk] - knots[, 1])
+#         for (j in 1:(nk - 2)) {
+#           b[, j + 2] <- pmax(x - knots[, j + 1], 0)^3 - lam[,j + 1] * pmax(x - knots[, 1], 0)^3 - 
+#             (1 - lam[,j + 1]) * pmax(x - knots[, nk], 0)^3
+#         }
+#       }
+#       b
+#     }
+#     
+#     if (nsim==1) { # Computes the survival curve for the average value of all the parameters
+#       S <- list()
+#       sim <- NULL
+#       coefs <- apply(coefs,2,mean)
+#       if(dist=="Exponential") {
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pexp(t,linpred[1,i])))
+#       }
+#       if (dist=="WeibullAF") {
+#         shape <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(j) cbind(t,1-pweibull(t,shape,linpred[1,j])))
+#       }
+#       if (dist=="WeibullPH") {
+#         shape <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pweibullPH(t,shape,linpred[1,i])))
+#       }
+#       if (dist=="Gompertz") {
+#         shape <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgompertz(t,shape,linpred[1,i])))
+#       }
+#       if (dist=="Gamma") {
+#         shape <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgamma(t,shape,linpred[1,i])))
+#       }
+#       if (dist=="GenGamma") {
+#         q <- mean(as.numeric(rstan::extract(m)$Q))
+#         scale <- mean(as.numeric(rstan::extract(m)$sigma))
+#         linpred <- (coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgengamma(t,linpred[1,i],scale,q)))
+#       }
+#       if (dist=="GenF") {
+#         Q <- mean(as.numeric(rstan::extract(m)$Q))
+#         P <- mean(as.numeric(rstan::extract(m)$P))
+#         sigma <- mean(as.numeric(rstan::extract(m)$sigma))
+#         linpred <- (coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pgenf(t,linpred[1,i],sigma,Q,P)))
+#       }
+#       if (dist=="logNormal") {
+#         sigma <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- (coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-plnorm(t,linpred[1,i],sigma)))
+#       }
+#       if (dist=="logLogistic") {
+#         sigma <- mean(as.numeric(rstan::extract(m)$alpha))
+#         linpred <- exp(coefs%*%t(X))
+#         s <- lapply(1:ncol(linpred),function(i) cbind(t,1-pllogis(t,scale=linpred[1,i],shape=sigma)))
+#       }
+#       if (dist=="RP") {
+#         # Computes the knots wrt to the times selected for the analysis
+#         # If there's a time=0, then add a little constant
+#         t[t==0] <- min(0.00001,min(t[t>0]))
+#         B <- basis(fit$misc$data.stan[[mod]]$knots,log(t))
+#         gamma <- apply(rstan::extract(m)$gamma,2,mean)
+#         coefs <- c(0,coefs)
+#         if(nrow(X)==1) {
+#           s <- cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X,knots=fit$misc$data.stan[[mod]]$knots))
+#         } else {
+#           s <- lapply(1:ncol(X),function(i) 
+#             cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma,beta=coefs,X=X[i,],knots=fit$misc$data.stan[[mod]]$knots)))
+#         }
+#       }
+#       S[[1]] <- s
+#     } else {
+#       if (nsim>length(beta)) {nrow=length(beta)}
+#       if(dist=="Exponential") {
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pexp(t,linpred[i,j]))  
+#           })
+#         }) 
+#         sim <- coefs[1:nsim,]
+#       }
+#       if (dist=="WeibullAF") {
+#         shape <- as.numeric(rstan::extract(m)$alpha)
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pweibull(t,shape[i],linpred[i,j]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,shape)[1:nsim,]
+#       }
+#       if (dist=="WeibullPH") {
+#         shape <- as.numeric(rstan::extract(m)$alpha)
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pweibullPH(t,shape[i],linpred[i,j]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,shape)[1:nsim,]
+#       }
+#       if (dist=="Gompertz") {
+#         shape <- as.numeric(rstan::extract(m)$alpha)
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pgompertz(t,shape[i],linpred[i,j]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,shape)[1:nsim,]
+#       }
+#       if (dist=="Gamma") {
+#         shape <- as.numeric(rstan::extract(m)$alpha)
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pgamma(t,shape[i],linpred[i,j]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,shape)[1:nsim,]
+#       }
+#       if (dist=="GenGamma") {
+#         Q <- as.numeric(rstan::extract(m)$Q)
+#         shape <- as.numeric(rstan::extract(m)$sigma)
+#         linpred <- (coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pgengamma(t,linpred[i,j],shape[i],Q[i]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,shape,Q)[1:nsim,]
+#       }
+#       if (dist=="GenF") {
+#         Q <- as.numeric(rstan::extract(m)$Q)
+#         P <- as.numeric(rstan::extract(m)$P)
+#         sigma <- as.numeric(rstan::extract(m)$sigma)
+#         linpred <- (coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pgenf(t,linpred[i,j],sigma[i],Q[i],P[i]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,sigma,Q,P)[1:nsim,]
+#       }
+#       if (dist=="logNormal") {
+#         sigma <- as.numeric(rstan::extract(m)$alpha)
+#         linpred <- (coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-plnorm(t,linpred[i,j],sigma[i]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,sigma)[1:nsim,]
+#       }
+#       if (dist=="logLogistic") {
+#         sigma=as.numeric(rstan::extract(m)$alpha)
+#         linpred <- exp(coefs%*%t(X))
+#         S <- lapply(1:nsim,function(i) {
+#           lapply(1:ncol(linpred),function(j) {
+#             cbind(t,1-pllogis(t,scale=linpred[i,j],shape=sigma[i]))  
+#           })
+#         }) 
+#         sim <- cbind(coefs,sigma)[1:nsim,]
+#       }
+#       if (dist=="RP") {
+#         # Computes the knots wrt to the times selected for the analysis
+#         t[t==0] <- min(0.00001,min(t[t>0]))
+#         B <- basis(fit$misc$data.stan[[mod]]$knots,log(t))
+#         gamma <- rstan::extract(m)$gamma
+#         coefs <- cbind(rep(0,nrow(coefs)),coefs)
+#         if(nrow(X)==1) {
+#           S <- lapply(1:nsim,function(i) {
+#             lapply(1,function(j) {
+#               cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X,knots=fit$misc$data.stan[[mod]]$knots))
+#             })
+#           })
+#         } else {
+#           S <- lapply(1:nsim,function(i) {
+#             lapply(1:ncol(X),function(j) {
+#               cbind(t,1-flexsurv::psurvspline(q=t,gamma=gamma[i,],beta=coefs[i,],X=X[j,],knots=fit$misc$data.stan[[mod]]$knots))
+#             })
+#           })
+#         }
+#         sim <- cbind(coefs[,-1],gamma)[1:nsim,]
+#       }
+#     }
+#   }
+
 rescale.inla <- function(linpred,alpha,distr) {
   if (distr=="wei") {
     shape <- alpha

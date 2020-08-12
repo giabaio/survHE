@@ -73,7 +73,7 @@ runHMC <- function(x,exArgs) {
   }
   
   # Adds a field used in 'make.surv' to indicate the model used
-  model$dlist$name <- d3
+  ###model$dlist$name <- d3
 
   # Finally returns the output
   list(
