@@ -58,92 +58,21 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   #          uses the point estimate for the relevant distributional parameters and computes the resulting survival curve
   # ... = additional options
   
+  # Defines list with optional parameters
   exArgs <- list(...)
+  
+  # Extracts the model object and the data from the survHE output
+  m <- fit$models[[mod]]
+  data <- fit$misc$data
+  # Makes sure the distribution name(s) vector is in a useable format
+  if (fit$method=="hmc") {dist <- m@model_name} else {dist <- fit$models[[mod]]$dlist$name}
+    # Create a vector of times, if the user hasn't provided one, based on the observed data
   if(is.null(t)) {
     t <- sort(unique(fit$misc$km$time))
   }
   
-  m <- fit$models[[mod]]                # Extracts the model object from the survHE output
-  if (fit$method=="hmc") {dist <- m@model_name} else {dist <- fit$models[[mod]]$dlist$name}   # Extracts the name of the distribution fitted
-  
-  n.elements <- ifelse(is.null(newdata),0,length(newdata))
-  n.provided <- unlist(lapply(newdata,function(x) length(x)))
-  
-  # If no newdata are provided then see what to do!
-  data <- fit$misc$data
-  test <- attributes(terms(fit$misc$formula))$term.labels
-  ncovs <- length(test)
-  formula.temp <- as.formula(gsub("inla.surv","Surv",deparse(fit$misc$formula)))
-  Xraw <- model.frame(formula.temp,data=data)
-  is.fac <- sapply(Xraw, is.factor)[-1]
-  w <- (which(sapply(Xraw,is.factor)==1))-1
-  X <- matrix(colMeans(model.matrix(formula.temp,data=data)), nrow = 1)
-  if(fit$method=="inla") {
-    colnames(X) <- rownames(m$summary.fixed)
-  } else {
-    colnames(X) <- colnames(model.matrix(formula.temp,data=data)) #c("Intercept",test)
-  }
-  
-  # newdata is not given (ie = NULL); this implies n.provided=NULL
-  if (n.elements==0) {
-    # If all the covariates are factors and mode_factor = False, then get survival curves for all the combinations
-    if(all(is.fac) & length(is.fac)>0 ) {
-      X <- unique(model.matrix(formula.temp,data=data))
-      nam <- as.matrix(unique(X))
-      for (i in 2:ncol(nam)) {
-        nam[, i] <- paste(colnames(nam)[i],nam[, i], sep = "=")
-      }
-      rownames(X) <- apply(nam, 1, paste, collapse = ",")
-    }
-  }
-  # newdata is a list with many values for the individual profiles
-  if (n.elements>=1) {
-    if (!all(n.provided==ncovs)) {
-      stop("You need to provide data for *all* the covariates specified in the model, in the list 'newdata'")
-    } else {
-      X <- matrix(rep(X,n.elements),nrow=n.elements,byrow=T)
-      if(fit$method=="inla") {
-        colnames(X) <- rownames(m$summary.fixed)
-      } else {
-        colnames(X) <- colnames(model.matrix(formula.temp,data=data))
-      }
-      # Just like flexsurv, if you provide values for the covariates, you have to do so for *all*!
-      names <- unique(unlist(lapply(newdata,function(x) names(x))))
-      positions <- lapply(1:length(names),function(i) which(grepl(names[i],colnames(X))))
-      temp <- matrix(unlist(newdata),nrow=length(newdata),byrow=T)
-      colnames(temp) <- names
-      # Could change the value in X with the value in temp[-w] for the continuous variables
-      contin <- (1:length(names))[-w]
-      # Do this only if there're some continuous covariates!
-      if (length(contin)>0) {
-        for (i in 1:length(contin)) {
-          for (j in 1:n.elements) {
-            X[j,positions[[contin[i]]]] <- temp[j,contin[i]]
-          }
-        }
-      }
-      # And then change the value in X with the factor expansion for the categorical variables, if there are any
-      if (length(w)>0) {
-        for (i in 1:length(w)) {
-          for (j in 1:n.elements) {
-            check <- eval(parse(text=paste0("levels(as.factor(data$",names[w[i]],"))")))
-            if (class(check)=="character") {
-              # check will be 0 or 1 depending on which level of the factor is selected in newdata
-              check <- as.numeric(grepl(temp[j,w[i]],check))
-            } else {
-              check <- eval(parse(text=paste0("temp[j,w[i]]==as.numeric(levels(as.factor(data$",names[w[i]],")))")))
-            }
-            X[j,positions[[w[i]]]] <- check[-1]
-          }
-        }
-      }
-      nam <- as.matrix(unique(X))
-      for (i in 2:ncol(nam)) {
-        nam[, i] <- paste(colnames(nam)[i],nam[, i], sep = "=")
-      }
-      rownames(X) <- apply(nam, 1, paste, collapse = ",")
-    }
-  }
+  # Now creates the profile of covariates for which to compute the survival curves
+  X <- make_profile_surv(formula,data,newdata)
   
   # Now does the simulations
   if(fit$method=="mle") {
