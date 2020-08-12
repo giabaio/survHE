@@ -61,60 +61,34 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   # Defines list with optional parameters
   exArgs <- list(...)
   
-  # Extracts the model object and the data from the survHE output
-  m <- fit$models[[mod]]
+  # Extracts the data from the survHE output
   data <- fit$misc$data
-  # Makes sure the distribution name(s) vector is in a useable format
-  if (fit$method=="hmc") {dist <- m@model_name} else {dist <- fit$models[[mod]]$dlist$name}
-    # Create a vector of times, if the user hasn't provided one, based on the observed data
+  # Create a vector of times, if the user hasn't provided one, based on the observed data
   if(is.null(t)) {
     t <- sort(unique(fit$misc$km$time))
   }
+  # Makes sure the distribution name(s) vector is in a useable format
+  if (fit$method=="hmc") {dist <- m@model_name} else {dist <- fit$models[[mod]]$dlist$name}
+  # Needs to change the name of the distribution if underlying 'flexsurv' value is 'weibull.quiet'
+  dist <- ifelse(dist=="weibull.quiet","weibull",dist)
   
   # Now creates the profile of covariates for which to compute the survival curves
   X <- make_profile_surv(formula,data,newdata)
   
-  # Now does the simulations
-  if(fit$method=="mle") {
-    dist <- ifelse(dist=="weibull.quiet","weibull",dist)
-    S <- sim <-list()
-    if(nsim==1) {
-      S <- lapply(1:n.elements,function(i) summary(m,t=t,newdata=newdata[[i]]))
-      ###S[[1]] <- summary(m,t=t)
-      sim <- NULL
-    } else {
-      if (is.null(newdata)){
-        sim <- lapply(1:dim(X)[1],function(i) flexsurv::normboot.flexsurvreg(m,B=nsim,X=matrix(X[i,-1],nrow=1)))
-      } else {
-        sim <- lapply(1:n.elements,function(i) flexsurv::normboot.flexsurvreg(m,B=nsim,newdata=newdata[[i]]))
-      }
-      txt1 <- paste("x[",1:dim(sim[[1]])[2],"]",sep="",collapse=",")
-      if (dist=="survspline") {
-        if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
-        if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
-        if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
-        if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
-        tmp <- lapply(1:length(sim), function(i) {
-          matrix(unlist(
-            lapply(1:nsim,function(j) {
-              1-flexsurv::psurvspline(t,gamma=sim[[i]][j,],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)
-            })
-          ),nrow=nsim,byrow=T)
-        })
-      } else {
-        tmp <- lapply(1:length(sim), function(i) {
-          eval(parse(text=paste0("t(apply(sim[[",i,"]],1,function(x) d",dist,"(t,",txt1,")/h",dist,"(t,",txt1,")))")))     
-        }) 
-      }
-      S <- list(list())
-      S <- lapply(1:nsim,function(i) {
-        lapply(1:length(sim),function(j) {
-          cbind(t,tmp[[j]][i,])
-        })
-      })
-    }
-  } 
+  # Draws a sample of nsim simulations from the distribution of the model parameters
+  sim <- do.call(paste0("make_sim_",fit$method),
+                 args=list(fit=fit,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist)
+         )
+  # Computes the survival curves
+  S <- do.call(compute_surv_curve,
+               args=list(sim=sim,exArgs=exArgs,nsim=nsim,dist=dist,t=t) 
+        )
   
+  # Formats the output
+  list(S=S,sim=sim,nsim=nsim,mat=mat,des.mat=X,times=t)
+}
+  
+ 
   # Re-defines inla.contrib.sd --- in case it's not in the main INLA package anymore
   inla.contrib.sd = function(model, nsamples=1000) {
     ## contributed by Gianluca Baio <gianluca@stats.ucl.ac.uk>

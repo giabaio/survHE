@@ -46,7 +46,8 @@ make_profile_surv <- function(formula,data,newdata) {
   # If formula is in 'inla' terms now change it back to 'flexsurv' terms
   formula_temp <- as.formula(gsub("inla.surv","Surv",deparse(fit$misc$formula)))
   # Computes the "average" profile of the covariates
-  X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean)
+  X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean) 
+  colnames(X)=colnames(covs)
   
   if(n.elements==0){
     # If all the covariates are factors, then get survival curves for *all* the combinations
@@ -64,8 +65,8 @@ make_profile_surv <- function(formula,data,newdata) {
       # Creates a design matrix containing the information provided in 'newdata'
       X <- bind_rows(lapply(newdata,function(x) as_tibble(x)))
       # But if there's an intercept in the model matrix, then add it
-      if ("(Intercept)" %in% colnames(mm)) {
-        X %>% mutate(`(Intercept)`=1) %>% select(`(Intercept)`,everything())
+      if ("(Intercept)" %in% colnames(model.matrix(formula,data))) {
+        X <- X %>% mutate(`(Intercept)`=1) %>% select(`(Intercept)`,everything())
       }
     }
   }
