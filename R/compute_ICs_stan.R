@@ -26,7 +26,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   }
   
   # Now computes the densities using the helper functions
-  out=do.call(what=paste0("lik_",distr3),args=list(distr3,linpred,linpred.hat,alpha,data.stan))
+  out=do.call(what=paste0("lik_",distr3),args=list(distr3,linpred,linpred.hat,model,data.stan))
   # Extracts relevant variables from the list (See if there's a better way to do it!)
   logf=out$logf
   logf.hat=out$logf.hat

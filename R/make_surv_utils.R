@@ -10,11 +10,8 @@
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords 
-make_sim_mle <- function(fit,t,X,nsim,newdata) {
+make_sim_mle <- function(m,t,X,nsim,newdata,...) {
   # Simulates from the distribution of the model parameters
-  # Extracts the model object from the survHE output
-  m <- fit$models[[mod]]
-  
   # If the user has not provided any new data, then *all* the possible covariates are averaged out and so there's
   # only one survival curve computed
   if(is.null(newdata)) {
@@ -27,11 +24,8 @@ make_sim_mle <- function(fit,t,X,nsim,newdata) {
   return(sim)
 }
 
-make_sim_inla <- function(fit,t,X,nsim,newdata) {
+make_sim_inla <- function(m,t,X,nsim,newdata,...) {
   # Simulates from the distribution of the model parameters
-  # Extracts the model object from the survHE output
-  m <- fit$models[[mod]]
-  
   # Selects the variables to sample from the posterior distributions (excludes the linear predictor)
   selection <- eval(parse(text=paste0('list(Predictor=-c(1:',nrow(data),'),',
                    paste0("`",colnames(model.matrix(formula,data)),"`",'=1',collapse=','),')')))
@@ -47,16 +41,28 @@ make_sim_inla <- function(fit,t,X,nsim,newdata) {
   return(sim)
 }
 
-make_sim_hmc <- function(fit,t,X,nsim,newdata) {
+make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
   # Extracts the model object from the survHE output
-  m <- fit$models[[mod]]
+  exArgs <- list(...)
+  distr <- exArgs$name
   
-  # 
-  
+  # Extracts the coefficients for the covariates
+  beta <- rstan::extract(m)$beta
   # And the ancillary parameters (which may or may not exist for a given model)
   alpha <- as.numeric(rstan::extract(model)$alpha)
   
   return(sim)
+}
+
+function(fit,mod,dist) {
+  m <- fit$models[[mod]]
+  beta <- rstan::extract(m)$beta
+  if(dist%in%c("gam","gga","gef")) {
+    covs <- fit$misc$data.stan[[mod]]$X_obs
+  } else {
+    covs <- fit$misc$data.stan[[mod]]$X
+  }
+  coefs=matrix(coefs[,apply(covmat,2,function(x) 1-all(x==0))==1],nrow=nrow(beta))
 }
 
 #   if(fit$method=="hmc") {

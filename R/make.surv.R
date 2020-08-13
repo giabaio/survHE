@@ -61,7 +61,8 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   # Defines list with optional parameters
   exArgs <- list(...)
   
-  # Extracts the data from the survHE output
+  # Extracts the model object and the data from the survHE output
+  m <- fit$models[[mod]]
   data <- fit$misc$data
   # Create a vector of times, if the user hasn't provided one, based on the observed data
   if(is.null(t)) {
@@ -69,13 +70,15 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   }
   # Makes sure the distribution name(s) vector is in a useable format
   dist <- fit$misc$model_name
+  # This extra input is needed for HMC only
+  if(method=="hmc"){name <- fit$models[[mod]]@model_name} else {name <- NULL}
   
   # Now creates the profile of covariates for which to compute the survival curves
   X <- make_profile_surv(formula,data,newdata)
   
   # Draws a sample of nsim simulations from the distribution of the model parameters
   sim <- do.call(paste0("make_sim_",fit$method),
-                 args=list(fit=fit,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist)
+                 args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist)
          )
   # Computes the survival curves
   S <- do.call(compute_surv_curve,
