@@ -53,20 +53,20 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
   
   # Extracts the model object from the survHE output
   exArgs <- list(...)
-  dist <- exArgs$name
+  dist <- exArgs$dist
   nsim <- exArgs$nsim
   
   # Stores the values returned by rstan into the list 'sim'
   sim <- lapply(1:nrow(X),function(x) do.call(paste0("rescale_hmc_",dist),
                                               args=list(m,X)))
-  if(nsim>nrow(nrow(sim[[1]]))) {
+  if(nsim>m@stan_args[[1]]$iter) {
     stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
   }
   if(nsim==1) {
     # If the user requested only 1 simulation, then take the mean value
     sim <- lapply(sim,function(x) apply(x,2,mean))
   }
-  if(nsim<nrow(sim[[1]])) {
+  if(nsim<m@stan_args[[1]]$iter) {
     # If the user selected a number of simulation < the one from rstan, then select a random sample 
     sim <- lapply(sim,function(x) x[sample(1:nrow(sim[[1]]),nsim,replace=FALSE),])
   }
@@ -76,7 +76,7 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
 rescale_hmc_exp <- function(m,X){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Exponential distribution
-  sim <- exp(rstan::extract(m)$beta %*% t(X)); 
+  sim <- as.matrix(exp(rstan::extract(m)$beta %*% t(X))); 
   colnames(sim) <- "rate"
   return(sim)
 }
