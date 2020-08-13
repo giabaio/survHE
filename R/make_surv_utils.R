@@ -42,9 +42,30 @@ make_sim_inla <- function(m,t,X,nsim,newdata,...) {
 }
 
 make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
+  #### TO DO
+  # need to filter the cases 
+  # when nsim=1, use all simulations from stan, but then take mean value of parameters
+  # when nsim=number of simulations from stan, use all
+  # when nsim<number of simulations from stan, then use a sample of nsim from the original ones
+  # when nsim>number of simulations from stan, return error
+  #
+  # Then need to figure out a clever way to derive the linpred and the other params
+  
   # Extracts the model object from the survHE output
   exArgs <- list(...)
   distr <- exArgs$name
+  nsim <- exArgs$nsim
+  
+  # HERE DO THE LINPRED AND GET ALL THE PARAMS
+  if (nsim==1 | nsim==nrow(beta)) {
+    # HERE THINGS ARE EASY. GET THE WHOLE THING AND EITHER USE IT OR TAKE MEANS
+  }
+  if (nsim<nrow(beta)) {
+    # HERE SAMPLE nsim FROM nrow(beta) AND DO THE SAME AS ABOVE
+  }
+  if (nsim>nrow(beta)) {
+    stop()
+  }
   
   # Extracts the coefficients for the covariates
   beta <- rstan::extract(m)$beta

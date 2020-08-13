@@ -78,7 +78,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   
   # Draws a sample of nsim simulations from the distribution of the model parameters
   sim <- do.call(paste0("make_sim_",fit$method),
-                 args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist)
+                 args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,name=name,nsim=nsim)
          )
   # Computes the survival curves
   S <- do.call(compute_surv_curve,
