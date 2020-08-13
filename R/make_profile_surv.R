@@ -44,7 +44,7 @@ make_profile_surv <- function(formula,data,newdata) {
   nfacts <- covs %>% select(where(is.factor)) %>% with(ncol(.))
   
   # If formula is in 'inla' terms now change it back to 'flexsurv' terms
-  formula_temp <- as.formula(gsub("inla.surv","Surv",deparse(fit$misc$formula)))
+  formula_temp <- as.formula(gsub("inla.surv","Surv",deparse(formula)))
   # Computes the "average" profile of the covariates
   X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean) 
   colnames(X)=colnames(covs)
