@@ -23,6 +23,8 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   if (distr3 %in% c("exp", "wei", "wph", "gom", "lno", "llo")) {
     linpred <- beta%*%t(data.stan$X)
     linpred.hat <- beta.hat%*%t(data.stan$X)
+  } else {
+    linpred <- linpred.hat <- NULL
   }
   
   # Now computes the densities using the helper functions

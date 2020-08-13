@@ -53,18 +53,22 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
   
   # Extracts the model object from the survHE output
   exArgs <- list(...)
-  distr <- exArgs$name
+  dist <- exArgs$name
   nsim <- exArgs$nsim
   
-  # HERE DO THE LINPRED AND GET ALL THE PARAMS
-  if (nsim==1 | nsim==nrow(beta)) {
-    sim <- lapply(1:ncol(beta),function(x) do.call(paste0("rescale_hmc_",)))
+  # Stores the values returned by rstan into the list 'sim'
+  sim <- lapply(1:nrow(X),function(x) do.call(paste0("rescale_hmc_",dist),
+                                              args=list(m,X)))
+  if(nsim>nrow(nrow(sim[[1]]))) {
+    stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
   }
-  if (nsim<nrow(beta)) {
-    # HERE SAMPLE nsim FROM nrow(beta) AND DO THE SAME AS ABOVE
+  if(nsim==1) {
+    # If the user requested only 1 simulation, then take the mean value
+    sim <- lapply(sim,function(x) apply(x,2,mean))
   }
-  if (nsim>nrow(beta)) {
-    stop()
+  if(nsim<nrow(sim[[1]])) {
+    # If the user selected a number of simulation < the one from rstan, then select a random sample 
+    sim <- lapply(sim,function(x) x[sample(1:nrow(sim[[1]]),nsim,replace=FALSE),])
   }
   return(sim)
 }
