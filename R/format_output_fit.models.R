@@ -30,7 +30,8 @@ format_output_fit.models <- function(output,method,distr) {
     time2run= unlist(lapply(output, function(x) x$time2run)),
     formula=formula,
     km=make_KM(formula,data),
-    data=data
+    data=data,
+    model_name=unlist(lapply(output,function(x) x$model_name))
   )
   
   # HMC-specific extra output

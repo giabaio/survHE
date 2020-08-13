@@ -58,7 +58,7 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
   
   # HERE DO THE LINPRED AND GET ALL THE PARAMS
   if (nsim==1 | nsim==nrow(beta)) {
-    # HERE THINGS ARE EASY. GET THE WHOLE THING AND EITHER USE IT OR TAKE MEANS
+    sim <- lapply(1:ncol(beta),function(x) do.call(paste0("rescale_hmc_",)))
   }
   if (nsim<nrow(beta)) {
     # HERE SAMPLE nsim FROM nrow(beta) AND DO THE SAME AS ABOVE
@@ -72,8 +72,19 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
 rescale_hmc_exp <- function(m,X){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Exponential distribution
-  linpred <- rstan::extract(m)$beta %*% X
-  
+  sim <- exp(rstan::extract(m)$beta %*% t(X)); 
+  colnames(sim) <- "rate"
+  return(sim)
+}
+
+rescale_hmc_wei <- function(m,X){
+  # Rescales the original simulations to the list sim to be used by 'make.surv'
+  # Weibull distribution
+  shape <- as.numeric(rstan::extract(m)$alpha)
+  scale <- exp(rstan::extract(m)$beta %*% t(X))
+  sim <- cbind(shape,scale) 
+  colnames(sim) <- c("shape","scale")
+  return(sim)
 }
 
 function(fit,mod,dist) {
