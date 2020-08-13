@@ -66,13 +66,14 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
   if (nsim>nrow(beta)) {
     stop()
   }
-  
-  # Extracts the coefficients for the covariates
-  beta <- rstan::extract(m)$beta
-  # And the ancillary parameters (which may or may not exist for a given model)
-  alpha <- as.numeric(rstan::extract(model)$alpha)
-  
   return(sim)
+}
+
+rescale_hmc_exp <- function(m,X){
+  # Rescales the original simulations to the list sim to be used by 'make.surv'
+  # Exponential distribution
+  linpred <- rstan::extract(m)$beta %*% X
+  
 }
 
 function(fit,mod,dist) {
