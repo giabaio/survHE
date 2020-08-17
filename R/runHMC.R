@@ -15,6 +15,10 @@ runHMC <- function(x,exArgs) {
   if (!isTRUE(requireNamespace("rstan", quietly = TRUE))) {
     stop("You need to install the R package 'rstan'. Please run in your R terminal:\n install.packages('rstan')")
   }
+  
+  # Loads the model formula
+  formula <- exArgs$formula
+  
   # Loads in the available models in each method
   availables <- load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs

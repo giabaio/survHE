@@ -15,10 +15,14 @@ runMLE <- function(x,exArgs) {
   if(!isTRUE(requireNamespace("flexsurv",quietly=TRUE))) {
     stop("You need to install the R package 'flexsurv'. Please run in your R terminal:\n install.packages('flexsurv')")
   }
+  # Loads the model formula
+  formula <- exArgs$formula
+  
   # Loads in the available models in each method
   availables <- load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
   d3 <- manipulate_distributions(x)$distr3
+  x <- manipulate_distributions(x)$distr
   
   tic <- proc.time()
   # If user selects RPS model, then could also provide some optional arguments - uses flexsurv defaults

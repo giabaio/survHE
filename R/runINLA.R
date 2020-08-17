@@ -21,6 +21,10 @@ runINLA <- function(x,exArgs) {
   #     attachNamespace("INLA")
   #   }
   # }
+  
+  # Loads the model formula
+  formula <- exArgs$formula
+  
   # Loads in the available models in each method
   availables <- load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs

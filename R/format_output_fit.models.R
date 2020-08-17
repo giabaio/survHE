@@ -12,7 +12,7 @@
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
-format_output_fit.models <- function(output,method,distr) {
+format_output_fit.models <- function(output,method,distr,formula) {
   
   # Uses the helper 'manipulated_distributions' to create the vector labs
   labs <- manipulate_distributions(distr)$labs

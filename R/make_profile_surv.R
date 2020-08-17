@@ -49,11 +49,15 @@ make_profile_surv <- function(formula,data,newdata) {
   X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean) 
   colnames(X)=colnames(covs)
   
+  # The way the object X *must* be formatted depends on which way it's been generated.
+  # The point is that it *always* has to be a matrix for other functions to process
   if(n.elements==0){
     # If all the covariates are factors, then get survival curves for *all* the combinations
-    if(nfacts==ncovs) {
-      X <- covs %>% unique(.)
-    }  
+    if(nfacts==ncovs & nfacts>0) {
+      X <- apply(covs %>% unique(.),2,as.numeric)
+    } else {
+      X <- as.matrix(X,nrow=nrow(X),ncol=ncol(X))
+    }
   }
   
   # If 'newdata' provides a specific (set of) profile(s), then use that
@@ -68,8 +72,9 @@ make_profile_surv <- function(formula,data,newdata) {
       if ("(Intercept)" %in% colnames(model.matrix(formula,data))) {
         X <- X %>% mutate(`(Intercept)`=1) %>% select(`(Intercept)`,everything())
       }
+      X <- as.matrix(X)
     }
   }
   # Returns the output (the matrix with the covariates profile)
-  as.matrix(X)
+  return(X)
 }

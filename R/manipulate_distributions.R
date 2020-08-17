@@ -26,7 +26,9 @@ manipulate_distributions <- function(x){
     "gef" = c("generalisedf", "generalizedf", "genf", "gef"),
     "gof" = c("genf.orig", "gof"),
     "gom" = c("gompertz", "gpz", "gomp", "gompz", "gom"),
-    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps"))
+    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps")
+  )
+  # Human readable label
   labelTable = c(
     "exp" = "Exponential",
     "wei" = "Weibull (AFT)",
@@ -39,6 +41,21 @@ manipulate_distributions <- function(x){
     "gom" = "Gompertz",
     "rps" = "Royston-Parmar",
     "pow" = "Poly-Weibull")
+  # Labels used by R to define p..., r... and d... commands
+  labelR = c(
+    "exp" = "exp",
+    "wei" = "weibull", 
+    "wph" = "weibullPH", 
+    "gam" = "gamma",
+    "lno" = "lnorm", 
+    "llo" = "llogis",
+    "gga" = "gengamma", 
+    "ggo" = "gengamma.orig",
+    "gef" = "genf",
+    "gof" = "genf.orig",
+    "gom" = "gompertz",
+    "rps" = "survspline"
+  )
   
   distr = gsub("[ ]*[-]*", "", tolower(x))
   isDistrUnmatched = which(!sapply(
@@ -53,7 +70,8 @@ manipulate_distributions <- function(x){
   for (i in 1:length(distr)) {
     distr3[i] <- names(which(unlist(lapply(matchTable,function(x) distr[i]%in%x))))  
   }
-  labs = unname(labelTable[distr3])
+  labs <- unname(labelTable[distr3])
+  distr <- unname(labelR[distr3])
   
   list(distr=distr,distr3=distr3,labs=labs)
 }

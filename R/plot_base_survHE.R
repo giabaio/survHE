@@ -189,7 +189,7 @@ plot_base_survHE <- function(...) {
     x$method <- method[i]
     make.surv(x,nsim=1,t=t,mod=i,newdata=newdata)
   })
-  
+
   if (!is.null(newdata)) {
     # Needs to distinguish between mle and non-mle because of how make.surv saves the S list
     options(digits=5,nsmall=2)
@@ -219,8 +219,10 @@ plot_base_survHE <- function(...) {
   if(is.null(newdata)) {
     # With no newdata this works!
     for (i in 1:nmodels) {
-      pts <- lapply(res[[i]]$S[[1]],function(m) cbind(m[,1],m[,2]))
-      lapply(1:length(pts), function(x) points(pts[[x]],t="l",col=colors[i],lty=x))
+      #####pts <- lapply(res[[i]]$S[[1]],function(m) cbind(m[,1],m[,2]))
+      #####lapply(1:length(pts), function(x) points(pts[[x]],t="l",col=colors[i],lty=x))
+      pts <- lapply(res[[i]]$S[[1]],function(m) m %>% as.matrix())
+      lapply(1:length(pts), function(x) points(pts[[x]]$t,pts[[x]]$S,t="l",col=colors[i],lty=x))
     }
     if(legend) {legend(x="topright",legend=labs,lwd=2,bty="n",col=col,cex=cex.lab)}
   }

@@ -39,8 +39,12 @@
 #' @export plot.survHE
 plot.survHE <- function(...) {
   exArgs=list(...)
-  if(exists("graph",where=exArgs)){graph=exArgs$graph} else {graph="base"}
+  
+  if(exists("graph",where=exArgs)){graph=exArgs$graph} else {graph="ggplot"}
   if(graph=="base") {
-    do.call(survHE:::plot_base_survHE,exArgs)
+    do.call(plot_base_survHE,exArgs)
+  }
+  if(graph=="ggplot") {
+    do.call(plot_ggplot_survHE,exArgs)
   }
 }

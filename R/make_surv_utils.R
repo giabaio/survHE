@@ -10,12 +10,13 @@
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords 
-make_sim_mle <- function(m,t,X,nsim,newdata,...) {
+make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
   # Simulates from the distribution of the model parameters
   # If the user has not provided any new data, then *all* the possible covariates are averaged out and so there's
   # only one survival curve computed
   if(is.null(newdata)) {
     sim <- lapply(1:dim(X)[1],function(i) flexsurv::normboot.flexsurvreg(m,B=nsim,X=matrix(X[i,-1],nrow=1)))
+    #sim <- lapply(1:dim(X)[1],function(i) flexsurv::normboot.flexsurvreg(m,B=nsim,X=X))
   } 
   # If the user specifies a profile of covariates (in the list 'newdata') then use that. In this case
   if(!is.null(newdata)) {
@@ -24,131 +25,131 @@ make_sim_mle <- function(m,t,X,nsim,newdata,...) {
   return(sim)
 }
 
-make_sim_inla <- function(m,t,X,nsim,newdata,...) {
+make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
   # Simulates from the distribution of the model parameters
+  
+  exArgs_inla <- list(...)
   # Selects the variables to sample from the posterior distributions (excludes the linear predictor)
-  selection <- eval(parse(text=paste0('list(Predictor=-c(1:',nrow(data),'),',
-                   paste0("`",colnames(model.matrix(formula,data)),"`",'=1',collapse=','),')')))
+  selection <- eval(parse(text=paste0('list(Predictor=-c(1:',nrow(exArgs_inla$data),'),',
+                   paste0("`",colnames(model.matrix(exArgs_inla$formula,exArgs_inla$data)),"`",'=1',collapse=','),')')))
   # Runs INLA to get nsim samples from the posterior of the parameters 
-  jpost <- INLA:::inla.posterior.sample(nsim,m,selection=selection)
+  jpost <- INLA::inla.posterior.sample(nsim,m,selection=selection)
   # Then computes the linear predictor
   linpred <- matrix(unlist(lapply(jpost,function(x){x$latent})),ncol=length(jpost[[1]]$latent),nrow=nsim,byrow=T)%*%t(X)
   # And the ancillary parameters (which may or may not exist for a given model)
-  alpha <- matrix(unlist(lapply(jpost,function(x){x$hyperpar})),ncol=length(jpost[[1]]$hyperpar),nrow=nsim,byrow=T)
+  if(!is.null(jpost[[1]]$hyperpar)) {
+    alpha <- matrix(unlist(lapply(jpost,function(x){x$hyperpar})),ncol=length(jpost[[1]]$hyperpar),nrow=nsim,byrow=T)
+  } else {
+    alpha <- 0
+  }
   
   # Now uses the helper function to rescale the parameters and retrieve the correct simulations
-  sim <- lapply(1:ncol(linpred),function(x) rescale.inla(linpred[,x],alpha,m$dlist$name))
+  sim <- lapply(1:ncol(linpred),function(x) rescale.inla(linpred[,x],alpha,dist))
   return(sim)
 }
 
-make_sim_hmc <- function(m,t,X,nsim,newdata,...) {
-  #### TO DO
-  # need to filter the cases 
-  # when nsim=1, use all simulations from stan, but then take mean value of parameters
-  # when nsim=number of simulations from stan, use all
-  # when nsim<number of simulations from stan, then use a sample of nsim from the original ones
-  # when nsim>number of simulations from stan, return error
-  #
-  # Then need to figure out a clever way to derive the linpred and the other params
-  
+make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
+
   # Extracts the model object from the survHE output
-  exArgs <- list(...)
-  dist <- exArgs$dist
-  nsim <- exArgs$nsim
+  iter_stan <- m@stan_args[[1]]$iter
   
+  linpred <- rstan::extract(m)$beta %*% t(X)
   # Stores the values returned by rstan into the list 'sim'
-  sim <- lapply(1:nrow(X),function(x) do.call(paste0("rescale_hmc_",dist),
-                                              args=list(m,X)))
-  if(nsim>m@stan_args[[1]]$iter) {
+  sim <- lapply(1:nrow(X),function(x) {
+    do.call(paste0("rescale_hmc_",dist),
+            args=list(m,X,linpred[,x]))
+  })
+
+  if(nsim>iter_stan) {
     stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
   }
   if(nsim==1) {
     # If the user requested only 1 simulation, then take the mean value
-    sim <- lapply(sim,function(x) apply(x,2,mean))
+    sim <- lapply(sim,function(x) as.matrix(as_tibble(x) %>% summarise_all(mean),nrow=1,ncol=ncol(x)))
   }
-  if(nsim<m@stan_args[[1]]$iter) {
+  if(nsim>1 & nsim<iter_stan) {
     # If the user selected a number of simulation < the one from rstan, then select a random sample 
-    sim <- lapply(sim,function(x) x[sample(1:nrow(sim[[1]]),nsim,replace=FALSE),])
+    sim <- lapply(sim,function(x) as.matrix(as_tibble(x) %>% sample_n(nsim,replace=FALSE),nrow=nsim,ncol=ncol(x)))
   }
   return(sim)
 }
 
-rescale_hmc_exp <- function(m,X){
+rescale_hmc_exp <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Exponential distribution
-  sim <- as.matrix(exp(rstan::extract(m)$beta %*% t(X))); 
+  sim <- as.matrix(exp(linpred)) # exp(rstan::extract(m)$beta %*% t(X)); 
   colnames(sim) <- "rate"
   return(sim)
 }
 
-rescale_hmc_wei <- function(m,X){
+rescale_hmc_wei <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  scale <- exp(rstan::extract(m)$beta %*% t(X))
+  scale <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(shape,scale) 
   colnames(sim) <- c("shape","scale")
   return(sim)
 }
 
-rescale_hmc_wph <- function(m,X){
+rescale_hmc_wph <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull PH distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  scale <- exp(rstan::extract(m)$beta %*% t(X))
+  scale <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(shape,scale) 
   colnames(sim) <- c("shape","scale")
   return(sim)
 }
 
-rescale_hmc_gom <- function(m,X){
+rescale_hmc_gom <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gompertz distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  rate <- exp(rstan::extract(m)$beta %*% t(X))
+  rate <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(shape,rate) 
   colnames(sim) <- c("shape","rate")
   return(sim)
 }
 
-rescale_hmc_gam <- function(m,X){
+rescale_hmc_gam <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gamma distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  rate <- 1/exp(rstan::extract(m)$beta %*% t(X))
+  rate <- 1/exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(shape,rate) 
   colnames(sim) <- c("shape","rate")
   return(sim)
 }
 
-rescale_hmc_gga <- function(m,X){
+rescale_hmc_gga <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised Gamma distribution
   Q <- as.numeric(rstan::extract(m)$Q)
   sigma <- as.numeric(rstan(extract(m)$sigma))
-  mu <- exp(rstan::extract(m)$beta %*% t(X))
+  mu <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(mu,sigma,Q) 
   colnames(sim) <- c("mu","sigma","Q")
   return(sim)
 }
 
-rescale_hmc_gef <- function(m,X){
+rescale_hmc_gef <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised F distribution
   Q <- as.numeric(rstan::extract(m)$Q)
   P <- as.numeric(rstan::extract(m)$P)
   sigma <- as.numeric(rstan(extract(m)$sigma))
-  mu <- exp(rstan::extract(m)$beta %*% t(X))
+  mu <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
   sim <- cbind(mu,sigma,Q) 
   colnames(sim) <- c("mu","sigma","Q","P")
   return(sim)
 }
 
-rescale_hmc_lno <- function(m,X){
+rescale_hmc_lno <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
   sdlog <- as.numeric(rstan::extract(m)$alpha)
-  meanlog <- rstan::extract(m)$beta %*% t(X)
+  meanlog <- linpred #rstan::extract(m)$beta %*% t(X)
   sim <- cbind(meanlog,sigma) 
   colnames(sim) <- c("meanlog","sdlog")
   return(sim)
@@ -163,6 +164,21 @@ rescale_hmc_llo <- function(m,X){
   colnames(sim) <- c("shape","scale")
   return(sim)
 }
+
+rescale_hmc_rps <- function(m,X,linpred) {
+  # Rescales the original simulations to the list sim to be used by 'make.surv'
+  # RPS
+  gamma <- rstan::extract(m)$gamma
+  # If X has an intercept needs to remove it as RPS doesn't have one
+  if(any(grepl("Intercept",colnames(X)))) {
+    X <- as.matrix(as_tibble(X) %>% select(-`(Intercept)`))
+  }
+  offset <- linpred #rstan::extract(m)$beta %*% t(X) 
+  sim <- cbind(offset,gamma)
+  colnames(sim) <- c("offset",paste0("gamma",1:ncol(gamma)))
+  return(sim)
+}
+
 
 rescale.inla <- function(linpred,alpha,distr) {
   if (distr=="wei") {
@@ -179,7 +195,7 @@ rescale.inla <- function(linpred,alpha,distr) {
     colnames(sim) <- c("shape","scale")
   }
   if (distr=="exp") {
-    sim <- exp(linpred)
+    sim <- as.matrix(exp(linpred))
     colnames(sim) <- "rate" 
   }
   if (distr=="llo") {
@@ -188,7 +204,7 @@ rescale.inla <- function(linpred,alpha,distr) {
     sim <- cbind(shape,scale) 
     colnames(sim) <- c("shape","scale")
   }
-  if (m$dlist$name=="lno") {
+  if (distr=="lno") {
     mulog <- linpred
     sdlog <- 1/sqrt(alpha)
     sim <- cbind(mulog,sdlog) 
@@ -199,23 +215,52 @@ rescale.inla <- function(linpred,alpha,distr) {
 
 compute_surv_curve <- function(sim,exArgs,nsim,dist,t) {  
   # Computes the survival curves
-  args=args_surv()
+  args <- args_surv()
+  distr <- manipulate_distributions(dist)$distr 
   
-  # RPS-related options
-  if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
-  if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
-  if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
-  if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
-  S <- lapply(sim,function(x) {
-    cbind(t,matrix(
-      unlist(
-        lapply(1:nsim,function(i) {
-          1-do.call(paste0("p",dist),args=eval(parse(text=args[[dist]])))
-        })
-      ),nrow=length(t),ncol=nsim,byrow=TRUE)
-    )
-  })
-  return(S)
+  if(dist=="rps") {
+    # RPS-related options
+    if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
+    if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
+    #if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
+    if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
+    knots <- exArgs$data.stan$knots
+    mat <- lapply(sim,function(x) {
+      gamma=as_tibble(x) %>% select(contains("gamma"))
+      offset=as_tibble(x) %>% select(offset)
+      matrix(
+        unlist(
+          lapply(1:nsim,function(i){
+            1-do.call(psurvspline,args=list(
+              q=t,
+              gamma=as.numeric(gamma %>% slice(i)),
+              beta=0,
+              X=0,
+              knots=knots,
+              scale=scale,
+              timescale=timescale,
+              offset=as.numeric(offset%>% slice(i)),
+              log=log
+            ))
+          })
+        )
+      )
+    })
+  } else {
+    mat <- lapply(sim,function(x) {
+      matrix(
+        unlist(
+          lapply(1:nsim,function(i) {
+            1-do.call(paste0("p",distr),args=eval(parse(text=args[[distr]])))
+          })
+        ),nrow=length(t),ncol=nsim,byrow=FALSE
+      )
+    })
+  }
+  for (i in 1:length(mat)){colnames(mat[[i]])=paste0("S_",1:nsim)}
+  mat <- mat %>% lapply(function(x) bind_cols(as_tibble(t),as_tibble(x)) %>% rename(t=value))
+
+  return(mat)
 }
 
 # Utility function to define the arguments needed to compute the cumulative distribution,

@@ -40,59 +40,132 @@
 #'     distr="exp",method="mle")
 #' plot(mle)
 #' 
-plot_ggplot_survHE <- function(x,mod=NULL,add.km=TRUE,n.risk=FALSE) {
+plot_ggplot_survHE <- function(x,mod=NULL,add.km=TRUE,n.risk=FALSE,newdata=NULL,exArgs) {
+  
+  if (is.null(exArgs$t)) {t <- sort(unique(x$misc$km$time))} else {t <- exArgs$t}
+  if (is.null(exArgs$xlab)) {xl <- "time"} else {xl <- exArgs$xlab}
+  if (is.null(exArgs$ylab)) {yl <- "Survival"} else {yl <- exArgs$ylab}
+  if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<-exArgs$lab.trt}
+  if (is.null(exArgs$cex.trt)) {cex.trt <- 0.8} else {cex.trt <- exArgs$cex.trt}
+  if (is.null(exArgs$n.risk)) {nrisk <- FALSE} else {nrisk <- exArgs$n.risk}
+  if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
+  if (is.null(exArgs$newdata)) {newdata <- NULL} else {newdata <- exArgs$newdata}
+  if (is.null(exArgs$cex.lab)) {cex.lab <- 0.8} else {cex.lab <- exArgs$cex.lab}
+  if (is.null(exArgs$legend)) {legend=TRUE} else (legend=FALSE)
+  if (exists("colour",exArgs)) {colour=exArgs$colour} else (colour="blue")
+  
+  
   # First checks the class of the input
   if(class(x)=="survHE") {
     # If x is a 'survHE' object, then there's only one object to deal with
-    mods <- x$models
-    totmodels <- length(mods)
-    method <- rep(x$method,totmodels)
-    aic <- unlist(x$model.fitting$aic)
-    bic <- unlist(x$model.fitting$bic)
-    dic <- unlist(x$model.fitting$dic)
-    # Is this only one model?
+    totmodels <- length(x$models)
+    
     if(totmodels==1) {
-      
-    } else if (totmodels>1) {
-      if(is.null(mod)) {
-        # If 'add.km' is TRUE, then prepares to plot the KM curve
-        if(add.km) {
-          # Needs to hack the formula saved in the km object under $misc
-          # otherwise ggsurvplot will complain
-          x$misc$km$call$formula=as.formula(deparse(formula))
-          kmplot <- survminer::ggsurvplot(fit=x$misc$km,data=x$misc$data,
-                                          conf.int=TRUE,
-                                          risk.table = n.risk,        # Add risk table?
-                                          risk.table.col = "strata",
-                                          palette = c("#E7B800", "#2E9FDF"),
-                                          legend.labs = c("Controls", "Treated"),
-                                          risk.table.height = 0.25, # Useful to change when you have multiple groups
-                                          ggtheme = ggplot2::theme_bw()
-          ) 
-        }
-        # Now needs to add the survival curves for the models (with no interval estimate in this case)
-        
-        
-        mod=length(mods)
-        
-      } else {
-        mod=mod
-      }
-      
     }
-    
-    if(totmodels>1){
-      if (!is.null(exArgs$mod)) {which.model <- exArgs$mod} else {which.model <- 1:length(mods)}
-      mods <- lapply(which.model,function(i) mods[[i]])
-      method <- method[which.model]
-      aic <- aic[which.model]
-      bic <- bic[which.model]
-      dic <- dic[which.model]
-    }
-  } else if(class(x)=="list") {
-    # If x is a list then need to check all the elements are in fact
-    # 'survHE' objects and then process then one by one, adding to the 
-    # layered graph
-    
+  surv.curv
   }
+}
+
+
+make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata",
+                         palette=NULL,legend.labs=NULL) {
+  # Helper function to plot the KM curve 
+  if(is.null(palette)) {
+    if (length(x$misc$km$strata)>0) {
+      greyscale=colorRampPalette(c("grey20","grey80"))
+      palette=greyscale(length(x$misc$km$strata))
+  } else {
+      palette="black"
+    }
+  }
+  kmplot <- survminer::ggsurvplot(fit=x$misc$km,data=x$misc$data,
+                                  conf.int=TRUE,
+                                  risk.table = risk.table,        
+                                  ##risk.table.col = "strata",
+                                  palette = palette,
+                                  legend.labs = legend.labs,
+                                  risk.table.height = 0.25, # Useful to change when you have multiple groups
+                                  ggtheme = ggplot2::theme_bw()
+  )
+  kmplot
+}
+
+
+make_surv_curve_plot <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,add.km=FALSE) {
+  # Defines the times to allow for extrapolation
+  if(is.null(t)) {
+    t <- sort(unique(x$misc$km$time))
+  }
+  
+  s=lapply(1:length(x$models),function(i) {
+    make.surv(x,mod=i,t=t,nsim=nsim,newdata=newdata)
+  })
+  strata=lapply(1:length(s),function(i) {
+    lapply(1:nrow(s[[i]]$des.mat),function(x){
+      s[[i]]$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
+        round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
+    }) %>% bind_rows(.) %>% select(strata)
+  })
+  toplot=lapply(1:length(mods),function(i) {
+    lapply(1:length(s[[mods[i]]]$S),function(j) {
+      s[[mods[i]]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[mods[i]]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
+    })
+  }) %>% bind_rows(.)
+  
+  surv.curv=ggplot() +
+    geom_line(data=toplot,aes(x=t,y=S,group=model_name:strata,col=model_name,linetype=strata),size=.9) +
+    theme_bw() + 
+    theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
+          axis.text.y = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
+          axis.title.x = element_text(color="black",size=14,angle=0,hjust=.5,vjust=.5),
+          axis.title.y = element_text(color="black",size=14,angle=90,hjust=.5,vjust=.5)) +
+    theme(axis.line = element_line(colour = "black"),
+          #panel.grid.major = element_blank(),
+          #panel.grid.minor = element_blank(),
+          #panel.border = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          plot.title = element_text(size=10, face="bold")) +
+    theme(legend.position=c(.75,.9),
+          legend.title=element_text(size=15,face="bold"),
+          #legend.title = element_blank(),
+          legend.text = element_text(colour="black", size=14, face="plain"),
+          legend.background=element_blank()) +
+    labs(y="Survival",x="Time",title=NULL,
+         color=ifelse(length(mods)==1,"Model","Models"),
+         linetype="Profile") + 
+    # This ensures that the model legend is always before the profile legend
+    guides(color=guide_legend(order=1),
+           linetype=guide_legend(order=2))
+  # If uses morethan 1 simulation from distribution of survival curves, then add ribbon
+  if(nsim>1) {
+    surv.curv=surv.curv+geom_ribbon(data=toplot,aes(x=t,y=S,ymin=low,ymax=upp,group=model_name:strata),alpha=.2)
+  }
+  
+  # Add KM plot? 
+  if(add.km==TRUE) {
+    # If the number of strata in the KM computed in 'fit.models' is not the same as the 
+    # number of rows in the design matrix from 'make.surv', then re-do a KM with no covariates
+    if(length(x$misc$km$strata)!=nrow(s[[1]]$des.mat)){
+      x$misc$km=rms::npsurv(update(x$misc$formula,~1),data=x$misc$data)
+      x$misc$km$call$formula=as.formula(deparse(update(x$misc$formula,~1)))
+    }
+    # Now uses info in the KM table in the survHE object to create a dataset to plot
+    datakm=bind_cols(t=x$misc$km$time,n.risk=x$misc$km$n.risk,n.event=x$misc$km$n.event,
+                  n.censor=x$misc$km$n.censor,S=x$misc$km$surv,lower=x$misc$km$lower,
+                  upper=x$misc$km$upper) %>% mutate(model_name="Kaplan Meier")
+    # If 'strata' is not in the KM object (will happen if there's only 1)
+    if(is.null(x$misc$km$strata)) {
+      datakm$strata=as.factor("all")
+    } else {
+      datakm$strata=as.factor(rep(1:length(x$misc$km$strata),x$misc$km$strata))
+    }
+    surv.curv=surv.curv+geom_line(data=datakm,aes(t,S,group=as.factor(strata)),color="darkgrey") + 
+      geom_ribbon(data=datakm,aes(x=t,y=S,ymin=lower,ymax=upper,group=as.factor(strata)),alpha=.2) 
+  }
+  ## If I want to change the appearance of the elements I may need to do something like
+  # +scale_linetype_manual(labels=c("Control","Treated"),values=c("dotdash","solid"))
+  # +scale_color_manual(values=cols) (if cols is specified by the user and is a vector of colours - one per model)
+  #...
+  surv.curv
 }

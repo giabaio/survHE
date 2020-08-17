@@ -20,7 +20,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   beta <- rstan::extract(model)$beta
   # To safeguard against very asymmetric densities use the median (instead of the mean)
   beta.hat <- apply(beta,2,median)
-  if (distr3 %in% c("exp", "wei", "wph", "gom", "lno", "llo")) {
+  if (distr3 %in% c("exp", "wei", "wph", "gom", "lno", "llo","rps")) {
     linpred <- beta%*%t(data.stan$X)
     linpred.hat <- beta.hat%*%t(data.stan$X)
   } else {
@@ -268,17 +268,13 @@ lik_llo <- function(x,linpred,linpred.hat,model,data.stan) {
 lik_rps <- function(x,linpred,linpred.hat,model,data.stan) {
   gamma <- rstan::extract(model)$gamma
   gamma.hat <- apply(gamma, 2, median)
-  logf <- data.stan$d * (
-    -log(data.stan$t) + log(gamma %*% t(data.stan$DB)) + 
-      gamma %*% t(data.stan$B) +
-      beta %*% t(data.stan$X)) -
-    exp(gamma %*% t(data.stan$B) + beta %*% t(data.stan$X))
+  # Needs to reformat linpred.hat to a vector for consistency
+  linpred.hat <- as.numeric(linpred.hat)
+  logf <- data.stan$d * (-log(data.stan$t) + log(gamma %*% t(data.stan$DB)) + gamma %*% t(data.stan$B) + linpred) -
+    exp(gamma %*% t(data.stan$B) + linpred)
   logf.hat <- t(
-    data.stan$d * (
-      -log(data.stan$t) + log(data.stan$DB %*% gamma.hat) + 
-        data.stan$B %*% gamma.hat + 
-        data.stan$X %*% beta.hat) -
-      exp(data.stan$B %*% gamma.hat + data.stan$X %*% beta.hat))
+    data.stan$d * (-log(data.stan$t) + log(data.stan$DB %*% gamma.hat) + data.stan$B %*% gamma.hat + linpred.hat) -
+      exp(data.stan$B %*% gamma.hat + linpred.hat))
   # Number of parameters (for AIC): gamma + covariates
   npars <- length(gamma.hat) + sum(
     apply(data.stan$X, 2, function(x) 1 - all(x == 0)))
