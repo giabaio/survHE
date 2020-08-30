@@ -1,15 +1,20 @@
-#' Helper function to manipulate the survival distributions and 
-#' compute relevant quantities (*ICs, survival curves, etc)
+#' Helper function to make the simulations for the survival curves using MLE
+#' for a given formula and dataset
 #' 
-#' @param x A string with the distribution abbreviation ('distr3')
-#' @return \item{list}{A list containing the modified name of the 
-#' distribution, the acronym (3-letters abbreviation), or the
-#' labels (humane-readable name)}.
-#' @note Something will go here
+#' @param m The output of a 'survHE' object including the model
+#' @param t A vector of times for which the survival curves are to be
+#' computed
+#' @param X The covariates profile for which to compute the survival curve
+#' @param nsim The number of simulations to be computed
+#' @param newdata A list with the "new data". This is a specific profile of
+#' covariates in correspondence of which to compute the survival curves.
+#' @param dist The string identifying the abbreviated name for the 
+#' underlying model used 
+#' @return \item{sim}{A list containing the generated simulations.}
 #' @author Gianluca Baio
-#' @seealso fit.models
+#' @seealso make.surv
 #' @references Baio (2020). survHE
-#' @keywords 
+#' @keywords MLE
 make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
   # Simulates from the distribution of the model parameters - takes 100000 bootstrap samples
   nboot=100000
@@ -45,6 +50,23 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
   return(sim)
 }
 
+
+#' Helper function to make the simulations for the survival curves using INLA
+#' for a given formula and dataset
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param t A vector of times for which the survival curves are to be
+#' computed
+#' @param X The covariates profile for which to compute the survival curve
+#' @param nsim The number of simulations to be computed
+#' @param newdata A list with the "new data". This is a specific profile of
+#' covariates in correspondence of which to compute the survival curves.
+#' @param dist The string identifying the abbreviated name for the 
+#' underlying model used 
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @keywords INLA
 make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
   # Simulates from the distribution of the model parameters
   
@@ -84,6 +106,24 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
   return(sim)
 }
 
+
+#' Helper function to make the simulations for the survival curves using HMC
+#' for a given formula and dataset
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param t A vector of times for which the survival curves are to be
+#' computed
+#' @param X The covariates profile for which to compute the survival curve
+#' @param nsim The number of simulations to be computed
+#' @param newdata A list with the "new data". This is a specific profile of
+#' covariates in correspondence of which to compute the survival curves.
+#' @param dist The string identifying the abbreviated name for the 
+#' underlying model used 
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC
 make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
 
   # Extracts the model object from the survHE output
@@ -110,6 +150,18 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' Exponential distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Exponential
 rescale_hmc_exp <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Exponential distribution
@@ -118,6 +170,18 @@ rescale_hmc_exp <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' WeibullAFT distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Weibull AFT
 rescale_hmc_wei <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull distribution
@@ -128,6 +192,18 @@ rescale_hmc_wei <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' WeibullPH distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Weibull PH
 rescale_hmc_wph <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull PH distribution
@@ -138,6 +214,18 @@ rescale_hmc_wph <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' Gompertz distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Gompertz
 rescale_hmc_gom <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gompertz distribution
@@ -148,6 +236,18 @@ rescale_hmc_gom <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' Gamma distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Gamma
 rescale_hmc_gam <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gamma distribution
@@ -158,6 +258,18 @@ rescale_hmc_gam <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' GenGamma distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Generalised Gamma
 rescale_hmc_gga <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised Gamma distribution
@@ -169,6 +281,18 @@ rescale_hmc_gga <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' Gen F distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Generalised F
 rescale_hmc_gef <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised F distribution
@@ -181,6 +305,18 @@ rescale_hmc_gef <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' logNormal distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC logNormal
 rescale_hmc_lno <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
@@ -191,6 +327,18 @@ rescale_hmc_lno <- function(m,X,linpred){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' logLogistic distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC logLogistic
 rescale_hmc_llo <- function(m,X){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
@@ -201,6 +349,18 @@ rescale_hmc_llo <- function(m,X){
   return(sim)
 }
 
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' RPS distribution/HMC
+#' 
+#' @param m The output of a 'survHE' object including the model
+#' @param X The covariates profile for which to compute the survival curve
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Royston-Parmar splines
 rescale_hmc_rps <- function(m,X,linpred) {
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # RPS
@@ -215,6 +375,19 @@ rescale_hmc_rps <- function(m,X,linpred) {
   return(sim)
 }
 
+
+#' Helper function to make the rescale the original simulations to the 
+#' list sim to be used by 'make.surv' INLA
+#' 
+#' @param linpred The linear predictor obtained by multiplying the 
+#' simulated values for the model coefficients and the covariates profile
+#' @param alpha The hyperparameter from the INLA model
+#' @param distr The abbreviated name of the underlying distribution
+#' @return \item{sim}{A list containing the generated simulations.}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords HMC Exponential
 
 rescale.inla <- function(linpred,alpha,distr) {
   if (distr=="wei") {
@@ -249,6 +422,18 @@ rescale.inla <- function(linpred,alpha,distr) {
   return(sim)
 }
 
+#' Helper function to make the compute the survival curves
+#' 
+#' @param sim A list containing the simulations for the relevant parameters
+#' @param exArgs A list of extra arguments, as specified in 'make.surv'
+#' @param nsim The number of simulations included
+#' @param dist The abbreviated name of the underlying distribution
+#' @param t The vector of times to be used in the x-axis
+#' @return \item{mat}{A matrix of simulated values for the survival curves}
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords Survival curves
 compute_surv_curve <- function(sim,exArgs,nsim,dist,t) {  
   # Computes the survival curves
   args <- args_surv()
@@ -299,8 +484,14 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t) {
   return(mat)
 }
 
-# Utility function to define the arguments needed to compute the cumulative distribution,
-## with which to derive the survival function
+
+#' Utility function to define the arguments needed to compute the cumulative 
+#' distribution, with which to derive the survival function
+#' 
+#' @author Gianluca Baio
+#' @seealso make.surv
+#' @references Baio (2020). survHE
+#' @keywords Survival curves
 args_surv <- function() {
     list(
       exp='list(t,rate=x[,"rate"][i])',
@@ -317,7 +508,6 @@ args_surv <- function() {
       survspline='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)'
   )
 }
-
 
 
 #' Helper function to create the covariates profile to use in the 

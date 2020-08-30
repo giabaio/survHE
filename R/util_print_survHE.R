@@ -1,3 +1,12 @@
+#' Helper function to get the relevant stats to print the summary table
+#' 
+#' @param x The 'survHE' object with the fitted model
+#' @param mod A number identifying which of the models is to be used
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords MLE
 get_stats_mle <- function(x,mod) {
   # Can use directly 'flexsurv' output to make the results table
   res=x$models[[mod]]$res[,c(1,4,2,3),drop=FALSE]
@@ -5,6 +14,16 @@ get_stats_mle <- function(x,mod) {
   return(res)
 }
 
+
+#' Helper function to get the relevant stats to print the summary table
+#' 
+#' @param x The 'survHE' object with the fitted model
+#' @param mod A number identifying which of the models is to be used
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA
 get_stats_inla <- function(x,mod) {
   # Calls the helper functions to make the results table
   res=do.call(paste0("rescale_stats_inla_",x$misc$model_name[mod]),
@@ -12,6 +31,16 @@ get_stats_inla <- function(x,mod) {
   return(res)
 }
 
+
+#' Helper function to get the relevant stats to print the summary table
+#' 
+#' @param x The 'survHE' object with the fitted model
+#' @param mod A number identifying which of the models is to be used
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC
 get_stats_hmc <- function(x,mod) {
   quiet(print(x$models[[mod]]))
   # Gets the original summary stats from the 'rstan' run
@@ -28,6 +57,15 @@ get_stats_hmc <- function(x,mod) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Exponential model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Exponential
 rescale_stats_hmc_exp <- function(table) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -36,6 +74,15 @@ rescale_stats_hmc_exp <- function(table) {
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
 }
 
+#' Helper function to rescale the stats for the Weibull AFT model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC WeibullAFT
 rescale_stats_hmc_wei <- function(table) {
   scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
   rownames(scale) <- "scale"
@@ -47,6 +94,15 @@ rescale_stats_hmc_wei <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Weibull PH model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC WeibullPH
 rescale_stats_hmc_wph <- function(table) {
   scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
   rownames(scale) <- "scale"
@@ -58,6 +114,15 @@ rescale_stats_hmc_wph <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gompertz model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Gompertz
 rescale_stats_hmc_gom <- function(table) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -69,6 +134,15 @@ rescale_stats_hmc_gom <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the logNormal model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC logNormal
 rescale_stats_hmc_lno <- function(table) {
   meanlog <- matrix(table[grep("meanlog",rownames(table)),],ncol=4)
   rownames(meanlog) <- "meanlog"
@@ -80,6 +154,15 @@ rescale_stats_hmc_lno <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gamma model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Gamma
 rescale_stats_hmc_gam <- function(table) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -91,6 +174,15 @@ rescale_stats_hmc_gam <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the logLogistic model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC logLogistic
 rescale_stats_hmc_llo <- function(table) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "scale"
@@ -102,6 +194,15 @@ rescale_stats_hmc_llo <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gen F model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC GenF
 rescale_stats_hmc_gef <- function(table) {
   mu <- matrix(table[grep("beta",rownames(table)),],ncol=4,nrow=1)
   rownames(mu) <- "mu"
@@ -117,6 +218,15 @@ rescale_stats_hmc_gef <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gen Gamma model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC GenGamma
 rescale_stats_hmc_gga <- function(table) {
   mu <- matrix(table[grep("beta",rownames(table)),,drop=FALSE][1,],ncol=4,nrow=1)
   rownames(mu) <- "mu"
@@ -130,6 +240,15 @@ rescale_stats_hmc_gga <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the RPS model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Royston-Parmar splines
 rescale_stats_hmc_rps <- function(table) {
   gamma <- matrix(table[grep("gamma",rownames(table)),],ncol=4)
   rownames(gamma) <- paste0("gamma",0:(nrow(gamma)-1))
@@ -139,6 +258,15 @@ rescale_stats_hmc_rps <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Poly-Weibull model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Poly-Weibull
 rescale_stats_hmc_pow <- function(table) {
   # The rescaling function for the Poly-Weibull NEEDS to be checked and possibly re-written!!
   alpha <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
@@ -165,6 +293,15 @@ rescale_stats_hmc_pow <- function(table) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Weibull AFT model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA WeibullAFT
 rescale_stats_inla_wei <- function(x,mod,nsim=1000) {
   # The scale and effects are computed as a *non linear* function of the AFT effects and the shape
   # But for simplicity can approximate this using 'inla.rmarginal'
@@ -192,6 +329,15 @@ rescale_stats_inla_wei <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Weibull PH model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA WeibullPH
 rescale_stats_inla_wph <- function(x,mod,nsim=1000) {
   # The scale and effects are computed as a *non linear* function of the AFT effects and the shape
   # But for simplicity can approximate this using 'inla.rmarginal'
@@ -218,6 +364,15 @@ rescale_stats_inla_wph <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Exponential model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA Exponential
 rescale_stats_inla_exp <- function(x,mod,nsim=1000) {
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
@@ -238,6 +393,15 @@ rescale_stats_inla_exp <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the logNormal model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA logNormal
 rescale_stats_inla_lno <- function(x,mod,nsim=1000) {
   prec_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
@@ -261,6 +425,15 @@ rescale_stats_inla_lno <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the logLogistic model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA logLogistic
 rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
   # Uses 'variant=1' in INLA
   shape_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
@@ -285,20 +458,43 @@ rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to create summary stats
+#' 
+#' @param x A vector of simulations
+#' @return \item{tab}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords 
 make_stats <- function(x) {
   tab=c(mean(x), sd(x), quantile(x, 0.025), quantile(x,0.975))
   return(tab)
 }
 
-# NB: Stan needs to first print the output of the model before you can access the elements
-#     in the object '@.MISC$summary', so can use this function to print quietly...
+#' Helper function to for Stan, which needs to first print the output of 
+#' the model before you can access the elements in the object 
+#' '@.MISC$summary', so can use this function to print quietly...
+#' 
+#' @param x A 'survHE' object
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Stan
 quiet <- function(x) { 
   sink(tempfile()) 
   on.exit(sink()) 
   invisible(force(x)) 
 } 
 
-# Checks whether covariates effects should be included in the 'res' table for HMC
+#' Helper function to checks whether covariates effects should be 
+#' included in the 'res' table for HMC
+#' 
+#' @param table The table with the summary statistics
+#' @return \item{effects}{The effects}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC Stan
 add_effects_hmc <- function(table) {
   # If there's more than one beta, then there are "effects" (otherwise it's only intercept)
   if(length(grep("beta",rownames(table)))>1) {
@@ -312,14 +508,41 @@ add_effects_hmc <- function(table) {
   return(effects)
 }
 
+#' Helper function to create the original summary table
+#' 
+#' @param x The 'survHE' model
+#' @param mod Which of the models to be used
+#' @param digits The number of digits to print
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords MLE
 original_table_mle <- function(x,mod,digits) {
   print(x$models[[mod]],digits=digits)
 }
 
+#' Helper function to create the original summary table
+#' 
+#' @param x The 'survHE' model
+#' @param mod Which of the models to be used
+#' @param digits The number of digits to print
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA
 original_table_inla <- function(x,mod,digits) {
   print(summary(x$models[[mod]]),digits=digits)
 }
 
+#' Helper function to create the original summary table
+#' 
+#' @param x The 'survHE' model
+#' @param mod Which of the models to be used
+#' @param digits The number of digits to print
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords HMC
 original_table_hmc <- function(x,mod,digits) {
   #######################################################################################################################################
   ### NEED TO CHECK HOW THINGS WORK FOR THE POLY-WEIBULL!
@@ -352,6 +575,17 @@ original_table_hmc <- function(x,mod,digits) {
       "convergence, Rhat=1).\n", sep = "")
 }
 
+
+#' Helper function to format the summary table with the model parameters
+#' 
+#' @param x The 'survHE' model
+#' @param mod Which of the models to be used
+#' @param res The output table
+#' @param digits The number of digits to print
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords 
 format_table <- function(x,mod,res,digits){
   # First re-format some of the labels (eg model names)
   if(x$misc$model_name[mod]=="exp") {label <- "Exponential"}

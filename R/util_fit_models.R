@@ -378,9 +378,9 @@ make_data_stan=function(formula,data,distr3,exArgs) {
 runMLE <- function(x,exArgs) {
   ##### PROBABLY CAN REMOVE THIS ######
   # Checks that 'flexsurv' is loaded up. NB: ***Probably*** not needed, as 'flexsurv' is a primary dependency???
-  if(!isTRUE(requireNamespace("flexsurv",quietly=TRUE))) {
-    stop("You need to install the R package 'flexsurv'. Please run in your R terminal:\n install.packages('flexsurv')")
-  }
+  #if(!isTRUE(requireNamespace("flexsurv",quietly=TRUE))) {
+  #  stop("You need to install the R package 'flexsurv'. Please run in your R terminal:\n install.packages('flexsurv')")
+  #}
   # Loads the model formula & data
   formula <- exArgs$formula
   data=exArgs$data
@@ -465,6 +465,10 @@ make_KM <- function(formula,data) {
 #' 
 #' @param output The output of one of the helper functions used to run the
 #' models.
+#' @param method The method used to do the estimation
+#' @param distr The abbreviated name for the distribution to be used
+#' @param formula The model formula
+#' @param data The dataset used
 #' @return \item{res}{A 'survHE' object containing all the relevant output
 #' conveniently formatted}.
 #' @note Something will go here
