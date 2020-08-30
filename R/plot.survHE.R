@@ -63,6 +63,7 @@ plot.survHE <- function(...) {
   }
 
   # If the user selects 'base' (only for back-compatibility), then runs the old code
+  ### NB: Do I want this? (probably not...)
   if(graph=="base") {
     do.call(plot_base_survHE,exArgs)
   }

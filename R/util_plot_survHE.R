@@ -37,18 +37,6 @@
 #' 
 plot_ggplot_survHE <- function(exArgs) {
   
-  ### These can also be specified (but the functions below need to be modified to account for these new options)
-  ###
-  # if (is.null(exArgs$xlab)) {xl <- "time"} else {xl <- exArgs$xlab}
-  # if (is.null(exArgs$ylab)) {yl <- "Survival"} else {yl <- exArgs$ylab}
-  # if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<-exArgs$lab.trt}
-  # if (is.null(exArgs$cex.trt)) {cex.trt <- 0.8} else {cex.trt <- exArgs$cex.trt}
-  # if (is.null(exArgs$n.risk)) {nrisk <- FALSE} else {nrisk <- exArgs$n.risk}
-  # if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
-  # if (is.null(exArgs$cex.lab)) {cex.lab <- 0.8} else {cex.lab <- exArgs$cex.lab}
-  # if (is.null(exArgs$legend)) {legend=TRUE} else (legend=FALSE)
-  # if (exists("colour",exArgs)) {colour=exArgs$colour} else (colour="blue")
-  
   # # First checks the class of the input
   # if(class(x)=="survHE") {
   #   # If x is a 'survHE' object, then there's only one object to deal with
@@ -80,6 +68,9 @@ plot_ggplot_survHE <- function(exArgs) {
   } else {mods=exArgs$mods}
   # Should the KM curve be added to the plots?
   if (!exists("add.km",exArgs)) {add.km <- FALSE} else {add.km <- exArgs$add.km}
+  
+  # Should the graph be annotated with extrapolation vs observed data?
+  if(exists("annotate",where=exArgs)){annotate=exArgs$annotate} else {annotate=FALSE}
   
   # Makes the dataframe with the data to plot
   toplot = lapply(1:length(survHE_objs),function(i){
@@ -114,24 +105,35 @@ plot_ggplot_survHE <- function(exArgs) {
   # Now makes the plot using the helper function
   surv.curv=make_surv_curve_plot(toplot,datakm,mods)
 
-  if(exists("labels",exArgs)){
+  # Optional arguments
+  if(exists("lab.trt",exArgs)){
     surv.curv=surv.curv+
-      scale_linetype_manual(labels=exArgs$labels,values=1:length(exArgs$labels))
+      scale_linetype_manual(labels=exArgs$lab.trt,values=1:length(exArgs$lab.trt))
+  }
+  if(exists("colour",exArgs)){
+    surv.curv=surv.curv+scale_color_manual(values=exArgs$colour)
+  }
+  if(exists("xlab",where=exArgs)){
+    surv.curv=surv.curv+labs(x=exArgs$xlab)
+  }
+  if(exists("ylab",where=exArgs)){
+    surv.curv=surv.curv+labs(y=exArgs$ylab)
+  }
+  if(exists("main",where=exArgs)) {
+    surv.plot=surv.plot+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
+  }
+  if(annotate==TRUE){
+    cutoff=max(survHE_objs[[1]]$misc$km$time)
+    surv.curv=surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
+      geom_segment(aes(x=cutoff,y=-Inf,xend=cutoff,yend=-.01),size=1.1) + 
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.8,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.2,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
+      annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
+      annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5)
   }
   
-  # If the survival curves have been extrapolated beyond the trial data, plots a vertical curve to 
-  # highlight the portion that is not based directly on the observed data
-    ## If I want to change the appearance of the elements I may need to do something like
-    # +scale_linetype_manual(labels=c("Control","Treated"),values=c("dotdash","solid"))
-    # +scale_color_manual(values=cols) (if cols is specified by the user and is a vector of colours - one per model)
-    # +labs(title="Pippo")+theme(plot.title=element_text(size=18,face="bold"))
-    #...
-    
-  # cutoff=max(survHE_objs[[1]]$misc$km$time)
-  # surv.curv=surv.curv + geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
-  #   annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) + 
-  #   annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5)
-  
+  # +scale_linetype_manual(labels=c("Control","Treated"),values=c("dotdash","solid"))
+
   # Now prints the plot
   surv.curv
 }

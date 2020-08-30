@@ -11,7 +11,7 @@
 #' @param ...  Optional graphical parameters, such as: \code{xlab} = label for
 #' the x-axis \code{ylab} = label for the y-axis \code{col} = (vector) of
 #' colors for the lines to be plotted \code{alpha} = the level of transparency
-#' for the curves (default = 0.1)
+#' for the curves (default = 0.2)
 #' @author Gianluca Baio
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
 #' @examples
@@ -90,7 +90,7 @@ psa.plot <- function(psa,...) {
     psa.plot=psa.plot+labs(y=exArgs$ylab)
   }
   if(exists("main",where=exArgs)) {
-    psa.plot=psa.plot+labs(title=exArgs$main)
+    psa.plot=psa.plot+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
   }
   if(exists("labs",where=exArgs)) {
     psa.plot=psa.plot+scale_color_discrete(labels=exArgs$labs)
