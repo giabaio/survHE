@@ -24,7 +24,15 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
     linpred <- beta%*%t(data.stan$X)
     linpred.hat <- beta.hat%*%t(data.stan$X)
   } else {
-    linpred <- linpred.hat <- NULL
+    linpred <- list(
+      lo=beta%*%t(data.stan$X_obs),
+      lc=beta%*%t(data.stan$X_cens)
+    )
+    linpred.hat <- list(
+      lo.bar=beta.hat%*%t(data.stan$X_obs),
+      lc.bar=beta.hat%*%t(data.stan$X_cens)
+    )
+    #linpred <- linpred.hat <- NULL
   }
   
   # Now computes the densities using the helper functions
@@ -141,10 +149,10 @@ lik_gom <- function(x,linpred,linpred.hat,model,data.stan) {
 lik_gam <- function(x,linpred,linpred.hat,model,data.stan) {
   shape <- alpha <- as.numeric(rstan::extract(model)$alpha)
   shape.bar <- median(shape)
-  lo <- exp(beta %*% t(data.stan$X_obs))
-  lc <- exp(beta %*% t(data.stan$X_cens))
-  lo.bar <- exp(beta.hat %*% t(data.stan$X_obs))
-  lc.bar <- exp(beta.hat %*% t(data.stan$X_cens))
+  lo <- exp(linpred$lo)
+  lc <- exp(linpred$lc)
+  lo.bar <- exp(linpred.hat$lo.bar)
+  lc.bar <- exp(linpred.hat$lc.bar)
   f = matrix(
     unlist(lapply(1:nrow(lo), function(i) 
       dgamma(data.stan$t, shape[i], lo[i, ]))),
@@ -171,10 +179,10 @@ lik_gga <- function(x,linpred,linpred.hat,model,data.stan) {
   q.bar = median(q)
   scale = as.numeric(rstan::extract(model)$sigma)
   scale.bar = median(scale)
-  lo = (beta %*% t(data.stan$X_obs))
-  lc = (beta %*% t(data.stan$X_cens))
-  lo.bar = (beta.hat %*% t(data.stan$X_obs))
-  lc.bar = (beta.hat %*% t(data.stan$X_cens))
+  lo <- exp(linpred$lo)
+  lc <- exp(linpred$lc)
+  lo.bar <- exp(linpred.hat$lo.bar)
+  lc.bar <- exp(linpred.hat$lc.bar)
   f = matrix(
     unlist(lapply(1:nrow(lo), function(i)
       dgengamma(data.stan$t, lo[i, ], scale[i], q[i]))), 
@@ -203,10 +211,10 @@ lik_gef <- function(x,linpred,linpred.hat,model,data.stan) {
   P.bar = median(P)
   sigma = as.numeric(rstan::extract(model)$sigma)
   sigma.bar = mean(sigma)
-  lo = (beta %*% t(data.stan$X_obs))
-  lc = (beta %*% t(data.stan$X_cens))
-  lo.bar = (beta.hat %*% t(data.stan$X_obs))
-  lc.bar = (beta.hat %*% t(data.stan$X_cens))
+  lo <- exp(linpred$lo)
+  lc <- exp(linpred$lc)
+  lo.bar <- exp(linpred.hat$lo.bar)
+  lc.bar <- exp(linpred.hat$lc.bar)
   f = matrix(
     unlist(lapply(1:nrow(lo), function(i) 
       dgenf(data.stan$t, lo[i, ], sigma[i], Q[i], P[i]))), 

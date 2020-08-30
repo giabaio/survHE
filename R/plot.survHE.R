@@ -39,16 +39,27 @@
 #' plot(mle)
 #' 
 #' @export plot.survHE
-plot.survHE <- function(x,...) {
+plot.survHE <- function(...) {
+  
   # Collects all the extra arguments
   exArgs=list(...)
-
-  # The default is to go with the 'ggplot' version of the graph. 
-  if(exists("graph",where=exArgs)){graph=exArgs$graph} else {graph="ggplot"}
   
+  # Finds out whether there are objects with no name (if so, they will be 'survHE' objects!)
+  # If there are any, then needs to rename them to make the rest of the function work
+  if(length(names(exArgs))==0) {
+    # This is the case where the only argument(s) is/are unnamed 'survHE' object(s)
+    names(exArgs)=paste0("Object",1:length(exArgs))
+  }
+  if(length(which(names(exArgs)==""))>0){
+    names(exArgs)[which(names(exArgs)=="")] = paste0("Object",1:length(which(names(exArgs)=="")))
+  }
+  
+  # The default is to go with the 'ggplot' version of the graph. 
+  if (exists("graph",exArgs)) {graph=exArgs$graph} else {graph="ggplot"}
+
   # If so, then call the function 'plot_ggplot_survHE
   if(graph=="ggplot") {
-    do.call(plot_ggplot_survHE,list(x,exArgs))
+    return(plot_ggplot_survHE(exArgs))
   }
 
   # If the user selects 'base' (only for back-compatibility), then runs the old code

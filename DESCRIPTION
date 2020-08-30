@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
 Version: 1.1.1
-Date: 2020-08-10
+Date: 2020-08-18
 Authors@R: 
     person(given = "Gianluca",
            family = "Baio",
@@ -16,7 +16,8 @@ Depends:
     R (>= 3.4.0),
     Rcpp (>= 0.12.19),
     flexsurv,
-    dplyr
+    dplyr,
+    ggplot2
 Imports: 
     rms,
     xlsx,
