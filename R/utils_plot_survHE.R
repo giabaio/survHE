@@ -9,19 +9,16 @@
 #' y-axis (default = "Survival") \code{lab.trt} = a (vector of) string(s)
 #' indicating the labels associated with the strata defining the different
 #' survival curves to plot. Default to the value used by the Kaplan Meier
-#' estimate given in \code{fit.models} \code{cex.trt} = factor by which the
-#' size of the font used to write the strata is resized (default = 0.8)
-#' \code{n.risk} = logical. If TRUE (defaults) writes the number at risk at
-#' different time points (as determined by the Kaplan Meier estimate)
-#' \code{newdata} = a list (of lists) providing the values for the relevant
-#' covariates If NULL, then will use the mean values for the covariates if at
-#' least one is a continuous variable, or the combination of the categorical
-#' covariates. \code{xlim} = a vector determining the limits for the x-axis
-#' \code{colors} = a vector of characters defining the colours in which to plot
-#' the different survival curves \code{labs} = a vector of characters defining
-#' the names of the models fitted \code{add.km} = TRUE (whether to also add the
-#' Kaplan Meier estimates of the data) \code{legend} = TRUE (whether to also 
-#' add the legend to the graph)
+#' estimate given in \code{fit.models}. \code{newdata} = a list (of lists) 
+#' providing the values for the relevant covariates If NULL, then will use 
+#' the mean values for the covariates if at least one is a continuous variable, 
+#' or the combination of the categorical covariates. \code{xlim} = a vector 
+#' determining the limits for the x-axis \code{colors} = a vector of characters 
+#' defining the colours in which to plot the different survival curves 
+#' \code{labs} = a vector of characters defining the names of the models fitted 
+#' \code{add.km} = TRUE (whether to also add the Kaplan Meier estimates of the data) 
+#' \code{annotate} = FALSE (whether to also add text to highlight the observed vs
+#' extrapolated data)
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso Something will go here
@@ -120,14 +117,14 @@ plot_ggplot_survHE <- function(exArgs) {
     surv.curv=surv.curv+labs(y=exArgs$ylab)
   }
   if(exists("main",where=exArgs)) {
-    surv.plot=surv.plot+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
+    surv.curv=surv.curv+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
   }
   if(annotate==TRUE){
     cutoff=max(survHE_objs[[1]]$misc$km$time)
     surv.curv=surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
-      geom_segment(aes(x=cutoff,y=-Inf,xend=cutoff,yend=-.01),size=1.1) + 
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.8,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.2,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-Inf,xend=cutoff,yend=-.01),size=0.9) + 
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
       annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5)
   }
