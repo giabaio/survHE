@@ -64,27 +64,30 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     bind_rows %>% mutate(lab=paste0(model_name,":",object_name)) %>% select(object_name,model_name,lab,everything()) %>% 
     slice(mods)
   
+  # Can make the bars stacked (looks actually nice...)
   if(stacked==TRUE) {
     if(type=="AIC") {
+      if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$aic)))}
       mfp=ggplot(data=toplot,aes(x=model_name,y=aic,fill=object_name)) +
         geom_bar(stat="identity",position=position_dodge()) +
-        geom_text(aes(x=model_name,y=aic,label=aic %>% round(digits=1.5)), hjust=2, 
-                  color="white", size=5.5,position = position_dodge(0.9))
+        geom_text(aes(x=model_name,y=aic,label=aic %>% round(digits=1.5)), hjust=1.05, 
+                  color="white", size=5.5,position = position_dodge(0.9)) + coord_flip(ylim=yl)
     }
     if(type=="BIC") {
+      if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$bic)))}
       mfp=ggplot(data=toplot,aes(x=model_name,y=bic,fill=object_name)) +
         geom_bar(stat="identity",position=position_dodge()) +
-        geom_text(aes(x=model_name,y=aic,label=bic %>% round(digits=1.5)), hjust=2, 
-                  color="white", size=5.5,position = position_dodge(0.9))
+        geom_text(aes(x=model_name,y=aic,label=bic %>% round(digits=1.5)), hjust=1.05, 
+                  color="white", size=5.5,position = position_dodge(0.9)) + coord_flip(ylim=yl)
     }
     if(type=="DIC") {
+      if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$dic,na.rm=TRUE)))}
       mfp=ggplot(data=toplot,aes(x=model_name,y=dic,fill=object_name)) +
         geom_bar(stat="identity",position=position_dodge()) +
-        geom_text(aes(x=model_name,y=aic,label=dic %>% round(digits=1.5)), hjust=2, 
-                  color="white", size=5.5,position = position_dodge(0.9))
+        geom_text(aes(x=model_name,y=aic,label=dic %>% round(digits=1.5)), hjust=1.05, 
+                  color="white", size=5.5,position = position_dodge(0.9)) + coord_flip(ylim=yl)
     }
     mfp=mfp+
-      coord_flip() + 
       theme_bw() + 
       theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
             axis.text.y = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
@@ -100,6 +103,7 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
       theme(legend.position="bottom")
     
     # Optional arguments
+    # Manual colours should be a vector with lenght equal to the number of objects
     if(exists("col",exArgs)){
       mfp=mfp+scale_fill_manual(values=exArgs$col)
     }
@@ -109,9 +113,12 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     if(exists("color",exArgs)){
       mfp=mfp+scale_fill_manual(values=exArgs$color)
     }
+    # Can modify the title of the legend
     if(exists("name_legend",exArgs)){
       mfp=mfp+labs(fill=exArgs$name_legend)
     }
+    # Can change the palette too
+    # plot + scale_fill_brewer(palette=...) see 'help(scale_fill_brewer)' for possible options
   }
   
   if(stacked==FALSE) {
@@ -124,60 +131,62 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     
     # Finally plots the bar-chart
     if(nlevels(toplot$object_name)==1){x=toplot$model_name} else {x=toplot$lab}
-    mfp=ggplot(data=toplot) 
+    mfp=ggplot(data=toplot)
     if(type=="AIC") {
       if(scale=="absolute" | scale=="abs") {
+        if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$aic)))}
         mfp=mfp+geom_bar(mapping=aes(x=x,y=aic),stat=stat_name,fill=col) +
-          geom_text(aes(x=x,y=aic,label=aic %>% round(digits=1.5)), hjust=2, color="white", size=5.5) +
+          geom_text(aes(x=x,y=aic,label=aic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
-               color=ifelse(length(mods)==1,"Model","Models")
-          )
+               color=ifelse(length(mods)==1,"Model","Models") 
+          ) + coord_flip(ylim=yl)
       }
       if (scale=="rel" | scale=="relative") {
         mfp=mfp+geom_bar(mapping=aes(x=x,y=100*(aic-min(aic))/min(aic)),stat="identity",fill=col) +
           geom_text(aes(x=x,y=100*(aic-min(aic))/min(aic),label=(100*(aic-min(aic))/min(aic)) %>% round(digits=1.5)), 
-                    hjust=2, color="white", size=5.5) +
+                    hjust=-.05, color="black", size=5.5) +
           labs(y=paste0("Percentage increase in ",toupper(type)),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
-          )
+          ) + coord_flip()
       }
     } 
     if(type=="BIC") {
       if(scale=="absolute" | scale=="abs") {
+        if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$bic)))}
         mfp=mfp+geom_bar(mapping=aes(x=x,y=bic),stat=stat_name,fill=col) +
-          geom_text(aes(x=x,y=aic,label=bic %>% round(digits=1.5)), hjust=2, color="white", size=5.5) +
+          geom_text(aes(x=x,y=bic,label=bic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
-          )
+          ) + coord_flip(ylim=yl)
       } 
       if(scale=="rel" | scale=="relative") {
         mfp=mfp+geom_bar(mapping=aes(x=x,y=100*(bic-min(bic))/min(bic)),stat="identity",fill=col) +
           geom_text(aes(x=x,y=100*(bic-min(bic))/min(bic),label=(100*(bic-min(bic))/min(bic)) %>% round(digits=1.5)), 
-                    hjust=2, color="white", size=5.5) +
+                    hjust=-.05, color="black", size=5.5) +
           labs(y=paste0("Percentage increase in ",toupper(type)),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
-          )
+          ) + coord_flip()
       }
     }
     if(type=="DIC") {
       if(scale=="absolute" | scale=="abs") {
+        if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$dic,na.rm=TRUE)))}
         mfp=mfp+geom_bar(mapping=aes(x=x,y=dic),stat=stat_name,fill=col) +
-          geom_text(aes(x=x,y=dic,label=aic %>% round(digits=1.5)), hjust=2, color="white", size=5.5) +
+          geom_text(aes(x=x,y=dic,label=dic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
-          )
+          ) + coord_flip(ylim=yl)
       } 
       if(scale=="rel" | scale=="relative") {
         mfp=mfp+geom_bar(mapping=aes(x=x,y=100*(dic-min(dic))/min(dic)),stat="identity",fill=col) +
           geom_text(aes(x=x,y=100*(dic-min(dic))/min(dic),label=(100*(dic-min(dic))/min(dic)) %>% round(digits=1.5)), 
-                    hjust=2, color="white", size=5.5) +
+                    hjust=-.05, color="black", size=5.5) +
           labs(y=paste0("Percentage increase in ",toupper(type)),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
-          )
+          ) + coord_flip()
       }
     }
-    mfp=mfp + 
-      coord_flip() + 
+    mfp=mfp +
       theme_bw() + 
       theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
             axis.text.y = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),

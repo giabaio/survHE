@@ -393,7 +393,7 @@ runMLE <- function(x,exArgs) {
   
   tic <- proc.time()
   # If user selects RPS model, then could also provide some optional arguments - uses flexsurv defaults
-  if(x=="rps") {
+  if(x=="survspline") {
     if(exists("bhazard",where=exArgs)) {bhazard <- exArgs$bhazard} else {bhazard <-NULL}
     if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights <- NULL}
     if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}

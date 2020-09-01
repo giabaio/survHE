@@ -129,7 +129,13 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
   # Extracts the model object from the survHE output
   iter_stan <- m@stan_args[[1]]$iter
   
-  linpred <- rstan::extract(m)$beta %*% t(X)
+  beta=rstan::extract(m)$beta
+  # RPS has a weird construction and needs to remove the intercept if it's present
+  if(dist=="rps" & any(grepl("Intercept",colnames(X)))) {
+    X <- as.matrix(as_tibble(X) %>% select(-`(Intercept)`))
+    beta=beta[,-ncol(beta)]
+  }
+  linpred <-  beta %*% t(X)
   # Stores the values returned by rstan into the list 'sim'
   sim <- lapply(1:nrow(X),function(x) {
     do.call(paste0("rescale_hmc_",dist),
@@ -434,7 +440,7 @@ rescale.inla <- function(linpred,alpha,distr) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords Survival curves
-compute_surv_curve <- function(sim,exArgs,nsim,dist,t) {  
+compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {  
   # Computes the survival curves
   args <- args_surv()
   distr <- manipulate_distributions(dist)$distr 
@@ -443,30 +449,59 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t) {
     # RPS-related options
     if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
     if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
-    #if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
     if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
-    knots <- exArgs$data.stan$knots
-    mat <- lapply(sim,function(x) {
-      gamma=as_tibble(x) %>% select(contains("gamma"))
-      offset=as_tibble(x) %>% select(offset)
-      matrix(
-        unlist(
-          lapply(1:nsim,function(i){
+    
+    if(method=="hmc") {
+      knots <- exArgs$data.stan$knots
+      mat <- lapply(sim,function(x) {
+        gamma=as_tibble(x) %>% select(contains("gamma"))
+        offset=as_tibble(x) %>% select(offset)
+        matrix(
+          unlist(
+            lapply(1:nsim,function(i){
+              1-do.call(psurvspline,args=list(
+                q=t,
+                gamma=as.numeric(gamma %>% slice(i)),
+                beta=0,
+                X=0,
+                knots=knots,
+                scale=scale,
+                timescale=timescale,
+                offset=as.numeric(offset%>% slice(i)),
+                log=log
+              ))
+            })
+          )
+        )
+      })
+    } 
+    if(method=="mle") {
+      # First needs to fiddle with the matrix of covariates profile
+      if("(Intercept)"%in%colnames(X)){
+        X=X %>% as_tibble() %>% select(-"(Intercept)")
+      } else {
+        X=X %>% as_tibble()
+      }
+###      if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
+      mat=lapply(sim,function(x) {
+        gamma=as_tibble(x) %>% select(contains("gamma"))
+        matrix(unlist(
+          lapply(1:nsim,function(i) {
             1-do.call(psurvspline,args=list(
               q=t,
               gamma=as.numeric(gamma %>% slice(i)),
               beta=0,
               X=0,
-              knots=knots,
+              knots=exArgs$knots,
               scale=scale,
               timescale=timescale,
-              offset=as.numeric(offset%>% slice(i)),
+              offset=0,
               log=log
             ))
           })
-        )
-      )
-    })
+        ))
+      })
+    }
   } else {
     mat <- lapply(sim,function(x) {
       matrix(
@@ -548,9 +583,12 @@ make_profile_surv <- function(formula,data,newdata) {
   covs <- data %>% model.frame(formula_temp,.) %>% as_tibble(.) %>%  select(-c(1:2)) %>% 
     rename_if(is.factor,.funs=~gsub("as.factor[( )]","",.x)) %>% 
     rename_if(is.factor,.funs=~gsub("[( )]","",.x)) %>% 
-    bind_cols(as_tibble(model.matrix(formula_temp,data)) %>% select(contains("Intercept"))) %>% 
-    select(`(Intercept)`,everything())
-  ncovs <- ncol(covs) - 1
+    bind_cols(as_tibble(model.matrix(formula_temp,data)) %>% select(contains("Intercept"))) 
+  if("(Intercept)"%in% names(covs)) {
+    covs=covs %>% select(`(Intercept)`,everything())
+  }
+  
+  ncovs <- covs %>% select(-contains("Intercept")) %>% with(ncol(.))
   # Selects the subset of categorical covariates
   is.fac <- covs %>% select(where(is.factor))
   fac.levels=lapply(is.fac,levels)

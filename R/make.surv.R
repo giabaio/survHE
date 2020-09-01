@@ -85,8 +85,11 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     exArgs$data.stan <- fit$misc$data.stan[[mod]]
     t[t==0] <- min(0.00001,min(t[t>0]))
   }
+  if(fit$method=="mle" & dist=="rps") {
+    exArgs$knots=fit$models[[mod]]$knots
+  }
   mat <- do.call(compute_surv_curve,
-               args=list(sim=sim,exArgs=exArgs,nsim=nsim,dist=dist,t=t) 
+               args=list(sim=sim,exArgs=exArgs,nsim=nsim,dist=dist,t=t,method=fit$method,X=X) 
         )
   # And then in summary forms
   if (nsim==1) {
