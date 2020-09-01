@@ -77,14 +77,14 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
       if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$bic)))}
       mfp=ggplot(data=toplot,aes(x=model_name,y=bic,fill=object_name)) +
         geom_bar(stat="identity",position=position_dodge()) +
-        geom_text(aes(x=model_name,y=aic,label=bic %>% round(digits=1.5)), hjust=1.05, 
+        geom_text(aes(x=model_name,y=bic,label=bic %>% round(digits=1.5)), hjust=1.05, 
                   color="white", size=5.5,position = position_dodge(0.9)) + coord_flip(ylim=yl)
     }
     if(type=="DIC") {
       if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$dic,na.rm=TRUE)))}
       mfp=ggplot(data=toplot,aes(x=model_name,y=dic,fill=object_name)) +
         geom_bar(stat="identity",position=position_dodge()) +
-        geom_text(aes(x=model_name,y=aic,label=dic %>% round(digits=1.5)), hjust=1.05, 
+        geom_text(aes(x=model_name,y=dic,label=dic %>% round(digits=1.5)), hjust=1.05, 
                   color="white", size=5.5,position = position_dodge(0.9)) + coord_flip(ylim=yl)
     }
     mfp=mfp+
@@ -135,7 +135,7 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     if(type=="AIC") {
       if(scale=="absolute" | scale=="abs") {
         if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$aic)))}
-        mfp=mfp+geom_bar(mapping=aes(x=x,y=aic),stat=stat_name,fill=col) +
+        mfp=mfp+geom_bar(mapping=aes(x=x,y=aic),stat="identity",fill=col) +
           geom_text(aes(x=x,y=aic,label=aic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models") 
@@ -153,7 +153,7 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     if(type=="BIC") {
       if(scale=="absolute" | scale=="abs") {
         if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$bic)))}
-        mfp=mfp+geom_bar(mapping=aes(x=x,y=bic),stat=stat_name,fill=col) +
+        mfp=mfp+geom_bar(mapping=aes(x=x,y=bic),stat="identity",fill=col) +
           geom_text(aes(x=x,y=bic,label=bic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")
@@ -171,7 +171,7 @@ model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {
     if(type=="DIC") {
       if(scale=="absolute" | scale=="abs") {
         if(exists("xlim",exArgs)){yl=exArgs$xlim} else {yl=range(pretty(range(toplot$dic,na.rm=TRUE)))}
-        mfp=mfp+geom_bar(mapping=aes(x=x,y=dic),stat=stat_name,fill=col) +
+        mfp=mfp+geom_bar(mapping=aes(x=x,y=dic),stat="identity",fill=col) +
           geom_text(aes(x=x,y=dic,label=dic %>% round(digits=1.5)), hjust=1.05, color="white", size=5.5) +
           labs(y=toupper(type),x="",title=paste0("Model comparison based on ",toupper(type)),
                color=ifelse(length(mods)==1,"Model","Models")

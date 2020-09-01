@@ -15,7 +15,7 @@
 #' or the combination of the categorical covariates. \code{xlim} = a vector 
 #' determining the limits for the x-axis \code{colors} = a vector of characters 
 #' defining the colours in which to plot the different survival curves 
-#' \code{labs} = a vector of characters defining the names of the models fitted 
+#' \code{lab.trt} = a vector of characters defining the names of the models fitted 
 #' \code{add.km} = TRUE (whether to also add the Kaplan Meier estimates of the data) 
 #' \code{annotate} = FALSE (whether to also add text to highlight the observed vs
 #' extrapolated data)
