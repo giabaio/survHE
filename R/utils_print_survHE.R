@@ -58,8 +58,8 @@ get_stats_hmc <- function(x,mod) {
     }
   }
   # Now calls the helper functions to make the results table
-  res=do.call(paste0("rescale_stats_hmc_",x$misc$model_name),
-              args=list(table,x))
+  res=do.call(paste0("rescale_stats_hmc_",x$misc$model_name[mod]),
+              args=list(table=table,x=x))
   return(res)
 }
 
@@ -98,7 +98,7 @@ rescale_stats_hmc_wei <- function(table,x) {
   shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
   rownames(shape) <- "shape"
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(shape,scale,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -119,7 +119,7 @@ rescale_stats_hmc_wph <- function(table,x) {
   shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
   rownames(shape) <- "shape"
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(shape,scale,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -161,7 +161,7 @@ rescale_stats_hmc_lno <- function(table,x) {
   sigma <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
   rownames(sigma) <- "sdlog"
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(meanlog,sdlog,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -202,8 +202,8 @@ rescale_stats_hmc_llo <- function(table,x) {
   rownames(rate) <- "scale"
   shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
   rownames(shape) <- "shape"
-  effects=add_effects_hmc(table)
-  res <- rbind(shape,rate,effects,x)
+  effects=add_effects_hmc(table,x)
+  res <- rbind(shape,rate,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -228,7 +228,7 @@ rescale_stats_hmc_gef <- function(table,x) {
   P <- matrix(table[match("P",rownames(table)),],ncol=4)
   rownames(P) <- "P"
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(mu,sigma,Q,P,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -251,7 +251,7 @@ rescale_stats_hmc_gga <- function(table,x) {
   Q <- matrix(table[grep("Q",rownames(table)),],ncol=4)
   rownames(Q) <- "Q"
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(mu,sigma,Q,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -313,7 +313,7 @@ rescale_stats_hmc_pow <- function(table,x) {
     paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
   }))
   effects=add_effects_hmc(table,x)
-  res <- rbind(shape,rate,effects)
+  res <- rbind(alpha,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }

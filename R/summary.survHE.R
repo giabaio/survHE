@@ -73,7 +73,7 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   exArgs <- list(...)
   if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
-  if (is.null(t)) {t <- object$misc$km$time} else {t <- t}
+  if (is.null(t)) {t <- sort(unique(fit$misc$km$time))} else {t <- t}
   
   psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
   rlabs <- rownames(psa$des.mat)
@@ -84,13 +84,16 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   }
   if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs <- labs}
   
-  mean.surv <- matrix(unlist(lapply(1:psa$nsim,function(i) {
-    lapply(1:length(psa$S[[1]]),function(j) {
-      xvar <- psa$S[[i]][[j]][,1]
-      yvar <- psa$S[[i]][[j]][,2]
-      sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+  mean.surv=matrix(unlist(
+    lapply(psa$mat,function(i) {
+      lapply(1:psa$nsim,function(j) {
+        xvar=i$t
+        yvar=i[,(j+1)]
+        sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+      })
     })
-  })),nrow = psa$nsim,byrow=T)
+  ),nrow=psa$nsim,byrow=T)
+
   if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
     colnames(mean.surv) <- names(object$misc$km$strata)
   }
