@@ -359,6 +359,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
   if(!is.null(priors$a_alpha)) {a_alpha=priors$a_alpha}
   if(!is.null(priors$b_alpha)) {b_alpha=priors$b_alpha}
   
+  # Returns the list of data
   data.stan
 }
 

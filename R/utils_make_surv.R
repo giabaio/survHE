@@ -415,7 +415,7 @@ rescale.inla <- function(linpred,alpha,distr) {
   }
   if (distr=="llo") {
     shape <- alpha
-    scale <- exp(linpred)
+    scale <- exp(-linpred)
     sim <- cbind(shape,scale) 
     colnames(sim) <- c("shape","scale")
   }
