@@ -251,7 +251,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     }
   }
   
-  if (distr3 %in% c("exp", "gom", "wei", "wph", "llo", "lno")) {
+  if (distr3 %in% c("exp", "gom", "wei", "wph", "llo", "lno","pow")) {
     # If it's one of the others (except polyweibull), use the "h,S" format
     data.stan <- list(t=(mf$time),
                       d=mf$event,
@@ -265,7 +265,8 @@ make_data_stan=function(formula,data,distr3,exArgs) {
       data.stan$H <- ncol(data.stan$X)
     }
   }
-  
+
+  # RPS needs specific data to be created and stored in the 'data.stan' list
   if (distr3=="rps"){
     # If it's Royston-Parmar splines, then gets the correct data 
     if (exists("k",where = exArgs)) {k <- exArgs$k} else {k <- 0}
@@ -495,10 +496,14 @@ format_output_fit.models <- function(output,method,distr,formula,data) {
   misc <- list(
     time2run= unlist(lapply(output, function(x) x$time2run)),
     formula=formula,
-    km=make_KM(formula,data),
     data=data,
     model_name=unlist(lapply(output,function(x) x$model_name))
   )
+  if(distr=="polyweibull") {
+    misc$km=lapply(formula,function(f) make_KM(f,data))
+  } else {
+    misc$km=make_KM(formula,data)
+  }
   
   # HMC-specific extra output
   if(method=="hmc"){
@@ -599,7 +604,8 @@ manipulate_distributions <- function(x){
     "gef" = c("generalisedf", "generalizedf", "genf", "gef"),
     "gof" = c("genf.orig", "gof"),
     "gom" = c("gompertz", "gpz", "gomp", "gompz", "gom"),
-    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps")
+    "rps" = c("roystonparmar", "roystonparmarsplines", "roystonparmarspline", "spline", "splines", "rps"),
+    "pow" = c("polyweibull","pow","PolyWeibull")
   )
   # Human readable label
   labelTable = c(
@@ -627,7 +633,8 @@ manipulate_distributions <- function(x){
     "gef" = "genf",
     "gof" = "genf.orig",
     "gom" = "gompertz",
-    "rps" = "survspline"
+    "rps" = "survspline",
+    "pow" = "polyweibull"
   )
   
   distr = gsub("[ ]*[-]*", "", tolower(x))
@@ -675,6 +682,16 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   if (distr3 %in% c("exp", "wei", "wph", "gom", "lno", "llo","rps")) {
     linpred <- beta%*%t(data.stan$X)
     linpred.hat <- beta.hat%*%t(data.stan$X)
+  } else if(distr3=="pow") {
+    alpha <- rstan::extract(model)$alpha
+    beta.hat <- apply(beta,c(2,3),median)
+    alpha.hat <- apply(alpha,2,median)
+    linpred <- lapply(1:data.stan$M,function(m) {
+      beta[,m,]%*%t(data.stan$X[m,,])
+    })
+    linpred.hat <- lapply(1:data.stan$M,function(m) {
+      beta.hat[m,]%*%t(data.stan$X[m,,])
+    })
   } else {
     linpred <- list(
       lo=beta%*%t(data.stan$X_obs),
@@ -684,9 +701,8 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
       lo.bar=beta.hat%*%t(data.stan$X_obs),
       lc.bar=beta.hat%*%t(data.stan$X_cens)
     )
-    #linpred <- linpred.hat <- NULL
   }
-  
+
   # Now computes the densities using the helper functions
   out=do.call(what=paste0("lik_",distr3),args=list(distr3,linpred,linpred.hat,model,data.stan))
   # Extracts relevant variables from the list (See if there's a better way to do it!)
@@ -705,6 +721,24 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
     loglik.bar <- compute.loglik(f.bar,s.bar)
     D.bar <- -2*loglik.bar
     data.stan$n <- data.stan$n_obs+data.stan$n_cens
+  } else if(distr3=="pow") {
+    # If the model is Poly-Weibull, then computes these quantites directly
+    h <- log_s <- array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
+    h_bar <- log_s_bar <- matrix(NA,data.stan$n,data.stan$M)
+    for (m in 1:data.stan$M) {
+      h_bar[,m] <- alpha.hat[m]*exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m]-1)
+      log_s_bar[,m] <- exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m])
+      for (i in 1:nrow(linpred[[m]])) {
+        h[i,,m] <- alpha[i,m]*exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m]-1)
+        log_s[i,,m] <- exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m])
+      }
+    }
+    d_log_sum_h <- matrix(NA,nrow(alpha),data.stan$n)
+    for (i in 1:nrow(alpha)) {
+      d_log_sum_h[i,] <- data.stan$d * log(rowSums(h[i,,]))
+    }
+    loglik.bar <- sum(data.stan$d*log(rowSums(h_bar))-rowSums(log_s_bar))
+    loglik <- rowSums(d_log_sum_h) - rowSums(log_s,2)
   } else {
     loglik <- apply(logf,1,sum)
     loglik.bar <- apply(logf.hat,1,sum)
@@ -718,7 +752,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
   aic <- D.bar+2*npars                   #mean(D.theta)+2*pD
   bic <- D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
-  
+    
   list(aic=aic,bic=bic,dic=dic,dic2=dic2)
 }
 
@@ -729,6 +763,13 @@ compute.loglik <- function(f,s) {
 }
 
 ### These are utility functions to compute the log-density for the models fitted by hmc
+lik_pow <- function(x,linpred,linpred.hat,model,data.stan) {
+  # Little trick for the Poly-Weibull. Because the distribution is more complex, 
+  # simply computes the relevant variables in the main code and this returns mostly NULL
+  npars <- data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
+  list(logf=NULL,logf.hat=NULL,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
+}
+
 lik_exp <- function(x,linpred,linpred.hat,model,data.stan) {
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
@@ -940,4 +981,5 @@ lik_rps <- function(x,linpred,linpred.hat,model,data.stan) {
     apply(data.stan$X, 2, function(x) 1 - all(x == 0)))
   list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
+
 

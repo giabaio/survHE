@@ -42,6 +42,8 @@ print.survHE <- function(x,mod=1,...) {
   # Can select the number of digits to be printed in the output table
   if(!exists("digits",where=exArgs)){digits=6} else {digits=exArgs$digits}
   if(!exists("original",where=exArgs)){original=FALSE} else {original=exArgs$original}
+  # Aliases for 'original'
+  if(exists("orig",exArgs)){original=exArgs$orig}
   
   # Now computes the stats, using different helpers depending on the underlying method
   # Can ask for the original output from either 'flexsurv', 'inla' or 'rstan'

@@ -293,10 +293,10 @@ rescale_stats_hmc_rps <- function(table,x) {
 #' @references Baio (2020). survHE
 #' @keywords HMC Poly-Weibull
 rescale_stats_hmc_pow <- function(table,x) {
-  # The rescaling function for the Poly-Weibull NEEDS to be checked and possibly re-written!!
-  alpha <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-  rownames(alpha) <- paste0("shape_",1:x$misc$data.stan$M)
-  to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0)))),
+  rownames(table)[grep("alpha",rownames(table))]=paste0("shape_",1:x$misc$data.stan[[mod]]$M)
+
+  # Figures out which beta coefficients should be removed (because they are multiplied by a covariate that is constantly 0)
+  to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan[[mod]]$X[m,,],2,function(x) all(x==0)))),
                nrow=length(x$misc$formula),byrow=T)
   nmatch <- length(which(to.rm==T))
   if(nmatch>0){
@@ -308,12 +308,11 @@ rescale_stats_hmc_pow <- function(table,x) {
     take.out <- match(paste0("beta[",idx,"]"),rownames(table))
   }
   if(all(!is.na(take.out))) {table=table[-take.out,]}
-  effects=table[-grep("alpha",rownames(table)),]
-  rownames(effects) <- unlist(lapply(1:x$misc$data.stan$M,function(m) {
+  effects=table[-grep("shape",rownames(table)),]
+  rownames(effects) <- unlist(lapply(1:x$misc$data.stan[[mod]]$M,function(m) {
     paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
   }))
-  effects=add_effects_hmc(table,x)
-  res <- rbind(alpha,effects)
+  res <- rbind(table[grep("shape",rownames(table)),],effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
@@ -570,41 +569,7 @@ original_table_inla <- function(x,mod,digits) {
 #' @references Baio (2020). survHE
 #' @keywords HMC
 original_table_hmc <- function(x,mod,digits) {
-  #######################################################################################################################################
-  ### NEED TO CHECK HOW THINGS WORK FOR THE POLY-WEIBULL!
-  # if (x$models[[mod]]@model_name=="PolyWeibull") {
-  #   take.out <- betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan$X[m,,],2,function(x) all(x==0))))]
-  # } else {
-  #   take.out <- betas[unlist(lapply(1:length(x$misc$formula),function(m) apply(covmat,2,function(x) all(x==0))))]
-  # }
-  #######################################################################################################################################
-  
-  # Gets the original info from 'rstan
-  table=rstan::summary(x$models[[mod]],probs=c(.025,.975))$summary
-  # Removes the node 'lp___'
-  table=table[-grep("lp__",rownames(table)),]
-  # If the model is intercept only, removes the unnecessary covariates created to suit 'stan' format
-  if("X_obs" %in% names(x$misc$data.stan[[1]])) {
-    if(any(apply(x$misc$data.stan[[1]]$X_obs,2,function(x) all(x==0)))) {
-      table=table[-grep("beta\\[2\\]",rownames(table)),]
-    }
-  } else {
-    if(any(apply(x$misc$data.stan[[1]]$X,2,function(x) all(x==0)))) {
-      table=table[-grep("beta\\[2\\]",rownames(table)),]
-    }
-  }
-  n_kept <- x$models[[mod]]@sim$n_save - x$models[[mod]]@sim$warmup2
-  cat("Inference for Stan model: ", x$models[[mod]]@model_name, ".\n", sep = "")
-  cat(x$models[[mod]]@sim$chains, " chains, each with iter=", x$models[[mod]]@sim$iter, 
-      "; warmup=", x$models[[mod]]@sim$warmup, "; thin=", x$models[[mod]]@sim$thin, "; \n", 
-      "post-warmup draws per chain=", n_kept[1], ", ", "total post-warmup draws=", 
-      sum(n_kept), ".\n\n", sep = "")
-  print(table,digits=digits)
-  sampler <- attr(x$models[[mod]]@sim$samples[[1]], "args")$sampler_t
-  cat("\nSamples were drawn using ", sampler, " at ", x$models[[mod]]@date, 
-      ".\n", "For each parameter, n_eff is a crude measure of effective sample size,\n", 
-      "and Rhat is the potential scale reduction factor on split chains (at \n", 
-      "convergence, Rhat=1).\n", sep = "")
+  print(x$models[[mod]],digits=digits)
 }
 
 
