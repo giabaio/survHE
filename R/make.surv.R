@@ -61,37 +61,48 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   # Defines list with optional parameters
   exArgs <- list(...)
   
-  # Extracts the model object and the data from the survHE output
-  m <- fit$models[[mod]]
-  data <- fit$misc$data
-  # Create a vector of times, if the user hasn't provided one, based on the observed data
-  if(is.null(t)) {
-    t <- sort(unique(fit$misc$km$time))
+  # The Poly-Weibull/HMC model is special and needs a custom function
+  if(fit$misc$model_name=="pow") {
+    pwstuff=make_surv_pw(fit=fit,mod=mod,t=t,newdata=newdata,nsim=nsim,exArgs)
+    sim=pwstuff$sim
+    mat=pwstuff$mat
+    X=pwstuff$X
+    t=pwstuff$t
+  } else {
+    # Any other model/method has a streamlined process using helper functions
+    # Extracts the model object and the data from the survHE output
+    m <- fit$models[[mod]]
+    data <- fit$misc$data
+    # Create a vector of times, if the user hasn't provided one, based on the observed data
+    if(is.null(t)) {
+      t <- sort(unique(fit$misc$km$time))
+    }
+    
+    # Makes sure the distribution name(s) vector is in a useable format
+    dist <- fit$misc$model_name[mod]
+    
+    # Now creates the profile of covariates for which to compute the survival curves
+    X <- make_profile_surv(fit$misc$formula,data,newdata)
+    
+    # Draws a sample of nsim simulations from the distribution of the model parameters
+    sim <- do.call(paste0("make_sim_",fit$method),
+                   args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist,data=data,formula=fit$misc$formula)
+    )
+    # Computes the survival curves - first in matrix form with all the simulations
+    # Needs to add more inputs for the case of hmc/rps
+    if(fit$method=="hmc" & dist=="rps") {
+      exArgs$data.stan <- fit$misc$data.stan[[mod]]
+      t[t==0] <- min(0.00001,min(t[t>0]))
+    }
+    if(fit$method=="mle" & dist=="rps") {
+      exArgs$knots=fit$models[[mod]]$knots
+    }
+    mat <- do.call(compute_surv_curve,
+                   args=list(sim=sim,exArgs=exArgs,nsim=nsim,dist=dist,t=t,method=fit$method,X=X) 
+    )
   }
   
-  # Makes sure the distribution name(s) vector is in a useable format
-  dist <- fit$misc$model_name[mod]
-
-  # Now creates the profile of covariates for which to compute the survival curves
-  X <- make_profile_surv(fit$misc$formula,data,newdata)
-  
-  # Draws a sample of nsim simulations from the distribution of the model parameters
-  sim <- do.call(paste0("make_sim_",fit$method),
-                 args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist,data=data,formula=fit$misc$formula)
-         )
-  # Computes the survival curves - first in matrix form with all the simulations
-  # Needs to add more inputs for the case of hmc/rps
-  if(fit$method=="hmc" & dist=="rps") {
-    exArgs$data.stan <- fit$misc$data.stan[[mod]]
-    t[t==0] <- min(0.00001,min(t[t>0]))
-  }
-  if(fit$method=="mle" & dist=="rps") {
-    exArgs$knots=fit$models[[mod]]$knots
-  }
-  mat <- do.call(compute_surv_curve,
-               args=list(sim=sim,exArgs=exArgs,nsim=nsim,dist=dist,t=t,method=fit$method,X=X) 
-        )
-  # And then in summary forms
+  # Finally computes the actual survival curves, in summary forms
   if (nsim==1) {
     # If nsim=1 then only save the point estimates of the survival curve
     S <-lapply(mat,function(x) x %>% mutate(S=rowMeans(select(.,contains("S")))) %>% select(t,S))
@@ -104,7 +115,6 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
                    ) %>% select(t,S,low,upp)
     })
   }
-  
   
   # Formats the output
   list(S=S,sim=sim,nsim=nsim,mat=mat,des.mat=X,times=t)

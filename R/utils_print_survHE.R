@@ -44,7 +44,8 @@ get_stats_inla <- function(x,mod) {
 get_stats_hmc <- function(x,mod) {
   quiet(print(x$models[[mod]]))
   # Gets the original summary stats from the 'rstan' run
-  table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
+  table = rstan::summary(x$models[[1]])$summary[,c("mean","sd","2.5%","97.5%")]
+  ###table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
   # Removes the node 'lp___'
   table=table[-grep("lp__",rownames(table)),]
   # If the model is intercept only, removes the unnecessary covariates created to suit 'stan' format
@@ -293,10 +294,10 @@ rescale_stats_hmc_rps <- function(table,x) {
 #' @references Baio (2020). survHE
 #' @keywords HMC Poly-Weibull
 rescale_stats_hmc_pow <- function(table,x) {
-  rownames(table)[grep("alpha",rownames(table))]=paste0("shape_",1:x$misc$data.stan[[mod]]$M)
+  rownames(table)[grep("alpha",rownames(table))]=paste0("shape_",1:length(grep("alpha",rownames(table))))
 
   # Figures out which beta coefficients should be removed (because they are multiplied by a covariate that is constantly 0)
-  to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan[[mod]]$X[m,,],2,function(x) all(x==0)))),
+  to.rm=matrix(unlist(lapply(1:length(x$misc$formula),function(m) apply(x$misc$data.stan[[1]]$X[m,,],2,function(x) all(x==0)))),
                nrow=length(x$misc$formula),byrow=T)
   nmatch <- length(which(to.rm==T))
   if(nmatch>0){
@@ -306,10 +307,10 @@ rescale_stats_hmc_pow <- function(table,x) {
   } else {idx=NULL}
   if (!is.null(nrow(idx))) {
     take.out <- match(paste0("beta[",idx,"]"),rownames(table))
-  }
-  if(all(!is.na(take.out))) {table=table[-take.out,]}
+  } else {take.out=NULL}
+  if(all(!is.null(take.out))) {table=table[-take.out,]}
   effects=table[-grep("shape",rownames(table)),]
-  rownames(effects) <- unlist(lapply(1:x$misc$data.stan[[mod]]$M,function(m) {
+  rownames(effects) <- unlist(lapply(1:x$misc$data.stan[[1]]$M,function(m) {
     paste0(colnames(model.matrix(x$misc$formula[[m]],x$misc$data)),"_",m)
   }))
   res <- rbind(table[grep("shape",rownames(table)),],effects)

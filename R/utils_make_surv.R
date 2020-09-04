@@ -345,11 +345,11 @@ rescale_hmc_lno <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC logLogistic
-rescale_hmc_llo <- function(m,X){
+rescale_hmc_llo <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  scale <- exp(rstan::extract(m)$beta %*% t(X))
+  scale <- exp(linpred)
   sim <- cbind(shape,scale) 
   colnames(sim) <- c("shape","scale")
   return(sim)
@@ -638,4 +638,85 @@ make_profile_surv <- function(formula,data,newdata) {
   }
   # Returns the output (the matrix with the covariates profile)
   return(X)
+}
+
+
+# Specialised function to make the PSA values and survival curves for the Poly-Weibull/HMC model
+make_surv_pw=function(fit,mod,t,newdata,nsim,exArgs) {
+  
+  # Extracts the model object and the data from the survHE output
+  m <- fit$models[[mod]]
+  data <- fit$misc$data
+  # Create a vector of times, if the user hasn't provided one, based on the observed data
+  if(is.null(t)) {
+    t <- sort(unique(fit$misc$km[[mod]]$time))
+  }
+  
+  # Makes sure the distribution name(s) vector is in a useable format
+  dist <- fit$misc$model_name[mod]
+  
+  # Now creates the profile of covariates for which to compute the survival curves
+  X <- lapply(fit$misc$formula,function(f) make_profile_surv(f,data,newdata))
+  
+  # Extracts the model object from the survHE output
+  iter_stan <- m@stan_args[[1]]$iter
+  # Coefficients (NB array with size nsim, M=number of mixture components, H=maximum number of covariates)
+  beta=rstan::extract(m)$beta
+  alpha=rstan::extract(m)$alpha
+  
+  if(nsim>iter_stan) {
+    stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
+  }
+  if(nsim==1) {
+    # If the user requested only 1 simulation, then take the mean value
+    beta=array(apply(beta,c(3,2),mean),dim=c(1,dim(beta)[2],dim(beta)[3]))
+    alpha=matrix(apply(alpha,2,mean),nrow=1,ncol=ncol(alpha))
+  }
+  if(nsim>1 & nsim<iter_stan) {
+    # If the user selected a number of simulation < the one from rstan, then select a random sample 
+    beta=beta[sample(1:iter_stan,nsim,replace=FALSE),,]
+    alpha=alpha[sample(1:iter_stan,nsim,replace=FALSE),]
+  }
+  
+  # Checks that the coefficients and covariate matrix are conformable
+  # This is because the formula has different length for the components so needs to
+  # create "fake" covariates for the components with fewer covariates...
+  truecovs=unlist(lapply(X,function(i) ncol(i)))
+  ncomponents=length(truecovs)
+  linpred=lapply(1:ncomponents,function(i) beta[,i,1:truecovs[i]]%*%X[[i]])
+  
+  # All combinations of the underlying covariates
+  combs=expand.grid(lapply(X,function(i) 1:ncol(i)))
+
+  # Computes the simulation for the model parameters
+  sim=lapply(1:nrow(combs),function(i) {
+    lapply(1:length(linpred),function(l) {
+     exp(linpred[[l]][,combs[i,l]])
+   }) %>% bind_cols(.,.name_repair = ~ vctrs::vec_as_names(..., repair = "unique", quiet = TRUE)) 
+  })
+  
+  # Computes the matrix of simulations from the survival curves
+  mat=lapply(1:nrow(combs),function(i) {
+    lapply(1:nsim,function(k) {
+      exp(-(lapply(1:ncomponents,function(m) {
+        as.numeric(sim[[i]][k,m])*t^alpha[k,m]
+      }) %>% bind_cols(.,.name_repair=~vctrs::vec_as_names(...,repair="unique",quiet=TRUE)) %>% rowSums()))
+    }) %>% bind_cols(.,.name_repair=~vctrs::vec_as_names(...,repair="unique",quiet=TRUE))
+  })
+  for (i in 1:length(mat)){colnames(mat[[i]])=paste0("S_",1:nsim)}
+  mat <- mat %>% lapply(function(x) bind_cols(as_tibble(t),as_tibble(x)) %>% rename(t=value))
+  
+  # Now adds the shape parameters to the sim list
+  sim=lapply(1:length(sim),function(l) {
+    sim[[l]] %>% bind_cols(alpha %>% as_tibble(),.name_repair = ~ vctrs::vec_as_names(..., repair = "unique", quiet = TRUE))
+  })
+  for(m in 1:length(sim)) {
+    names(sim[[m]])=c(paste0("scale_component_",1:ncomponents),paste0("shape_",1:ncomponents))
+  }
+  
+  # Updates the model formulae to a single one with *all* the covariates
+  comb.formula=update(fit$misc$formula[[1]],paste("~.+",terms(fit$misc$formula[[2]]))[[3]])
+  X=unique(model.matrix(comb.formula,data))
+
+  list(sim=sim,mat=mat,X=X,t=t)
 }
