@@ -31,21 +31,12 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
   }
   # Then if 'nsim'=1, then take the average over the bootstrap samples
   if(nsim==1) {
-    if(nrow(X)==1) {
-      sim=list(sim %>% as_tibble() %>% summarise_all(mean) %>% as.matrix(.,ncol=ncol(X)))
-    } else {
-      sim=lapply(sim,function(x) x %>% as_tibble() %>% summarise_all(mean) %>% as.matrix(.,ncol=ncol(X)))
-    }
+    sim=lapply(sim,function(x) x %>% as_tibble() %>% summarise_all(mean) %>% as.matrix(.,ncol=ncol(X)))
   } 
   # If nsim<=5000 (number of bootstrap samples), then samples only 'nsim' of them
   if(nsim>1 & nsim<nboot) {
-    if (nrow(X)==1) {
-      sim=list(sim %>% as_tibble %>% sample_n(ifelse(nsim<nboot,nsim,B),replace=FALSE) %>% 
-        as.matrix(.,nrow=nsim,ncol=ncol(X)))
-    } else {
-      sim=lapply(sim,function(x) x %>% as_tibble %>% sample_n(ifelse(nsim<nboot,nsim,B),replace=FALSE) %>% 
-                   as.matrix(.,nrow=nsim,ncol=ncol(X)))
-    }
+    sim=lapply(sim,function(x) x %>% as_tibble %>% sample_n(ifelse(nsim<nboot,nsim,B),replace=FALSE) %>% 
+                 as.matrix(.,nrow=nsim,ncol=ncol(X)))
   }
   return(sim)
 }
@@ -656,7 +647,8 @@ make_surv_pw=function(fit,mod,t,newdata,nsim,exArgs) {
   dist <- fit$misc$model_name[mod]
   
   # Now creates the profile of covariates for which to compute the survival curves
-  X <- lapply(fit$misc$formula,function(f) make_profile_surv(f,data,newdata))
+  X <- lapply(1:length(fit$misc$formula),function(i) make_profile_surv(fit$misc$formula[[i]],data,newdata[[i]]))
+  #X <- lapply(fit$misc$formula,function(f) make_profile_surv(f,data,newdata))
   
   # Extracts the model object from the survHE output
   iter_stan <- m@stan_args[[1]]$iter
@@ -664,59 +656,84 @@ make_surv_pw=function(fit,mod,t,newdata,nsim,exArgs) {
   beta=rstan::extract(m)$beta
   alpha=rstan::extract(m)$alpha
   
-  if(nsim>iter_stan) {
-    stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
-  }
-  if(nsim==1) {
-    # If the user requested only 1 simulation, then take the mean value
-    beta=array(apply(beta,c(3,2),mean),dim=c(1,dim(beta)[2],dim(beta)[3]))
-    alpha=matrix(apply(alpha,2,mean),nrow=1,ncol=ncol(alpha))
-  }
-  if(nsim>1 & nsim<iter_stan) {
-    # If the user selected a number of simulation < the one from rstan, then select a random sample 
-    beta=beta[sample(1:iter_stan,nsim,replace=FALSE),,]
-    alpha=alpha[sample(1:iter_stan,nsim,replace=FALSE),]
-  }
-  
   # Checks that the coefficients and covariate matrix are conformable
   # This is because the formula has different length for the components so needs to
   # create "fake" covariates for the components with fewer covariates...
   truecovs=unlist(lapply(X,function(i) ncol(i)))
   ncomponents=length(truecovs)
-  linpred=lapply(1:ncomponents,function(i) beta[,i,1:truecovs[i]]%*%X[[i]])
+  linpred=lapply(1:ncomponents,function(i) beta[,i,1:truecovs[i]]%*%t(X[[i]]))
   
-  # All combinations of the underlying covariates
-  combs=expand.grid(lapply(X,function(i) 1:ncol(i)))
-
-  # Computes the simulation for the model parameters
-  sim=lapply(1:nrow(combs),function(i) {
-    lapply(1:length(linpred),function(l) {
-     exp(linpred[[l]][,combs[i,l]])
-   }) %>% bind_cols(.,.name_repair = ~ vctrs::vec_as_names(..., repair = "unique", quiet = TRUE)) 
+  # Creates a list of lists containing the simulations for the rescaled model parameters
+  # 'sim' has M elements (as many as the components of the mixture). Each of these has
+  # as many elements as there are in the profile matrix for that component
+  sim=lapply(1:ncomponents,function(k) {
+    lapply(1:nrow(X[[k]]),function(i) {
+      cbind(
+        shape=as.numeric(rstan::extract(m)$alpha[,k]),
+        rate=exp(linpred[[k]][,i])
+      ) %>% as_tibble()
+    })
   })
   
-  # Computes the matrix of simulations from the survival curves
+  # Selects the relevant number of simulations depending on the value of 'nsim'
+  if(nsim>iter_stan) {
+    stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
+  }
+  if(nsim==1) {
+    # If the user requested only 1 simulation, then take the mean value
+    sim=lapply(sim,function(x){
+      lapply(1:length(x),function(i) {
+        as.matrix(as_tibble(x[[i]]) %>% summarise_all(mean),nrow=1,ncol=ncol(x[[i]]))
+      })
+    })
+  }
+  if(nsim>1 & nsim<iter_stan) {
+    # If the user selected a number of simulation < the one from rstan, then select a random sample 
+    sim=lapply(sim,function(x) {
+      lapply(1:length(x),function(i) {
+        as.matrix(as_tibble(x[[i]]) %>% sample_n(nsim,replace=FALSE),nrow=nsim,ncol=ncol(x[[i]]))
+      })
+    })
+  }
+  
+  # Now makes some work to compute the survival curves. First rescale the rates by times and shape
+  vals=lapply(sim,function(k) {
+    lapply(1:length(k),function(i) {
+      matrix(
+        unlist(
+          lapply(1:nsim,function(j) {
+            as.numeric(k[[i]][j,"rate"])*t^as.numeric(k[[i]][j,"shape"])
+          })
+        ),nrow=length(t),ncol=nsim
+      )
+    })
+  })
+  dims=unlist(lapply(vals,length))
+  # If 'vals' has 1 element only in each component, then obviously need to use these
+  if(all(dims==1)) {
+    combs=matrix(1,nrow=1,ncol=length(vals))
+  } else {
+    # Creates a matrix of indicators for the combination of the covariates
+    combs=expand.grid(lapply(X,function(i) 1:ncol(i)))
+  }
+  
+  
+  # Creates the list of matrices with the simulations from the survival curves
   mat=lapply(1:nrow(combs),function(i) {
-    lapply(1:nsim,function(k) {
-      exp(-(lapply(1:ncomponents,function(m) {
-        as.numeric(sim[[i]][k,m])*t^alpha[k,m]
-      }) %>% bind_cols(.,.name_repair=~vctrs::vec_as_names(...,repair="unique",quiet=TRUE)) %>% rowSums()))
-    }) %>% bind_cols(.,.name_repair=~vctrs::vec_as_names(...,repair="unique",quiet=TRUE))
+    eval(parse(text=paste0("exp(- (",paste0("vals[[",1:ncol(combs),"]][[",combs[i,],"]]",collapse="+"),") )")))
   })
+  
   for (i in 1:length(mat)){colnames(mat[[i]])=paste0("S_",1:nsim)}
   mat <- mat %>% lapply(function(x) bind_cols(as_tibble(t),as_tibble(x)) %>% rename(t=value))
   
-  # Now adds the shape parameters to the sim list
-  sim=lapply(1:length(sim),function(l) {
-    sim[[l]] %>% bind_cols(alpha %>% as_tibble(),.name_repair = ~ vctrs::vec_as_names(..., repair = "unique", quiet = TRUE))
-  })
-  for(m in 1:length(sim)) {
-    names(sim[[m]])=c(paste0("scale_component_",1:ncomponents),paste0("shape_",1:ncomponents))
-  }
-  
   # Updates the model formulae to a single one with *all* the covariates
-  comb.formula=update(fit$misc$formula[[1]],paste("~.+",terms(fit$misc$formula[[2]]))[[3]])
-  X=unique(model.matrix(comb.formula,data))
+  if(is.null(newdata)) {
+    comb.formula=update(fit$misc$formula[[1]],paste("~.+",paste(lapply(fit$misc$formula,function(i) terms(i)[[3]]),collapse="+")))
+    X=make_profile_surv(comb.formula,data,newdata)
+  } else {
+    X=matrix(0,nrow=length(mat),ncol=1);
+    colnames(X)="Custom profile"
+  }
 
   list(sim=sim,mat=mat,X=X,t=t)
 }

@@ -130,9 +130,9 @@ poly.weibull <- function(formula=NULL,data,...) {
   # Maximum number of covariates
   data.stan$H=max(unlist(lapply(X,function(i) ncol(i))))
   # Fills the array in the data list with the covariates matrices
-  data.stan$X=array(NA,dim=c(data.stan$M,data.stan$n,data.stan$H))
+  data.stan$X=array(0,dim=c(data.stan$M,data.stan$n,data.stan$H))
   for (m in 1:length(formula)) {
-    data.stan$X[m,,]=X[[m]]
+    data.stan$X[m,,1:ncol(X[[m]])]=X[[m]]
   }
   data.stan$mu_beta <- matrix(0,nrow=data.stan$H,ncol=data.stan$M)
   data.stan$sigma_beta <- matrix(10,data.stan$H,data.stan$M)
