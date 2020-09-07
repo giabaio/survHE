@@ -19,6 +19,14 @@
 #' \code{add.km} = TRUE (whether to also add the Kaplan Meier estimates of the data) 
 #' \code{annotate} = FALSE (whether to also add text to highlight the observed vs
 #' extrapolated data)
+#' \code{legend.position} = a vector of proportions to place the legend. Default
+#' to 'c(.75,.9)', which means 75% across the x-axis and 90% across the y-axis
+#' \code{legend.title} = suitable instructions to format the title of the legend;
+#' defaults to 'element_text(size=15,face="bold")' but there may be other 
+#' arguments that can be added (using 'ggplot' facilities)
+#' \code{legend.text} = suitable instructions to format the text of the legend;
+#' defaults to 'element_text(colour="black", size=14, face="plain")' but there 
+#' may be other arguments that can be added (using 'ggplot' facilities)
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso Something will go here
@@ -126,9 +134,28 @@ plot_ggplot_survHE <- function(exArgs) {
       geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
       geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
-      annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5)
+      annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5) +
+      ylim(-0.01,1)
+  } else{
+    surv.curv=surv.curv+ylim(0,1)
   }
-  
+  if(exists("legend.position",exArgs)){
+    surv.curv=surv.curv+theme(legend.position=exArgs$legend.position)
+  }
+  if(exists("legend.title",exArgs)){
+    surv.curv=surv.curv+theme(legend.title=exArgs$legend.title)
+  }
+  if(exists("legend.text",exArgs)){
+    surv.curv=surv.curv+theme(legend.text=exArgs$legend.text)
+  }
+  # to remove the profiles legend
+  #surv.curv=surv.curv+guides(linetype=FALSE)
+  # to modify the profile legend
+  #surv.curv=surv.curv+scale_linetype_discrete(name="XXX",label=c("XX","YY","ZZ"))
+  # to remove the models legend
+  #surv.curv=surv.curv+guides(colour=FALSE)
+  # to modify the profile legend
+  #surv.curv=surv.curv+scale_color_discrete(name="XXX",label=c("XX","YY","ZZ"))
   # +scale_linetype_manual(labels=c("Control","Treated"),values=c("dotdash","solid"))
 
   # Now prints the plot

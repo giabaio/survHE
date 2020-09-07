@@ -20,12 +20,14 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
   nboot=100000
   B=ifelse(nsim<nboot,nboot,nsim)
   if(is.null(newdata)) {
+    #####X=X %>% as_tibble()
     # NB: 'flexsurv' needs to exclude the intercept
     if(grep("Intercept",colnames(X))>0) {
       # If the intercept is part of the design matrix X then remove it
       X=matrix(X[,-grep("Intercept",colnames(X))],nrow=nrow(X))
+      #####X=X %>% select(-`(Intercept)`)
     } 
-    sim=flexsurv::normboot.flexsurvreg(m,B=B,X=as.matrix(X))
+    sim=list(flexsurv::normboot.flexsurvreg(m,B=B,X=as.matrix(X)))
   } else {
     sim <- lapply(1:nrow(X),function(i) flexsurv::normboot.flexsurvreg(m,B=B,newdata=newdata[[i]]))
   }
@@ -319,7 +321,7 @@ rescale_hmc_lno <- function(m,X,linpred){
   # logNormal distribution
   sdlog <- as.numeric(rstan::extract(m)$alpha)
   meanlog <- linpred #rstan::extract(m)$beta %*% t(X)
-  sim <- cbind(meanlog,sigma) 
+  sim <- cbind(meanlog,sdlog) 
   colnames(sim) <- c("meanlog","sdlog")
   return(sim)
 }
@@ -462,7 +464,7 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
                 log=log
               ))
             })
-          )
+          ),nrow=length(t),ncol=nsim,byrow=FALSE
         )
       })
     } 
@@ -490,7 +492,8 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
               log=log
             ))
           })
-        ))
+          ),nrow=length(t),ncol=nsim,byrow=FALSE
+        )
       })
     }
   } else {
@@ -545,7 +548,7 @@ args_surv <- function() {
 #' @param data A data frame containing the data to be used for the analysis.
 #' This must contain data for the 'event' variable. In case there is no
 #' censoring, then \code{event} is a column of 1s.
-#' @param newdata a list (of lists), specifiying the values of the covariates
+#' @param newdata a list **of lists**, specifiying the values of the covariates
 #' at which the computation is performed. For example
 #' \code{list(list(arm=0),list(arm=1))} will create two survival curves, one
 #' obtained by setting the covariate \code{arm} to the value 0 and the other by
@@ -591,7 +594,7 @@ make_profile_surv <- function(formula,data,newdata) {
   X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean) 
   # If there's at least one factor with more than 2 levels, then do *not* rename the columns to the simpler version
   # which only has the name of the variable (rather than the combination, eg 'groupMedium' that R produces)
-  if(all(unlist(lapply(fac.levels,length))<2)) {colnames(X)=colnames(covs)}
+  if(all(unlist(lapply(fac.levels,length))<=2)) {colnames(X)=colnames(covs)}
   
   # The way the object X *must* be formatted depends on which way it's been generated.
   # The point is that it *always* has to be a matrix for other functions to process
@@ -602,11 +605,6 @@ make_profile_surv <- function(formula,data,newdata) {
       # If there's at least one factor with more than 2 levels, then do *not* rename the columns to the simpler version
       # which only has the name of the variable (rather than the combination, eg 'groupMedium' that R produces)
       if(all(unlist(lapply(fac.levels,length))<2)) {colnames(X)=colnames(covs)}
-      # X=apply(
-      #   covs %>% unique %>%  mutate(across(.cols=everything(),.fns=factor)) %>% 
-      #     mutate(across(.cols=everything(),.fns=as.numeric)),2,as.numeric
-      # )
-      #X <- apply(covs %>% unique(.),2,as.numeric)
     } else {
       X <- as.matrix(X,nrow=nrow(X),ncol=ncol(X))
     }
@@ -618,15 +616,25 @@ make_profile_surv <- function(formula,data,newdata) {
     if (!all(n.provided==ncovs)) {
       stop("You need to provide data for *all* the covariates specified in the model, in the list 'newdata'")
     } else {
-      # Creates a design matrix containing the information provided in 'newdata'
-      X <- bind_rows(lapply(newdata,function(x) as_tibble(x)))
-      # But if there's an intercept in the model matrix, then add it
-      if ("(Intercept)" %in% colnames(model.matrix(formula,data))) {
-        X <- X %>% mutate(`(Intercept)`=1) %>% select(`(Intercept)`,everything())
-      }
-      X <- as.matrix(X)
+      # Turns the list 'newdata' into a data.frame & ensures the factors are indeed factors
+      nd=do.call(rbind.data.frame,newdata) %>% as_tibble() %>% 
+        mutate(across(names(is.fac),factor))
+      # Augments the original data with the values supplied in 'newdata'. To make things work, 
+      # needs to change the type of variables that are 'factors' in the analysis as well as remove
+      # the NAs and replace with 0s
+      aug_data=data %>% mutate(across(names(is.fac),factor)) %>% add_row(nd) %>% replace(is.na(.),0)
+      # Creates a model frame with IDs
+      mf=model.frame(formula,aug_data) %>% as_tibble() %>% select(-1) %>% 
+        mutate(id=row_number()) %>% rename_if(is.factor,.funs=~gsub("as.factor[( )]","",.x)) %>% 
+        rename_if(is.factor,.funs=~gsub("[( )]","",.x))
+      # Now creates the 'model matrix' with the combination of all the factors
+      mm=model.matrix(formula,aug_data) %>% as_tibble() %>% mutate(id=row_number())
+      mf=suppressMessages(mf %>% right_join(nd))
+      # And selects only the rows that match with the profile selected in 'newdata'
+      X=as.matrix(mm %>% filter(id %in% mf$id) %>% select(-id) %>% unique,drop=FALSE)
     }
   }
+  
   # Returns the output (the matrix with the covariates profile)
   return(X)
 }

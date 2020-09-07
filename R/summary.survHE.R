@@ -73,14 +73,16 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   exArgs <- list(...)
   if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
-  if (is.null(t)) {t <- sort(unique(fit$misc$km$time))} else {t <- t}
+  if(is.null(t)) {
+    t <- sort(unique(object$misc$km[mod]$time))
+  }
   
   psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
   rlabs <- rownames(psa$des.mat)
   if (!is.null(rlabs)) {
     rlabs <- gsub("^1,","",rlabs)
   } else {
-    rlabs <- ""
+    rlabs <- rep("",length(psa$sim))
   }
   if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs <- labs}
   
@@ -102,15 +104,15 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   if(psa$nsim>1) {
     tab <- make.stats(mean.surv)
     rownames(tab) <- rlabs
-    # if(!is.null(names(x$misc$km$strata))) {
-    #   if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
-    #     rownames(tab) <- names(x$misc$km$strata)
-    #   } else {
-    #     rownames(tab) <- rlabs
-    #   }
-    # } else {
-    #   rownames(tab) <- rlabs
-    # }
+    if(!is.null(names(object$misc$km$strata))) {
+      if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
+        rownames(tab) <- names(object$misc$km$strata)
+      } else {
+        rownames(tab) <- rlabs
+      }
+    } else {
+      rownames(tab) <- rlabs
+    }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
     cat(paste0("\n*Computed over the range: [",paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))

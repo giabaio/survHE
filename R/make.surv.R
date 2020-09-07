@@ -62,7 +62,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
   exArgs <- list(...)
   
   # The Poly-Weibull/HMC model is special and needs a custom function
-  if(fit$misc$model_name=="pow") {
+  if(fit$misc$model_name[mod]=="pow") {
     pwstuff=make_surv_pw(fit=fit,mod=mod,t=t,newdata=newdata,nsim=nsim,exArgs)
     sim=pwstuff$sim
     mat=pwstuff$mat

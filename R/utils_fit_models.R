@@ -499,7 +499,7 @@ format_output_fit.models <- function(output,method,distr,formula,data) {
     data=data,
     model_name=unlist(lapply(output,function(x) x$model_name))
   )
-  if(distr=="polyweibull") {
+  if(any(distr=="polyweibull")) {
     misc$km=lapply(formula,function(f) make_KM(f,data))
   } else {
     misc$km=make_KM(formula,data)

@@ -42,9 +42,9 @@ get_stats_inla <- function(x,mod) {
 #' @references Baio (2020). survHE
 #' @keywords HMC
 get_stats_hmc <- function(x,mod) {
-  quiet(print(x$models[[mod]]))
+  ######quiet(print(x$models[[mod]]))
   # Gets the original summary stats from the 'rstan' run
-  table = rstan::summary(x$models[[1]])$summary[,c("mean","sd","2.5%","97.5%")]
+  table = rstan::summary(x$models[[mod]])$summary[,c("mean","sd","2.5%","97.5%")]
   ###table <- cbind(x$models[[mod]]@.MISC$summary$msd,x$models[[mod]]@.MISC$summary$quan[,c("2.5%","97.5%")])
   # Removes the node 'lp___'
   table=table[-grep("lp__",rownames(table)),]
@@ -159,8 +159,8 @@ rescale_stats_hmc_gom <- function(table,x) {
 rescale_stats_hmc_lno <- function(table,x) {
   meanlog <- matrix(table[grep("meanlog",rownames(table)),],ncol=4)
   rownames(meanlog) <- "meanlog"
-  sigma <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
-  rownames(sigma) <- "sdlog"
+  sdlog <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
+  rownames(sdlog) <- "sdlog"
   effects=add_effects_hmc(table,x)
   res <- rbind(meanlog,sdlog,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
