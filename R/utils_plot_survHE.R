@@ -131,11 +131,13 @@ plot_ggplot_survHE <- function(exArgs) {
     cutoff=max(survHE_objs[[1]]$misc$km$time)
     surv.curv=surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
       geom_segment(aes(x=cutoff,y=-Inf,xend=cutoff,yend=-.01),size=0.9) + 
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.3,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
       annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5) +
-      ylim(-0.01,1)
+      ylim(-0.01,1) + 
+      geom_rect(data=data.frame(xmin=-Inf,xmax=cutoff,ymin=-Inf,ymax=Inf),
+                aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),fill="grey",alpha=.1)
   } else{
     surv.curv=surv.curv+ylim(0,1)
   }
