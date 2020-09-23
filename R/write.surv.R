@@ -23,7 +23,8 @@
 #' @export write.surv
 write.surv <- function(object,file,sheet=NULL,what="surv") {
   # Writes the survival summary to an excel file (helpful to then call the values in the Markov model)
-  # object = a summary.flexsurvreg object containing the survival curves (with times, estimates and interval limits)
+  # object = a summary.flexsurvreg object containing the survival curves (with times, estimates and interval limits) - that's actually
+  # the result of the PSA from 'make.surv'
   # file = a string with the full path to the file name to be saved
   # sheet = a string with the name of the sheet to be created
   # what = the object to be exported. Possible values are:
@@ -44,42 +45,27 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
       export <- object$mat
       export.lab <- paste0(object$nsim," simulation(s) for the survival curve:")
       nobjs <- length(export)
-      profile.lab <- unlist(lapply(1:nobjs,function(i) paste0("[[",i,"]] = ",rownames(object$des.mat)[i],"\n")))
+      ###profile.lab <- unlist(lapply(1:nobjs,function(i) paste0("[[",i,"]] = ",rownames(object$des.mat)[i],"\n")))
       dims <- dim(export[[1]])
       # Finds the total number of rows necessary to write the simulations to the output file
       tot.rows <- dims[1]*nobjs + nobjs
-      cn <- as.character(object$S[[1]][[1]][,1])
-      for (i in 1:nobjs) {
-        colnames(export[[i]]) <- paste0("t_",cn)
-      }
+    } else {
+      export=object$sim
     }
     
-    # # Gets the extension of the file --- then decides whether to do write.csv or xlsx (do we want more formats??)
-    # exts <- tools::file_ext(file)
-    # if(exts=="csv") {
-    #   out=export[[1]]
-    #   if (nobjs>1) {
-    #     for (i in 2:nobjs) {
-    #       out <- rbind(out,rep(NA,ncol(out)),export[[i]])
-    #     }
-    #   }
-    #   write.csv(out,file=file)
-    # }
-    
-    if(is.null(sheet)) {sheet <- "Sheet 1"}
+    if(is.null(sheet)) {
+      sheet = paste("Sheet",1:nobjs)
+    }
     
     # If it already exists, we need to append the data to a different sheet
     if (file.exists(file)) {
       wb <- xlsx::loadWorkbook(file)
       # If worksheet already exists needs to replace it & overwrite it
-      if (sheet %in% names(xlsx::getSheets(wb))) {xlsx::removeSheet(wb,sheetName=sheet)}
-      sheet <- xlsx::createSheet(wb,sheet)
-      sr <- seq(from=1,by=(dims[1]+2),to=tot.rows)
-      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=sr[i],startColumn=1,row.names=T,col.names=T))
-      # sc <- seq(from=1,by=5,length.out=nobjs)
-      # for (i in 1:nobjs) {
-      #   xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=1,startColumn=sc[i],row.names=F)
-      # }
+      for (i in 1:length(sheet)){
+        if(sheet[i] %in% names(xlsx::getSheets(wb))) {xlsx::removeSheet(wb,sheetName=sheet[i])}
+      }
+      sheet <- lapply(sheet,function(i) xlsx::createSheet(wb,i))
+      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet[[i]],startRow=1,startColumn=1,row.names=T,col.names=T))
       xlsx::saveWorkbook(wb,file)
     }
     
@@ -88,13 +74,8 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
       exts <- tools::file_ext(file)
       ## Should put some restriction as to what file extensions we want?
       wb <- xlsx::createWorkbook(type=exts)
-      sheet <- xlsx::createSheet(wb,sheet)
-      sr <- seq(from=1,by=(dims[1]+2),to=tot.rows)
-      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=sr[i],startColumn=1,row.names=T,col.names=T))
-      # sc <- seq(from=1,by=5,length.out=nobjs)
-      # for (i in 1:nobjs) {
-      #   xlsx::addDataFrame(object[[i]],sheet=sheet,startRow=1,startColumn=sc[i],row.names=F)
-      # }
+      sheet <- lapply(sheet,function(i) xlsx::createSheet(wb,i))
+      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet[[i]],startRow=1,startColumn=1,row.names=T,col.names=T))
       xlsx::saveWorkbook(wb,file)
     }
     

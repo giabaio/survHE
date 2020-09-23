@@ -74,7 +74,11 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
   if(is.null(t)) {
-    t <- sort(unique(object$misc$km[mod]$time))
+    if(object$misc$model_name=="pow") {
+      t <- sort(unique(object$misc$km[[mod]]$time))
+    } else {
+      t <- sort(unique(object$misc$km$time))
+    }
   }
   
   psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
