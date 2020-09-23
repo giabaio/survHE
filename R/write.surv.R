@@ -44,20 +44,19 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     if(what=="surv") {
       export <- object$mat
       export.lab <- paste0(" ",object$nsim," simulation(s) for the survival curve")
-      nobjs <- length(export)
-      profile.lab=lapply(1:nrow(object$des.mat),function(x){
-        object$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
-          round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
-      }) %>% bind_rows(.) %>% pull(strata)
-      
-      ###profile.lab <- unlist(lapply(1:nobjs,function(i) paste0("[[",i,"]] = ",rownames(object$des.mat)[i],"\n")))
-      dims <- dim(export[[1]])
-      # Finds the total number of rows necessary to write the simulations to the output file
-      tot.rows <- dims[1]*nobjs + nobjs
     } else {
       export=object$sim
+      export.lab <- paste0(" ",object$nsim," simulation(s) for the model parameters")
     }
-    
+    nobjs <- length(export)
+    profile.lab=lapply(1:nrow(object$des.mat),function(x){
+      object$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
+        round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
+    }) %>% bind_rows(.) %>% pull(strata)
+    dims <- dim(export[[1]])
+    # Finds the total number of rows necessary to write the simulations to the output file
+    tot.rows <- dims[1]*nobjs + nobjs
+
     if(is.null(sheet)) {
       sheet = paste("Sheet",1:nobjs)
       sheet = profile.lab
