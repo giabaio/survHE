@@ -43,8 +43,13 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     # Extracts the relevant component of the make.surv output
     if(what=="surv") {
       export <- object$mat
-      export.lab <- paste0(object$nsim," simulation(s) for the survival curve:")
+      export.lab <- paste0(" ",object$nsim," simulation(s) for the survival curve")
       nobjs <- length(export)
+      profile.lab=lapply(1:nrow(object$des.mat),function(x){
+        object$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
+          round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
+      }) %>% bind_rows(.) %>% pull(strata)
+      
       ###profile.lab <- unlist(lapply(1:nobjs,function(i) paste0("[[",i,"]] = ",rownames(object$des.mat)[i],"\n")))
       dims <- dim(export[[1]])
       # Finds the total number of rows necessary to write the simulations to the output file
@@ -55,6 +60,7 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     
     if(is.null(sheet)) {
       sheet = paste("Sheet",1:nobjs)
+      sheet = profile.lab
     }
     
     # If it already exists, we need to append the data to a different sheet
@@ -79,7 +85,7 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
       xlsx::saveWorkbook(wb,file)
     }
     
-    msg <- paste0("Written to file: ",file)
-    cat(export.lab,"\n",profile.lab,"\n",msg,"\n")
+    msg <- paste0("written to file: '",file,"'")
+    cat(export.lab,msg,"\n","Profile(s):",paste("\n  ",profile.lab),"\n")
   }
 }
