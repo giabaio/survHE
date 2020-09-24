@@ -335,8 +335,8 @@ make_data_stan=function(formula,data,distr3,exArgs) {
   if(exists("priors",where=exArgs)) {
     # Checks whether the user has specified the current model in the named list 'priors'
     abbrs=manipulate_distributions(names(exArgs$priors))$distr3
-    pos=grep(d3,abbrs)
-    if(pos>0) {
+    pos=grep(distr3,abbrs)
+    if(length(pos)>0) {
       priors = exArgs$priors[[pos]]
     }
   }
