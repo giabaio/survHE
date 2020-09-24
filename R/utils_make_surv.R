@@ -15,7 +15,7 @@
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords MLE
-make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
+make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
   # Simulates from the distribution of the model parameters - takes 100000 bootstrap samples
   nboot=100000
   B=ifelse(nsim<nboot,nboot,nsim)
@@ -37,9 +37,9 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,...) {
     # If there are newdata, then create the list of sims using it
     sim <- lapply(1:nrow(X),function(i) flexsurv::normboot.flexsurvreg(m,B=B,newdata=newdata[[i]]))
   }
-  # Then if 'nsim'=1, then take the average over the bootstrap samples
+  # Then if 'nsim'=1, then take the average over the bootstrap samples. 
   if(nsim==1) {
-    sim=lapply(sim,function(x) x %>% as_tibble() %>% summarise_all(mean) %>% as.matrix(.,ncol=ncol(X)))
+    sim=lapply(sim,function(x) x %>% as_tibble() %>% summarise_all(summary_stat) %>% as.matrix(.,ncol=ncol(X)))
   } 
   # If nsim<=5000 (number of bootstrap samples), then samples only 'nsim' of them
   if(nsim>1 & nsim<nboot) {
@@ -123,7 +123,7 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC
-make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
+make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
 
   # Extracts the model object from the survHE output
   iter_stan <- m@stan_args[[1]]$iter
@@ -146,7 +146,7 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,...) {
   }
   if(nsim==1) {
     # If the user requested only 1 simulation, then take the mean value
-    sim <- lapply(sim,function(x) as.matrix(as_tibble(x) %>% summarise_all(mean),nrow=1,ncol=ncol(x)))
+    sim <- lapply(sim,function(x) as.matrix(as_tibble(x) %>% summarise_all(summary_stat),nrow=1,ncol=ncol(x)))
   }
   if(nsim>1 & nsim<iter_stan) {
     # If the user selected a number of simulation < the one from rstan, then select a random sample 
@@ -257,7 +257,8 @@ rescale_hmc_gam <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gamma distribution
   shape <- as.numeric(rstan::extract(m)$alpha)
-  rate <- 1/exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
+  # NB: for the Gamma model, the linpred is already the log-rate!
+  rate <- exp(linpred)
   sim <- cbind(shape,rate) 
   colnames(sim) <- c("shape","rate")
   return(sim)
@@ -279,8 +280,9 @@ rescale_hmc_gga <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised Gamma distribution
   Q <- as.numeric(rstan::extract(m)$Q)
-  sigma <- as.numeric(rstan(extract(m)$sigma))
-  mu <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
+  sigma <- as.numeric(rstan::extract(m)$sigma)
+  # NB: The linpred is already the mean mu on the natural scale so no need to exponentiate!
+  mu <- linpred
   sim <- cbind(mu,sigma,Q) 
   colnames(sim) <- c("mu","sigma","Q")
   return(sim)
@@ -303,9 +305,10 @@ rescale_hmc_gef <- function(m,X,linpred){
   # Generalised F distribution
   Q <- as.numeric(rstan::extract(m)$Q)
   P <- as.numeric(rstan::extract(m)$P)
-  sigma <- as.numeric(rstan(extract(m)$sigma))
-  mu <- exp(linpred) #exp(rstan::extract(m)$beta %*% t(X))
-  sim <- cbind(mu,sigma,Q) 
+  sigma <- as.numeric(rstan::extract(m)$sigma)
+  # NB: The linpred is already the mean mu on the natural scale so no need to exponentiate!
+  mu <- (linpred) 
+  sim <- cbind(mu,sigma,Q,P) 
   colnames(sim) <- c("mu","sigma","Q","P")
   return(sim)
 }
@@ -326,7 +329,7 @@ rescale_hmc_lno <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
   sdlog <- as.numeric(rstan::extract(m)$alpha)
-  meanlog <- linpred #rstan::extract(m)$beta %*% t(X)
+  meanlog <- linpred 
   sim <- cbind(meanlog,sdlog) 
   colnames(sim) <- c("meanlog","sdlog")
   return(sim)
@@ -530,7 +533,6 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
 args_surv <- function() {
     list(
       exp='list(t,rate=x[,"rate"][i])',
-      ##weibull='list(t,shape=(x %>% as_tibble %>% slice(i))$shape,scale=(x %>% as_tibble %>% slice(i))$scale)',
       weibull='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
       weibullPH='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
       gamma='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
@@ -538,7 +540,7 @@ args_surv <- function() {
       gompertz='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
       lnorm='list(t,meanlog=x[,"meanlog"][i],sdlog=x[,"sdlog"][i])',
       llogis='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
-      genf='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i],P=x[,"P][i])',
+      genf='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i],P=x[,"P"][i])',
       rps='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)',
       survspline='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)'
   )

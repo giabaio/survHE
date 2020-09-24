@@ -14,7 +14,7 @@
 #' \code{original} = a flag to say whether the *original* table
 #' from either \code{flexsurv} or \code{INLA} or \code{rstan} should be printed
 #' @author Gianluca Baio
-#' @references Something will go here
+#' @template refs
 #' @keywords Parametric survival models
 #' @examples
 #' 

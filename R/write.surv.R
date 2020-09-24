@@ -9,16 +9,28 @@
 #' (with times, estimates and interval limits)
 #' @param file a string with the full path to the file name to be saved
 #' @param sheet a string with the name of the sheet to be created
-#' @param what a string to describe what to be exported
-#' @return Something will go here
+#' @param what a string to describe what to be exported. Can either be 
+#' 'surv' (default), which outputs the simulation(s) for the survival curves
+#' or 'sim', which outputs the simulation(s) for the underlying model 
+#' parameters. If there are several 'profiles', they get written in 
+#' separate spreadsheets and a clear indication is given as the name of the
+#' spreadsheet
+#' @return A spreadsheet file with the simulation(s) of the relevant quantity
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
-#' @keywords Excel
+#' @seealso \code{make.surv}
+#' @template refs
+#' @keywords Excel PSA
 #' @examples
 #' 
-#' # Something will go here
+#' # Loads an example dataset from 'flexsurv'
+#' data(bc)
+#' 
+#' # Fits the same model using the 3 inference methods
+#' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr="exp",method="mle")
+#' p.mle = make.surv(mle)
+#' write.surv(p.mle,file="test.xlsx")
 #' 
 #' @export write.surv
 write.surv <- function(object,file,sheet=NULL,what="surv") {

@@ -19,8 +19,8 @@
 #' survival times } \item{tab}{ A summary table }
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
+#' @seealso \code{fit.models}, \code{make.surv}
+#' @template refs
 #' @keywords Parametric survival models Mean survival time
 #' @examples
 #' 
@@ -74,7 +74,7 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
   if(is.null(t)) {
-    if(object$misc$model_name=="pow") {
+    if(object$misc$model_name[mod]=="pow") {
       t <- sort(unique(object$misc$km[[mod]]$time))
     } else {
       t <- sort(unique(object$misc$km$time))

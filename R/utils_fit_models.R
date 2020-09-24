@@ -298,6 +298,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     )
   }
   
+  ## SETS THE PRIORS
   # Adds the values for the parameters of the prior distributions
   data.stan$mu_beta = rep(0, data.stan$H)
   # For the models *not* on the log scale, needs higher values for the sd of the coefficients
@@ -332,9 +333,12 @@ make_data_stan=function(formula,data,distr3,exArgs) {
   d <- names(availables[[method]][match(distr3, availables[[method]])])
   priors <- list()
   if(exists("priors",where=exArgs)) {
-    if(d==names(exArgs$priors)) {
-      priors <- exArgs$priors[[d]]
-    } 
+    # Checks whether the user has specified the current model in the named list 'priors'
+    abbrs=manipulate_distributions(names(exArgs$priors))$distr3
+    pos=grep(d3,abbrs)
+    if(pos>0) {
+      priors = exArgs$priors[[pos]]
+    }
   }
   # Linear predictor coefficients
   if(!is.null(priors$mu_beta)) {
@@ -864,7 +868,7 @@ lik_gam <- function(x,linpred,linpred.hat,model,data.stan) {
     nrow = 1, byrow = T)
   # Number of parameters (for AIC): shape, rate + covariates
   npars <- 2 + sum(1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
-  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
+  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s.bar)
 }
 
 lik_gga <- function(x,linpred,linpred.hat,model,data.stan) {
@@ -894,7 +898,7 @@ lik_gga <- function(x,linpred,linpred.hat,model,data.stan) {
     nrow = 1, byrow = T)
   # Number of parameters (for AIC): mu, sigma, Q + covariates
   npars <- 3 + sum(1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
-  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
+  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s.bar)
 }
 
 lik_gef <- function(x,linpred,linpred.hat,model,data.stan) {
@@ -927,7 +931,7 @@ lik_gef <- function(x,linpred,linpred.hat,model,data.stan) {
   # Number of parameters (for AIC): mu, sigma, Q, P + covariates
   npars <- 4 + sum(
     1 - apply(data.stan$X_obs, 2, function(x) all(x == 0)))
-  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s)
+  list(logf=NULL,logf.hat=NULL,npars=npars,f=f,f.bar=f.bar,s=s,s.bar=s.bar)
 }
 
 lik_lno <- function(x,linpred,linpred.hat,model,data.stan) {

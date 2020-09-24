@@ -13,6 +13,8 @@
 #' colors for the lines to be plotted \code{alpha} = the level of transparency
 #' for the curves (default = 0.2)
 #' @author Gianluca Baio
+#' @template refs
+#' @seealso \code{make.surv}, \code{write.surv}
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
 #' @examples
 #' 

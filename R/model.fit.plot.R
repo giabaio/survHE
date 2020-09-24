@@ -16,11 +16,15 @@
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso Something will go here
-#' @references Something will go here
+#' @template refs
 #' @keywords Model fitting Parametric survival models
 #' @examples
 #' 
-#' # Something will go here
+#' data(bc)
+#' 
+#' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr=c("exp","wei","lno"),method="mle")
+#' model.fit.plot(mle)
 #' 
 #' @export model.fit.plot
 model.fit.plot <- function(...,type="aic",scale="absolute",stacked=FALSE) {

@@ -28,7 +28,7 @@
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso Something will go here
-#' @references Something will go here
+#' @template refs
 #' @keywords Parametric survival models
 #' @examples
 #' 
@@ -36,7 +36,9 @@
 #' 
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
-#' plot(mle)
+#' inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr="exp",method="inla")
+#' plot(MLE=mle,INLA=inla)
 #' 
 #' @export plot.survHE
 plot.survHE <- function(...) {

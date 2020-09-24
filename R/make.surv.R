@@ -26,8 +26,8 @@
 #' curve
 #' @param ...  Additional options
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
+#' @seealso \code{fit.models}, \code{psa.plot}, \code{write.surv}
+#' @template refs
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
 #' @examples
 #' 
@@ -38,6 +38,10 @@
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
 #' p.mle = make.surv(mle)
+#' psa.plot(p.mle)
+#' # Can also use the main 'plot' function to visualise the survival curves
+#' # and include uncertainty by using a number 'nsim' of simulations
+#' plot(mle,nsim=10)
 #' 
 #' @export make.surv
 make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
@@ -77,7 +81,13 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     if(is.null(t)) {
       t <- sort(unique(fit$misc$km$time))
     }
-    
+    # By default uses the mean to compute summary statistics (eg for the case when nsim=1)
+    # but the user can specify the median, which works better for very skewed parameters
+    # which happens for example when trying to fit a model with too many parameters, which
+    # results in a huge uncertainty, blowing up the estimates and making even the mean survival
+    # curve impossible to compute
+    if(exists("summary_stat",exArgs)){summary_stat=exArgs$summary_stat} else {summary_stat="mean"}
+
     # Makes sure the distribution name(s) vector is in a useable format
     dist <- fit$misc$model_name[mod]
     
@@ -86,7 +96,8 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     
     # Draws a sample of nsim simulations from the distribution of the model parameters
     sim <- do.call(paste0("make_sim_",fit$method),
-                   args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist,data=data,formula=fit$misc$formula)
+                   args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist,data=data,
+                             formula=fit$misc$formula,summary_stat=summary_stat)
     )
     # Computes the survival curves - first in matrix form with all the simulations
     # Needs to add more inputs for the case of hmc/rps

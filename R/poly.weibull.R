@@ -41,13 +41,13 @@
 #' }
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
+#' @seealso \code{fit.models}, \code{make.surv}
+#' @template refs
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Poly-Weibull model
 #' @examples
 #' 
-#' ###
+#' #See Baio (2019) for extended example
 #' 
 #' @export poly.weibull
 poly.weibull <- function(formula=NULL,data,...) {
