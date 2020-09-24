@@ -70,7 +70,6 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     tot.rows <- dims[1]*nobjs + nobjs
 
     if(is.null(sheet)) {
-      sheet = paste("Sheet",1:nobjs)
       sheet = profile.lab
     }
     

@@ -6,7 +6,7 @@
 #' Other possibilities are additional (mainly graphical) options. 
 #' These are: \code{xlab} = a string with the label for the
 #' x-axis (default = "time") \code{ylab} = a string with the label for the
-#' y-axis (default = "Survival") \code{lab.trt} = a (vector of) string(s)
+#' y-axis (default = "Survival") \code{lab.profile} = a (vector of) string(s)
 #' indicating the labels associated with the strata defining the different
 #' survival curves to plot. Default to the value used by the Kaplan Meier
 #' estimate given in \code{fit.models}. \code{newdata} = a list (of lists) 
@@ -15,7 +15,7 @@
 #' or the combination of the categorical covariates. \code{xlim} = a vector 
 #' determining the limits for the x-axis \code{colors} = a vector of characters 
 #' defining the colours in which to plot the different survival curves 
-#' \code{lab.trt} = a vector of characters defining the names of the models fitted 
+#' \code{lab.profile} = a vector of characters defining the names of the models fitted 
 #' \code{add.km} = TRUE (whether to also add the Kaplan Meier estimates of the data) 
 #' \code{annotate} = FALSE (whether to also add text to highlight the observed vs
 #' extrapolated data)
@@ -111,21 +111,21 @@ plot_ggplot_survHE <- function(exArgs) {
   surv.curv=make_surv_curve_plot(toplot,datakm,mods)
 
   # Optional arguments
-  if(exists("lab.trt",exArgs)){
+  if(exists("lab.profile",exArgs)){
     surv.curv=surv.curv+
-      scale_linetype_manual(labels=exArgs$lab.trt,values=1:length(exArgs$lab.trt))
+      scale_linetype_manual(labels=exArgs$lab.profile,values=1:length(exArgs$lab.profile))
   }
   # if both colours & labels are specified for the models chosen
-  if(exists("colour",exArgs) & exists("lab.models",exArgs)) {
-    surv.curv=surv.curv+scale_color_manual(labels=exArgs$lab.models,values=exArgs$colour)
+  if(exists("colour",exArgs) & exists("lab.model",exArgs)) {
+    surv.curv=surv.curv+scale_color_manual(labels=exArgs$lab.model,values=exArgs$colour)
   }
   # if only the colours
-  if(exists("colour",exArgs) & !exists("lab.models",exArgs)) {
+  if(exists("colour",exArgs) & !exists("lab.model",exArgs)) {
     surv.curv=surv.curv+scale_color_manual(values=exArgs$colour)
   }
   # if only the labels
-  if(exists("lab.models",exArgs) & !exists("colour",exArgs)) {
-    surv.curv=surv.curv+scale_color_manual(values=1:length(exArgs$lab.models),labels=exArgs$lab.models)
+  if(exists("lab.model",exArgs) & !exists("colour",exArgs)) {
+    surv.curv=surv.curv+scale_color_manual(values=1:length(exArgs$lab.model),labels=exArgs$lab.model)
   }
   if(exists("xlab",where=exArgs)){
     surv.curv=surv.curv+labs(x=exArgs$xlab)
@@ -343,21 +343,22 @@ make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata"
 #' \code{fit.models} function.  Other possibilities are additional (mainly
 #' graphical) options. These are: \code{xlab} = a string with the label for the
 #' x-axis (default = "time") \code{ylab} = a string with the label for the
-#' y-axis (default = "Survival") \code{lab.trt} = a (vector of) string(s)
+#' y-axis (default = "Survival") \code{lab.profile} = a (vector of) string(s)
 #' indicating the labels associated with the strata defining the different
 #' survival curves to plot. Default to the value used by the Kaplan Meier
-#' estimate given in \code{fit.models} \code{cex.trt} = factor by which the
-#' size of the font used to write the strata is resized (default = 0.8)
-#' \code{n.risk} = logical. If TRUE (defaults) writes the number at risk at
-#' different time points (as determined by the Kaplan Meier estimate)
-#' \code{newdata} = a list (of lists) providing the values for the relevant
-#' covariates If NULL, then will use the mean values for the covariates if at
-#' least one is a continuous variable, or the combination of the categorical
-#' covariates. \code{xlim} = a vector determining the limits for the x-axis
-#' \code{colors} = a vector of characters defining the colours in which to plot
-#' the different survival curves \code{labs} = a vector of characters defining
-#' the names of the models fitted \code{add.km} = TRUE (whether to also add the
-#' Kaplan Meier estimates of the data) \code{legend} = TRUE (whether to also 
+#' estimate given in \code{fit.models} \code{lab.model} = a vector of string(s) 
+#' indicating the labels associated with the models shown in the plots. 
+#' \code{cex.trt} = factor by which the size of the font used to write the 
+#' strata is resized (default = 0.8) \code{n.risk} = logical. If TRUE (defaults) 
+#' writes the number at risk at different time points (as determined by the 
+#' Kaplan Meier estimate) \code{newdata} = a list (of lists) providing the 
+#' values for the relevant covariates If NULL, then will use the mean values 
+#' for the covariates if at least one is a continuous variable, or the combination 
+#' of the categorical covariates. \code{xlim} = a vector determining the limits 
+#' for the x-axis \code{colors} = a vector of characters defining the colours in 
+#' which to plot the different survival curves \code{labs} = a vector of characters 
+#' defining the names of the models fitted \code{add.km} = TRUE (whether to also 
+#' add the Kaplan Meier estimates of the data) \code{legend} = TRUE (whether to also 
 #' add the legend to the graph)
 #' @note Something will go here
 #' @author Gianluca Baio
@@ -381,7 +382,8 @@ plot_base_survHE <- function(x,exArgs) {
   # mod = a numeric vector --- selects the models to plot (so mod=c(1,3) only selects the 1st and 3rd arguments)
   # xlab
   # ylab
-  # lab.trt
+  # lab.profile
+  # lab.model
   # cex.trt
   # n.risk
   # xlim
@@ -461,7 +463,7 @@ plot_base_survHE <- function(x,exArgs) {
   if (is.null(exArgs$t)) {t <- sort(unique(x$misc$km$time))} else {t <- exArgs$t}
   if (is.null(exArgs$xlab)) {xl <- "time"} else {xl <- exArgs$xlab}
   if (is.null(exArgs$ylab)) {yl <- "Survival"} else {yl <- exArgs$ylab}
-  if (is.null(exArgs$lab.trt)) {lab.trt <- names(x$misc$km$strata)} else {lab.trt<-exArgs$lab.trt}
+  if (is.null(exArgs$lab.profile)) {lab.profile <- names(x$misc$km$strata)} else {lab.profile<-exArgs$lab.profile}
   if (is.null(exArgs$cex.trt)) {cex.trt <- 0.8} else {cex.trt <- exArgs$cex.trt}
   if (is.null(exArgs$n.risk)) {nrisk <- FALSE} else {nrisk <- exArgs$n.risk}
   if (is.null(exArgs$main)) {main <- ""} else {main <- exArgs$main}
@@ -507,7 +509,7 @@ plot_base_survHE <- function(x,exArgs) {
   if (add.km==TRUE & is.null(newdata)) {
     rms::survplot(x$misc$km,                                     # Specialised plot from "rms" 
                   xlab=xl,ylab=yl,		                           # x- and y- labels
-                  label.curves=list(labels=lab.trt,cex=cex.trt), # specifies curve labels
+                  label.curves=list(labels=lab.profile,cex=cex.trt), # specifies curve labels
                   n.risk=nrisk,   	                             # tells R to show number at risk 
                   lwd=2,xlim=xlm  	                             # defines the size of the lines (2 pts)
     )

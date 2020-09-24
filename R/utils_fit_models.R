@@ -58,9 +58,11 @@ runINLA <- function(x,exArgs) {
   # 'exArgs'. If not, or if specified but for another distribution, use INLA defaults
   cf <- INLA::inla.set.control.family.default()
   if(exists("control.family",where=exArgs)) {
-    if(d==names(exArgs$control.family)) {
-      cf <- exArgs$control.family[[d]]
-    } 
+    abbrs=manipulate_distributions(names(exArgs$control.family))$distr3
+    pos=grep(d3,abbrs)
+    if(length(pos)>0) {
+      cf <- exArgs$control.family[[pos]]
+    }
   }
   if(exists("verbose",where=exArgs)) {verbose <- exArgs$verbose} else {verbose <- FALSE}
   
@@ -150,6 +152,7 @@ runHMC <- function(x,exArgs) {
   if (exists("cores",where = exArgs)) {cores <- exArgs$cores} else {cores <- 1}
   if (exists("init",where = exArgs)) {init <- exArgs$init} else {init="random"}
   if (exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
+  if (exists("refresh",where = exArgs)) {refresh=exArgs$refresh} else {refresh=max(iter/10, 1)}
   
   # Recomputes the three-letters code for the distributions and the HMC-specific name
   d <- names(availables[[method]][match(d3, availables[[method]])])
@@ -163,7 +166,7 @@ runHMC <- function(x,exArgs) {
   # Now runs Stan to sample from the posterior distributions
   tic <- proc.time()
   model <- rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,
-                           control=control,pars=pars,include=include,cores=cores,init=init)
+                           control=control,pars=pars,include=include,cores=cores,init=init,refresh=refresh)
   toc <- proc.time()-tic
   time_survHE <- toc[3]
   # rstan does have its way of computing the running time, but it may not be the actual one when running multiple
