@@ -115,8 +115,17 @@ plot_ggplot_survHE <- function(exArgs) {
     surv.curv=surv.curv+
       scale_linetype_manual(labels=exArgs$lab.trt,values=1:length(exArgs$lab.trt))
   }
-  if(exists("colour",exArgs)){
+  # if both colours & labels are specified for the models chosen
+  if(exists("colour",exArgs) & exists("lab.models",exArgs)) {
+    surv.curv=surv.curv+scale_color_manual(labels=exArgs$lab.models,values=exArgs$colour)
+  }
+  # if only the colours
+  if(exists("colour",exArgs) & !exists("lab.models",exArgs)) {
     surv.curv=surv.curv+scale_color_manual(values=exArgs$colour)
+  }
+  # if only the labels
+  if(exists("lab.models",exArgs) & !exists("colour",exArgs)) {
+    surv.curv=surv.curv+scale_color_manual(values=1:length(exArgs$lab.models),labels=exArgs$lab.models)
   }
   if(exists("xlab",where=exArgs)){
     surv.curv=surv.curv+labs(x=exArgs$xlab)
@@ -248,7 +257,7 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
       geom_line(data=toplot,aes(x=t,y=S,group=model_name:strata,col=model_name,linetype=linetype),size=.9) 
   } else {
     surv.curv=surv.curv+
-      geom_line(data=toplot,aes(x=t,y=S,group=model_name:strata:object_name,col=model_name:object_name,linetype=linetype),size=.9)   
+      geom_line(data=toplot,aes(x=t,y=S,group=model_name:strata:object_name,col=object_name:model_name,linetype=linetype),size=.9)   
   }
   surv.curv=surv.curv +
     theme_bw() + 
