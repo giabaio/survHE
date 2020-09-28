@@ -98,7 +98,7 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
         sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
       })
     })
-  ),nrow=psa$nsim,byrow=T)
+  ),nrow=psa$nsim,byrow=F)
 
   if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
     colnames(mean.surv) <- names(object$misc$km$strata)
