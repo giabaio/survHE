@@ -272,7 +272,7 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
           panel.background = element_blank(),
           panel.border = element_blank(),
           plot.title = element_text(size=18, face="bold")) +
-    theme(legend.position=c(.75,.9),
+    theme(legend.position=c(.75,.78),
           legend.title=element_text(size=15,face="bold"),
           #legend.title = element_blank(),
           legend.text = element_text(colour="black", size=14, face="plain"),
