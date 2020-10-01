@@ -1,7 +1,0 @@
-# 10/8/2020
-- Try INLA/RPS by doing a CoxPH model, fixing the baseline hazard (instead of having it modelled as RW1/2) 
-  and then using flexsurv::XXX to recreate the basis and derivatives
-- Check again the hmc part of fit.models and re-write to streamline
-- Check the initial part with the available models
-- Move to the other functions and check print. plot. etc to streamline
-- Play with extrapolation using RPS/PolyWeibull --- how do they *really* work?
