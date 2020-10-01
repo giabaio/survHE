@@ -119,6 +119,8 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     S <-lapply(mat,function(x) x %>% mutate(S=rowMeans(select(.,contains("S")))) %>% select(t,S))
   } else {
     # If nsim>1 then also give the lower and upper quartile of the underlying distribution
+    # avoids no visibile binding for global variable
+    . = low = upp = NULL
     S <- lapply(mat,function(x) {
       x %>% mutate(S=rowMeans(select(.,contains("S"))),
                    low=(apply(x %>% select(contains("S")),1,quantile,.025)),

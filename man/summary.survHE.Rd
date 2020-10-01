@@ -33,9 +33,6 @@ Calculates the mean survival time as the area under the survival curve
 \details{
 A list comprising of the following elements
 }
-\note{
-
-}
 \examples{
 
 data(bc)

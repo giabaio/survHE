@@ -31,9 +31,6 @@ values in the Markov model)
 \details{
 Something will go here
 }
-\note{
-
-}
 \examples{
 
 # Loads an example dataset from 'flexsurv'

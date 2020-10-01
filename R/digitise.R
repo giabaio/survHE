@@ -12,7 +12,7 @@
 #' @param ipd_output the name of the file to which the individual level data
 #' data will be written
 #' @author Patricia Guyot and Gianluca Baio
-#' @references Something will go here
+#' @template refs
 #' @keywords Digitized Kaplan Meier curve
 #' @examples
 #' 

@@ -1025,7 +1025,8 @@ check_distributions <- function(method,distr) {
   # falls back to 'mle'
   if(method %in% c("inla","hmc")) {
     if(!all(distr3 %in% availables[[method]])) {
-      modelsString <- unname(labelTable[availables[[method]]])
+      ####modelsString <- unname(labelTable[availables[[method]]])
+      modelsString <- unname(manipulate_distributions(availables[[method]])$labs)
       modelsString[length(modelsString)] = paste0("or ", modelsString[length(modelsString)])
       message(paste0(
         "NB: ",toupper(method)," can only fit ",

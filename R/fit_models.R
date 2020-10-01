@@ -7,7 +7,7 @@
 #' 
 #' On object in the class \code{survHE} containing the following elements
 #' 
-#' @param formula a formula specifying the model to be used, in the form
+#' @param formula a formula specifying the model to be used, in the form 
 #' \code{Surv(time,event)~treatment[+covariates]} for flexsurv, or
 #' \code{inla.surv(time,event)~treatment[+covariates]} for INLA
 #' @param data A data frame containing the data to be used for the analysis.
@@ -16,12 +16,11 @@
 #' @param distr a (vector of) string(s) containing the name(s) of the model(s)
 #' to be fitted.  Available options are:
 #' 
-#' \code{flexsurv}:
-#' "exponential","gamma","genf","gengamma","gompertz","weibull",
-#' "weibullPH","loglogistic","lognormal" \code{INLA}:
-#' "exponential","weibull","lognormal","loglogistic" \code{hmc}:
-#' "exponential","gamma","genf","gengamma","gompertz","weibull","weibullPH",
-#' "loglogistic","lognormal"
+#' \code{flexsurv}: "exponential", "gamma", "genf", "gengamma", "gompertz",
+#' "weibull", "weibullPH", "loglogistic", "lognormal" \code{INLA}:
+#' "exponential", "weibull", "lognormal", "loglogistic" \code{hmc}:
+#' "exponential", "gamma", "genf", "gengamma", "gompertz", "weibull", 
+#' "weibullPH", "loglogistic", "lognormal"
 #' @param method A string specifying the inferential method (\code{'mle'},
 #' \code{'inla'} or \code{'hmc'}). If \code{method} is set to \code{'hmc'},
 #' then \code{survHE} will write suitable model code in the Stan language
@@ -38,7 +37,7 @@
 #' for the intercept prior prec -> 0 for the intercept \code{control.family} =
 #' a list of options. If distr is a vector, then can be provided as a named
 #' list of options, for example something like this:
-#' \code{control.family=list(weibull=list(param=c(.1,.1)),lognormal=list(initial=2))}
+#' \code{control.family=list(weibull= list(param=c(.1,.1)), lognormal=list(initial=2))}
 #' the names of the elements of the list need to be the same as those given in
 #' the vector \code{distr}
 #' 

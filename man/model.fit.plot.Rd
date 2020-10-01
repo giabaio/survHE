@@ -28,9 +28,6 @@ Plots a summary of the model fit for all the models fitted
 \details{
 Something will go here
 }
-\note{
-
-}
 \examples{
 
 data(bc)

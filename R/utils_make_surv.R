@@ -531,7 +531,7 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
     })
   }
   for (i in 1:length(mat)){colnames(mat[[i]])=paste0("S_",1:nsim)}
-  mat <- mat %>% lapply(function(x) bind_cols(as_tibble(t),as_tibble(x)) %>% rename(t=value))
+  mat <- mat %>% lapply(function(x) bind_cols(tibble(t=t),as_tibble(x)))
 
   return(mat)
 }

@@ -299,19 +299,19 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
 }
 
 
-##' Make the KM curve plot using \code{survminer::ggsurvplot} 
-##' 
-##' @param x The KM fit object
-##' @param conf.int Should the confidence intervals be plotted too?
-##' @param risk.table Should the table with the number at risk plotted too?
-##' @param risk.table.col The name of the variable indexing the number at risk 
-##' @param palette The colouring scheme
-##' @param legend.labs The vector of legend labels
-##' @return \item{kmplot}{The \code{ggplot2} plot}
-##' @note Something will go here
-##' @author Gianluca Baio
-##' @keywords Parametric survival models
-##' @noRd 
+# #' Make the KM curve plot using \code{survminer::ggsurvplot} 
+# #' 
+# #' @param x The KM fit object
+# #' @param conf.int Should the confidence intervals be plotted too?
+# #' @param risk.table Should the table with the number at risk plotted too?
+# #' @param risk.table.col The name of the variable indexing the number at risk 
+# #' @param palette The colouring scheme
+# #' @param legend.labs The vector of legend labels
+# #' @return \item{kmplot}{The \code{ggplot2} plot}
+# #' @note Something will go here
+# #' @author Gianluca Baio
+# #' @keywords Parametric survival models
+# #' @noRd 
 #make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata",
 #                         palette=NULL,legend.labs=NULL) {
 #  # Helper function to plot the KM curve 

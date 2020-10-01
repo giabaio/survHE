@@ -82,9 +82,6 @@ Runs the survival analysis with several useful options, using either MLE
 \details{
 On object in the class \code{survHE} containing the following elements
 }
-\note{
-
-}
 \examples{
 
 # Loads an example dataset from 'flexsurv'
