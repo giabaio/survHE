@@ -1,2 +1,8 @@
+man-roxygen
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.travis.yml$
+^\.travis\.yml$
+^configure
+^README.md
+^appveyor\.yml$

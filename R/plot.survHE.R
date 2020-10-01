@@ -2,7 +2,7 @@
 #' 
 #' Plots the results of model fit.
 #' 
-#' @param @param ...  Must include at least one result object saved as 
+#' @param ... Must include at least one result object saved as 
 #' the call to the \code{fit.models} function. Nay include other 
 #' optional parameters. These include whether the KM curve should be 
 #' added \code{add.km} and whether the user specifies a profile of covariates 
@@ -35,7 +35,7 @@
 #' @template refs
 #' @keywords Parametric survival models
 #' @examples
-#' 
+#' \dontrun{
 #' data(bc)
 #' 
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
@@ -43,6 +43,7 @@
 #' inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="inla")
 #' plot(MLE=mle,INLA=inla)
+#' }
 #' 
 #' @export plot.survHE
 plot.survHE <- function(...) {
