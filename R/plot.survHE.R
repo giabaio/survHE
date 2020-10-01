@@ -35,7 +35,7 @@
 #' @template refs
 #' @keywords Parametric survival models
 #' @examples
-#' 
+#' \dontrun{
 #' data(bc)
 #' 
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
@@ -43,6 +43,7 @@
 #' inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="inla")
 #' plot(MLE=mle,INLA=inla)
+#' }
 #' 
 #' @export plot.survHE
 plot.survHE <- function(...) {
