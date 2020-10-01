@@ -7,6 +7,7 @@
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords MLE
+#' @noRd 
 get_stats_mle <- function(x,mod) {
   # Can use directly 'flexsurv' output to make the results table
   res=x$models[[mod]]$res[,c(1,4,2,3),drop=FALSE]
@@ -24,6 +25,7 @@ get_stats_mle <- function(x,mod) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA
+#' @noRd 
 get_stats_inla <- function(x,mod) {
   # Calls the helper functions to make the results table
   res=do.call(paste0("rescale_stats_inla_",x$misc$model_name[mod]),
@@ -41,6 +43,7 @@ get_stats_inla <- function(x,mod) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC
+#' @noRd 
 get_stats_hmc <- function(x,mod) {
   ######quiet(print(x$models[[mod]]))
   # Gets the original summary stats from the 'rstan' run
@@ -74,6 +77,7 @@ get_stats_hmc <- function(x,mod) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Exponential
+#' @noRd 
 rescale_stats_hmc_exp <- function(table,x) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -93,6 +97,7 @@ rescale_stats_hmc_exp <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC WeibullAFT
+#' @noRd 
 rescale_stats_hmc_wei <- function(table,x) {
   scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
   rownames(scale) <- "scale"
@@ -114,6 +119,7 @@ rescale_stats_hmc_wei <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC WeibullPH
+#' @noRd 
 rescale_stats_hmc_wph <- function(table,x) {
   scale <- matrix(table[grep("scale",rownames(table)),],ncol=4)
   rownames(scale) <- "scale"
@@ -135,6 +141,7 @@ rescale_stats_hmc_wph <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Gompertz
+#' @noRd 
 rescale_stats_hmc_gom <- function(table,x) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -156,6 +163,7 @@ rescale_stats_hmc_gom <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC logNormal
+#' @noRd 
 rescale_stats_hmc_lno <- function(table,x) {
   meanlog <- matrix(table[grep("meanlog",rownames(table)),],ncol=4)
   rownames(meanlog) <- "meanlog"
@@ -177,6 +185,7 @@ rescale_stats_hmc_lno <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Gamma
+#' @noRd 
 rescale_stats_hmc_gam <- function(table,x) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "rate"
@@ -198,6 +207,7 @@ rescale_stats_hmc_gam <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC logLogistic
+#' @noRd 
 rescale_stats_hmc_llo <- function(table,x) {
   rate <- matrix(table[grep("rate",rownames(table)),],ncol=4)
   rownames(rate) <- "scale"
@@ -219,6 +229,7 @@ rescale_stats_hmc_llo <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC GenF
+#' @noRd 
 rescale_stats_hmc_gef <- function(table,x) {
   mu <- matrix(table[grep("beta",rownames(table)),],ncol=4,nrow=1)
   rownames(mu) <- "mu"
@@ -244,6 +255,7 @@ rescale_stats_hmc_gef <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC GenGamma
+#' @noRd 
 rescale_stats_hmc_gga <- function(table,x) {
   mu <- matrix(table[grep("beta",rownames(table)),,drop=FALSE][1,],ncol=4,nrow=1)
   rownames(mu) <- "mu"
@@ -267,6 +279,7 @@ rescale_stats_hmc_gga <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Royston-Parmar splines
+#' @noRd 
 rescale_stats_hmc_rps <- function(table,x) {
   gamma <- matrix(table[grep("gamma",rownames(table)),],ncol=4)
   rownames(gamma) <- paste0("gamma",0:(nrow(gamma)-1))
@@ -293,6 +306,7 @@ rescale_stats_hmc_rps <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Poly-Weibull
+#' @noRd 
 rescale_stats_hmc_pow <- function(table,x) {
   rownames(table)[grep("alpha",rownames(table))]=paste0("shape_",1:length(grep("alpha",rownames(table))))
 
@@ -327,6 +341,7 @@ rescale_stats_hmc_pow <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA WeibullAFT
+#' @noRd 
 rescale_stats_inla_wei <- function(x,mod,nsim=1000) {
   # The scale and effects are computed as a *non linear* function of the AFT effects and the shape
   # But for simplicity can approximate this using 'inla.rmarginal'
@@ -363,6 +378,7 @@ rescale_stats_inla_wei <- function(x,mod,nsim=1000) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA WeibullPH
+#' @noRd 
 rescale_stats_inla_wph <- function(x,mod,nsim=1000) {
   # The scale and effects are computed as a *non linear* function of the AFT effects and the shape
   # But for simplicity can approximate this using 'inla.rmarginal'
@@ -398,6 +414,7 @@ rescale_stats_inla_wph <- function(x,mod,nsim=1000) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA Exponential
+#' @noRd 
 rescale_stats_inla_exp <- function(x,mod,nsim=1000) {
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
@@ -427,6 +444,7 @@ rescale_stats_inla_exp <- function(x,mod,nsim=1000) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA logNormal
+#' @noRd 
 rescale_stats_inla_lno <- function(x,mod,nsim=1000) {
   prec_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
@@ -459,6 +477,7 @@ rescale_stats_inla_lno <- function(x,mod,nsim=1000) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA logLogistic
+#' @noRd 
 rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
   # Uses 'variant=1' in INLA
   shape_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
@@ -490,7 +509,8 @@ rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
 #' @author Gianluca Baio
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
-#' @keywords 
+#' @keywords Summaries Print
+#' @noRd 
 make_stats <- function(x) {
   tab=c(mean(x), sd(x), quantile(x, 0.025), quantile(x,0.975))
   return(tab)
@@ -505,6 +525,7 @@ make_stats <- function(x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Stan
+#' @noRd 
 quiet <- function(x) { 
   sink(tempfile()) 
   on.exit(sink()) 
@@ -521,6 +542,7 @@ quiet <- function(x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC Stan
+#' @noRd 
 add_effects_hmc <- function(table,x) {
   # If there's more than one beta, then there are "effects" (otherwise it's only intercept)
   if(length(grep("beta",rownames(table)))>1) {
@@ -543,6 +565,7 @@ add_effects_hmc <- function(table,x) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords MLE
+#' @noRd 
 original_table_mle <- function(x,mod,digits) {
   print(x$models[[mod]],digits=digits)
 }
@@ -556,6 +579,7 @@ original_table_mle <- function(x,mod,digits) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords INLA
+#' @noRd 
 original_table_inla <- function(x,mod,digits) {
   print(summary(x$models[[mod]]),digits=digits)
 }
@@ -569,6 +593,7 @@ original_table_inla <- function(x,mod,digits) {
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
 #' @keywords HMC
+#' @noRd 
 original_table_hmc <- function(x,mod,digits) {
   print(x$models[[mod]],digits=digits)
 }
@@ -583,7 +608,8 @@ original_table_hmc <- function(x,mod,digits) {
 #' @author Gianluca Baio
 #' @seealso print.survHE
 #' @references Baio (2020). survHE
-#' @keywords 
+#' @keywords Table formatting Print
+#' @noRd 
 format_table <- function(x,mod,res,digits){
   # First re-format some of the labels (eg model names)
   if(x$misc$model_name[mod]=="exp") {label <- "Exponential"}

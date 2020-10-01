@@ -68,7 +68,6 @@
 #' seconds), the formula used, the results of the Kaplan-Meier analysis (which
 #' is automatically performed using \code{npsurv}) and the original data frame.
 #' }
-#' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso \code{make.surv}
 #' @template refs

@@ -15,6 +15,7 @@
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords MLE
+#' @noRd 
 make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
   # Simulates from the distribution of the model parameters - takes 100000 bootstrap samples
   nboot=100000
@@ -66,6 +67,7 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
 #' @author Gianluca Baio
 #' @seealso make.surv
 #' @keywords INLA
+#' @noRd 
 make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
   # Simulates from the distribution of the model parameters
   
@@ -123,6 +125,7 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC
+#' @noRd 
 make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
 
   # Extracts the model object from the survHE output
@@ -167,6 +170,7 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Exponential
+#' @noRd 
 rescale_hmc_exp <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Exponential distribution
@@ -187,6 +191,7 @@ rescale_hmc_exp <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Weibull AFT
+#' @noRd 
 rescale_hmc_wei <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull distribution
@@ -209,6 +214,7 @@ rescale_hmc_wei <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Weibull PH
+#' @noRd 
 rescale_hmc_wph <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Weibull PH distribution
@@ -231,6 +237,7 @@ rescale_hmc_wph <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Gompertz
+#' @noRd 
 rescale_hmc_gom <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gompertz distribution
@@ -253,6 +260,7 @@ rescale_hmc_gom <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Gamma
+#' @noRd 
 rescale_hmc_gam <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Gamma distribution
@@ -276,6 +284,7 @@ rescale_hmc_gam <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Generalised Gamma
+#' @noRd 
 rescale_hmc_gga <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised Gamma distribution
@@ -300,6 +309,7 @@ rescale_hmc_gga <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Generalised F
+#' @noRd 
 rescale_hmc_gef <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # Generalised F distribution
@@ -325,6 +335,7 @@ rescale_hmc_gef <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC logNormal
+#' @noRd 
 rescale_hmc_lno <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
@@ -347,6 +358,7 @@ rescale_hmc_lno <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC logLogistic
+#' @noRd 
 rescale_hmc_llo <- function(m,X,linpred){
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # logNormal distribution
@@ -369,6 +381,7 @@ rescale_hmc_llo <- function(m,X,linpred){
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Royston-Parmar splines
+#' @noRd 
 rescale_hmc_rps <- function(m,X,linpred) {
   # Rescales the original simulations to the list sim to be used by 'make.surv'
   # RPS
@@ -396,7 +409,7 @@ rescale_hmc_rps <- function(m,X,linpred) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords HMC Exponential
-
+#' @noRd 
 rescale.inla <- function(linpred,alpha,distr) {
   if (distr=="wei") {
     shape <- alpha
@@ -442,6 +455,7 @@ rescale.inla <- function(linpred,alpha,distr) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords Survival curves
+#' @noRd 
 compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {  
   # Computes the survival curves
   args <- args_surv()
@@ -530,6 +544,7 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords Survival curves
+#' @noRd 
 args_surv <- function() {
     list(
       exp='list(t,rate=x[,"rate"][i])',
@@ -574,6 +589,7 @@ args_surv <- function() {
 #' @seealso make.surv
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models
+#' @noRd 
 make_profile_surv <- function(formula,data,newdata) {
   # Checks how many elements are given in 'newdata'
   n.elements <- ifelse(is.null(newdata),0,length(newdata))

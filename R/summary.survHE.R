@@ -17,7 +17,6 @@
 #' @param \dots Additional options
 #' @return \item{mean.surv}{ A matrix with the simulated values for the mean
 #' survival times } \item{tab}{ A summary table }
-#' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso \code{fit.models}, \code{make.surv}
 #' @template refs

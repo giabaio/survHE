@@ -16,7 +16,11 @@
 #' @keywords Digitized Kaplan Meier curve
 #' @examples
 #' 
-#' # Something will go here
+#' # Defines the txt files to be used as inputs
+#' surv.inp <- system.file("extdata", "survival.txt", package = "survHE")
+#' nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
+#' # Runs 'digitise' to create the relevant output files
+#' digitise(surv.inp, nrisk.inp)
 #' 
 #' @export digitise
 digitise <- function(surv_inp,nrisk_inp,km_output="KMdata.txt",ipd_output="IPDdata.txt") {

@@ -5,7 +5,7 @@
 \title{Graphical representation of the measures of model fitting based on
 Information Criteria}
 \usage{
-model.fit.plot(..., type = "aic", scale = "absolute")
+model.fit.plot(..., type = "aic", scale = "absolute", stacked = FALSE)
 }
 \arguments{
 \item{...}{Optional inputs. Must include at least one \code{survHE} object.}
@@ -16,9 +16,11 @@ model.fit.plot(..., type = "aic", scale = "absolute")
 \item{scale}{If \code{scale='absolute'} (default), then plot the absolute value 
 of the *IC. If \code{scale='relative'} then plot a rescaled version taking
 the percentage increase in the *IC in comparison with the best-fitting model}
+
+\item{stacked}{Should the bars be stacked and grouped by survHE object? (default=F)}
 }
 \value{
-Something will go here
+A plot with the relevant model fitting statistics
 }
 \description{
 Plots a summary of the model fit for all the models fitted
@@ -27,18 +29,24 @@ Plots a summary of the model fit for all the models fitted
 Something will go here
 }
 \note{
-Something will go here
+
 }
 \examples{
 
-# Something will go here
+data(bc)
+
+mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+    distr=c("exp","wei","lno"),method="mle")
+model.fit.plot(mle)
 
 }
 \references{
-Something will go here
+G Baio (2019). survHE: Survival analysis for health economic evaluation 
+and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
+14, 1-47. <doi:10.18637/jss.v095.i14>
 }
 \seealso{
-Something will go here
+\code{fit.models}
 }
 \author{
 Gianluca Baio

@@ -16,7 +16,6 @@
 #' separate spreadsheets and a clear indication is given as the name of the
 #' spreadsheet
 #' @return A spreadsheet file with the simulation(s) of the relevant quantity
-#' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso \code{make.surv}
 #' @template refs

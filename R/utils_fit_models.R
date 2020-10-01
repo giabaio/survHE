@@ -10,6 +10,7 @@
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Integrated Nested Laplace Approximation
+#' @noRd 
 runINLA <- function(x,exArgs) {
   # First checks whether INLA is installed (it's only a suggestion, not a full dependency)
   if (!isTRUE(requireNamespace("INLA", quietly = TRUE))) {
@@ -116,6 +117,7 @@ runINLA <- function(x,exArgs) {
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Hamiltonian Monte Carlo
+#' @noRd 
 runHMC <- function(x,exArgs) {
   # First checks whether INLA is installed (it's only a suggestion, not a full dependency)
   if (!isTRUE(requireNamespace("rstan", quietly = TRUE))) {
@@ -219,6 +221,7 @@ runHMC <- function(x,exArgs) {
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo 
+#' @noRd 
 make_data_stan=function(formula,data,distr3,exArgs) {
   # Loads in the available models in each method
   availables <- load_availables()
@@ -384,6 +387,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Maximum likelihood estimation
+#' @noRd 
 runMLE <- function(x,exArgs) {
   ##### PROBABLY CAN REMOVE THIS ######
   # Checks that 'flexsurv' is loaded up. NB: ***Probably*** not needed, as 'flexsurv' is a primary dependency???
@@ -455,6 +459,7 @@ runMLE <- function(x,exArgs) {
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Kaplan-Meier estimate 
+#' @noRd 
 make_KM <- function(formula,data) {
   km.formula <- as.formula(gsub("inla.surv","Surv",deparse(formula)))
   # Computes the Kaplan Meier curve using the package "rms"
@@ -486,6 +491,7 @@ make_KM <- function(formula,data) {
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @noRd 
 format_output_fit.models <- function(output,method,distr,formula,data) {
   
   # Uses the helper 'manipulated_distributions' to create the vector labs
@@ -540,6 +546,7 @@ format_output_fit.models <- function(output,method,distr,formula,data) {
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @noRd 
 load_availables <- function() {
   # INLA can only do a limited set of models (for now) so if user has selected
   # one that is not available, then falls back on MLE analysis
@@ -597,6 +604,7 @@ load_availables <- function() {
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @noRd 
 manipulate_distributions <- function(x){
   # selected model checks -----
   matchTable = list(
@@ -681,6 +689,7 @@ manipulate_distributions <- function(x){
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @noRd 
 compute_ICs_stan <- function(model,distr3,data.stan) {
   # Computes the log-likelihood 
   beta <- rstan::extract(model)$beta
@@ -1005,6 +1014,7 @@ lik_rps <- function(x,linpred,linpred.hat,model,data.stan) {
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models 
+#' @noRd 
 check_distributions <- function(method,distr) {
   # Loads in the available models in each method
   availables <- load_availables()

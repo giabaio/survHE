@@ -12,10 +12,9 @@
 #' of the *IC. If \code{scale='relative'} then plot a rescaled version taking
 #' the percentage increase in the *IC in comparison with the best-fitting model
 #' @param stacked Should the bars be stacked and grouped by survHE object? (default=F)
-#' @return Something will go here
-#' @note Something will go here
+#' @return A plot with the relevant model fitting statistics
 #' @author Gianluca Baio
-#' @seealso Something will go here
+#' @seealso \code{fit.models}
 #' @template refs
 #' @keywords Model fitting Parametric survival models
 #' @examples

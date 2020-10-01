@@ -39,7 +39,7 @@
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
 #' plot(mle)
-#' 
+#' @noRd 
 plot_ggplot_survHE <- function(exArgs) {
   
   # # First checks the class of the input
@@ -186,6 +186,7 @@ plot_ggplot_survHE <- function(exArgs) {
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @keywords Parametric survival models
+#' @noRd 
 make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,add.km=FALSE) {
   if(is.null(t)) {
     t <- sort(unique(x$misc$km$time))
@@ -241,6 +242,7 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @keywords Parametric survival models
+#' @noRd 
 make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
   # Does the model have covariates?
   if (all(toplot$strata=="=")) {
@@ -297,42 +299,41 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
 }
 
 
-#' Make the KM curve plot using \code{survminer::ggsurvplot} 
-#' 
-#' @param x The KM fit object
-#' @param conf.int Should the confidence intervals be plotted too?
-#' @param risk.table Should the table with the number at risk plotted too?
-#' @param risk.table.col The name of the variable indexing the number at risk 
-#' @param palette The colouring scheme
-#' @param legend.labs The vector of legend labels
-#' @return \item{kmplot}{The \code{ggplot2} plot}
-#' @note Something will go here
-#' @author Gianluca Baio
-#' @keywords Parametric survival models
-make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata",
-                         palette=NULL,legend.labs=NULL) {
-  # Helper function to plot the KM curve 
-  if(is.null(palette)) {
-    if (length(x$misc$km$strata)>0) {
-      greyscale=colorRampPalette(c("grey20","grey80"))
-      palette=greyscale(length(x$misc$km$strata))
-    } else {
-      palette="black"
-    }
-  }
-  kmplot <- survminer::ggsurvplot(fit=x$misc$km,data=x$misc$data,
-                                  conf.int=TRUE,
-                                  risk.table = risk.table,        
-                                  ##risk.table.col = "strata",
-                                  palette = palette,
-                                  legend.labs = legend.labs,
-                                  risk.table.height = 0.25, # Useful to change when you have multiple groups
-                                  ggtheme = ggplot2::theme_bw()
-  )
-  kmplot
-}
-
-
+##' Make the KM curve plot using \code{survminer::ggsurvplot} 
+##' 
+##' @param x The KM fit object
+##' @param conf.int Should the confidence intervals be plotted too?
+##' @param risk.table Should the table with the number at risk plotted too?
+##' @param risk.table.col The name of the variable indexing the number at risk 
+##' @param palette The colouring scheme
+##' @param legend.labs The vector of legend labels
+##' @return \item{kmplot}{The \code{ggplot2} plot}
+##' @note Something will go here
+##' @author Gianluca Baio
+##' @keywords Parametric survival models
+##' @noRd 
+#make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata",
+#                         palette=NULL,legend.labs=NULL) {
+#  # Helper function to plot the KM curve 
+#  if(is.null(palette)) {
+#    if (length(x$misc$km$strata)>0) {
+#      greyscale=colorRampPalette(c("grey20","grey80"))
+#      palette=greyscale(length(x$misc$km$strata))
+#    } else {
+#      palette="black"
+#    }
+#  }
+#  kmplot <- survminer::ggsurvplot(fit=x$misc$km,data=x$misc$data,
+#                                  conf.int=TRUE,
+#                                  risk.table = risk.table,        
+#                                  ##risk.table.col = "strata",
+#                                  palette = palette,
+#                                  legend.labs = legend.labs,
+#                                  risk.table.height = 0.25, # Useful to change when you have multiple groups
+#                                  ggtheme = ggplot2::theme_bw()
+#  )
+#  kmplot
+#}
 
 #' Plot survival curves for the models fitted using \code{fit.models}
 #' 
@@ -372,7 +373,7 @@ make_KM_plot <- function(x,conf.int=TRUE,risk.table=TRUE,risk.table.col="strata"
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
 #' plot(mle)
-#' 
+#' @noRd 
 plot_base_survHE <- function(x,exArgs) {
   ## Plots the KM + the results of the model fitted by fit.models()
   ## Uses different commands, depending on which method has been used to fit the models
