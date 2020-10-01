@@ -2,7 +2,7 @@
 #' 
 #' Plots the results of model fit.
 #' 
-#' @param ...  Must include at least one result object saved as 
+#' @param ... Must include at least one result object saved as 
 #' the call to the \code{fit.models} function. Nay include other 
 #' optional parameters. These include whether the KM curve should be 
 #' added \code{add.km} and whether the user specifies a profile of covariates 
