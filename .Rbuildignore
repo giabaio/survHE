@@ -1,4 +1,3 @@
-^.*.yml
 man-roxygen
 ^.*\.Rproj$
 ^\.Rproj\.user$
@@ -6,3 +5,4 @@ man-roxygen
 ^\.travis\.yml$
 ^configure
 ^README.md
+^appveyor\.yml$
