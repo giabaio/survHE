@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 1.0.66
-Date: 2019-09-12
+Version: 1.1.1
+Date: 2020-10-01
 Authors@R: 
     person(given = "Gianluca",
            family = "Baio",
@@ -9,18 +9,21 @@ Authors@R:
            email = "gianluca@stats.ucl.ac.uk")
 URL: https://github.com/giabaio/survHE, http://www.statistica.it/gianluca
 BugReports: https://github.com/giabaio/survHE/issues
-Description: Contains a suite of functions for survival analysis in health economics. These can be used to run survival models under a frequentist (based on maximum likelihood) or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian Monte Carlo). The user can specify a set of parametric models using a common notation and select the preferred mode of inference. The results can also be post-processed to produce probabilistic sensitivity analysis and can be used to export the output to an Excel file (e.g. for a Markov model, as often done by modellers and practitioners).
+Description: Contains a suite of functions for survival analysis in health economics. These can be used to run survival models under a frequentist (based on maximum likelihood) or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian Monte Carlo). The user can specify a set of parametric models using a common notation and select the preferred mode of inference. The results can also be post-processed to produce probabilistic sensitivity analysis and can be used to export the output to an Excel file (e.g. for a Markov model, as often done by modellers and practitioners). doi:10.18637/jss.v095.i14.
 License: GPL (>=3)
 Depends: 
     methods,
-    R (>= 3.4.0),
+    R (>= 3.6.0),
     Rcpp (>= 0.12.19),
-    flexsurv
+    flexsurv,
+    dplyr,
+    ggplot2
 Imports: 
     rms,
     xlsx,
     tools,
     rstan (>= 2.18.1),
+    tibble
 Suggests: 
     shinystan, 
     INLA
@@ -35,4 +38,4 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 SystemRequirements: GNU make
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1

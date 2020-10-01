@@ -41,13 +41,13 @@
 #' }
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
+#' @seealso \code{fit.models}, \code{make.surv}
+#' @template refs
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Poly-Weibull model
 #' @examples
 #' 
-#' ###
+#' #See Baio (2019) for extended example
 #' 
 #' @export poly.weibull
 poly.weibull <- function(formula=NULL,data,...) {
@@ -73,6 +73,7 @@ poly.weibull <- function(formula=NULL,data,...) {
   if(!isTRUE(requireNamespace("rstan",quietly=TRUE))) {
     stop("You need to install the R package 'rstan'. Please run in your R terminal:\n install.packages('rstan')")
   }
+  distr="polyweibull"
   
   # Optional arguments
   exArgs <- list(...)
@@ -104,166 +105,240 @@ poly.weibull <- function(formula=NULL,data,...) {
     pars <- c("loglambda","lambda","lp__")
   }
   if(exists("include",where=exArgs)) {include <- exArgs$include} else {include <- FALSE}
+  if(exists("init",where = exArgs)) {init <- exArgs$init} else {init="random"}
   if(exists("cores",where=exArgs)) {cores <- exArgs$cores} else {cores <- 1}
+  if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
+
+  # Loads in the available models in each method
+  availables <- load_availables()
+  # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
+  d3 <- manipulate_distributions(distr)$distr3
+  method <- "hmc"
   
-  # Reconstructs the vars list based on the formula
-  vars <- list()
-  for (i in 1:M) {
-    test <- attributes(terms(formula[[i]]))$term.labels
-    ncovs <- length(test)
-    time <- all.vars(formula[[i]],data)[1]
-    event <- all.vars(formula[[i]],data)[2]
-    if (ncovs>0) {
-      Xraw <- model.frame(formula[[i]],data)
-      w <- (which(sapply(Xraw,is.factor)==1))-1
-      if (length(w)>=1) {
-        factors <- gsub("as.factor[( )]","",test[w]) 
-        factors <- gsub("[( )]","",factors)
-        covs <- test[-w]
-        if (length(covs)==0) {
-          covs <- NULL
-        }
-      } else {
-        factors <- NULL
-        covs <- test
-      }
-    } else {
-      covs <- factors <- NULL
-    }
-    # If there are covariates, creates a matrix and sets the dimension
-    if(!is.null(covs)) {
-      X <- data[,pmatch(covs,colnames(data))]
-      K <- ifelse(!is.null(dim(X)[2]),dim(X)[2],1)
-    }
-    # If there are categorical covariates (in the vector 'factors'), makes sure they have the right form
-    if(!is.null(factors)) {
-      cols <- pmatch(factors,colnames(data))
-      H <- length(cols)
-      D <- numeric()
-      for (i in 1:H) {
-        data[,cols[i]] <- as.factor(data[,cols[i]])
-        nlevs <- length(levels(data[,cols[i]]))
-        D[i] <- nlevs
-      } 
-    } else {
-      D <- 0
-    }
-    vars[[i]] <- list(time=time,event=event,factors=factors,covs=covs,nlevs=D)
-  }
+  # Recomputes the three-letters code for the distributions and the HMC-specific name
+  d <- names(availables[[method]][match(d3, availables[[method]])])
   
   # Loads the pre-compiled models
-  dso <- stanmodels
+  dso <- stanmodels[[d]]
   
-  time2run <- numeric()
-  # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
-  dso <- dso[[6]] 
-  
-  data.stan <- list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event])
-  data.stan$n <- length(data.stan$t)
+  # Creates the data list for the first formula (mixture component)
+  data.stan <- make_data_stan(formula[[1]],data,d3,exArgs)
+  # Adds other elements specific to the Poly-Weibull model
   data.stan$M <- M
-  X <- lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
-  # max number of covariates in all the model formulae
-  data.stan$H <- max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
-  # NB: Stan doesn't allow matrices with 1 column, so if there's only one covariate (eg intercept only), needs a little trick
-  if (data.stan$H==1) {data.stan$H <- data.stan$H+1}
-  X <- lapply(1:data.stan$M,function(i) {
-    if(ncol(X[[i]])<data.stan$H) {
-      X[[i]] <- cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
-    } else {
-      X[[i]] <- X[[i]]
-    }
-  })
-  data.stan$X <- array(NA,c(data.stan$M,data.stan$n,data.stan$H))
-  for (m in 1:data.stan$M) {
-    data.stan$X[m,,] <- X[[m]]
+  # And the data for the other mixture components (into an array)
+  X=lapply(formula,function(i) make_data_stan(i,data,d3,exArgs)$X)
+  # Maximum number of covariates
+  data.stan$H=max(unlist(lapply(X,function(i) ncol(i))))
+  # Fills the array in the data list with the covariates matrices
+  data.stan$X=array(0,dim=c(data.stan$M,data.stan$n,data.stan$H))
+  for (m in 1:length(formula)) {
+    data.stan$X[m,,1:ncol(X[[m]])]=X[[m]]
   }
   data.stan$mu_beta <- matrix(0,nrow=data.stan$H,ncol=data.stan$M)
   data.stan$sigma_beta <- matrix(10,data.stan$H,data.stan$M)
   
-  # These are modified if the user gives values in the call to poly.weibull
-  if(exists("priors",where=exArgs)) {
-    priors <- exArgs$priors
-    # Linear predictor coefficients
-    if(!is.null(priors$mu_beta)) {
-      data.stan$mu_beta <- priors$mu_beta
-    }
-    if(!is.null(priors$sigma_beta)) {
-      data.stan$sigma_beta <- priors$sigma_beta
-    }
-  }
-  
   # Now runs Stan to sample from the posterior distributions
   tic <- proc.time()
-  out <- rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control,
-                         pars=pars,include=include,cores=cores)
+  model <- rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,
+                           control=control,pars=pars,include=include,cores=cores,init=init)
   toc <- proc.time()-tic
-  time2run <- toc[3]
-  list(out=out,data.stan=data.stan,time2run=time2run)
+  time_survHE <- toc[3]
+  # rstan does have its way of computing the running time, but it may not be the actual one when running multiple
+  # chains. 
+  time_stan <- sum(rstan::get_elapsed_time(model))
   
-  if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan <- FALSE}
-  time_survHE <- time2run
-  time_stan <- sum(rstan::get_elapsed_time(out))
-  time2run <- min(time_survHE,time_stan)
-  names(time2run) <- "PolyWeibull"
+  # Uses the helper function to compute the *IC
+  #### NB: THIS WILL NEED TO BE A LIST
+  ics <- compute_ICs_stan(model,d3,data.stan)
   
-  # Computes the log-likelihood 
-  beta <- rstan::extract(out)$beta
-  alpha <- rstan::extract(out)$alpha
-  # NB: To make more robust estimate of AIC, BIC and DIC uses the median here (instead of the mean)
-  #     This is likely to be a better approximation to the MLE when the underlying distributions are highly skewed!
-  beta.hat <- apply(beta,c(2,3),median)
-  alpha.hat <- apply(alpha,2,median)
-  linpred <- lapply(1:data.stan$M,function(m) {
-    beta[,m,]%*%t(data.stan$X[m,,])
-  })
-  linpred.hat <- lapply(1:data.stan$M,function(m) {
-    beta.hat[m,]%*%t(data.stan$X[m,,])
-  })
-  
-  h <- log_s <- array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
-  h_bar <- log_s_bar <- matrix(NA,data.stan$n,data.stan$M)
-  for (m in 1:data.stan$M) {
-    h_bar[,m] <- alpha.hat[m]*exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m]-1)
-    log_s_bar[,m] <- exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m])
-    for (i in 1:nrow(linpred[[m]])) {
-      h[i,,m] <- alpha[i,m]*exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m]-1)
-      log_s[i,,m] <- exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m])
-    }
-  }
-  d_log_sum_h <- matrix(NA,nrow(alpha),data.stan$n)
-  for (i in 1:nrow(alpha)) {
-    d_log_sum_h[i,] <- data.stan$d * log(rowSums(h[i,,]))
-  }
-  loglik.bar <- sum(data.stan$d*log(rowSums(h_bar))-rowSums(log_s_bar))
-  loglik <- rowSums(d_log_sum_h) - rowSums(log_s,2)
-  D.theta <- -2*loglik
-  D.bar <- -2*loglik.bar
-  pD <- mean(D.theta) - D.bar
-  pV <- 0.5*var(D.theta)  # Uses Gelman's definition of pD!
-  dic <- mean(D.theta)+pD
-  # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
-  npars <- data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
-  aic <- D.bar+2*npars
-  bic <- D.bar+npars*log(data.stan$n)
-  
-  # Now defines the outputs of the function
-  model.fitting <- list(aic=aic,bic=bic,dic=dic)
-  km <- list(time=data.stan$t)
-  misc <- list(time2run=time2run,formula=formula,data=data,km=km)
-  misc$vars <- vars; misc$data.stan=data.stan
-  # If save.stan is set to TRUE, then saves the Stan model file(s) & data
-  if(save.stan==TRUE) {
-    model_code <- attr(mod$out@stanmodel,"model_code")
-    con <- "PolyWeibull.stan"
+  # If 'save.stan' is set to TRUE, then saves the Stan model file(s) & data
+  if(save.stan) {
+    model_code <- attr(model@stanmodel,"model_code")
+    con <- paste0(d,".stan")
     writeLines(model_code,con=con)
-    txt <- paste0("Model code saved to the file: ",con,"\n")
-    cat(txt)
+    cat(paste0("Model code saved to the file: ",con,"\n"))
   }
-  mod <- list(out)
-  names(mod) <- "PolyWeibull"
-  # Finally prepares the output object
-  res <- list(models=mod,model.fitting=model.fitting,method="hmc",misc=misc)
-  # And sets its class attribute to "survHE"
-  class(res) <- "survHE"
+  
+  # Adds a field used in 'make.surv' to indicate the model used
+  model_name <- d3
+  
+  # Finally returns the output
+  output=list(list(
+    model=model,
+    aic=ics$aic,
+    bic=ics$bic,
+    dic=ics$dic,
+    dic=ics$dic2,
+    time2run=pmin(time_survHE,time_stan),
+    data.stan=data.stan,
+    save.stan=save.stan,
+    model_name=model_name
+  ))
+  
+  # And formats it as a 'survHE' object
+  res=format_output_fit.models(output,method,distr,formula,data)
   return(res)
+  
+   
+  # ###################################################################################################################
+  # # Reconstructs the vars list based on the formula
+  # vars <- list()
+  # for (i in 1:M) {
+  #   test <- attributes(terms(formula[[i]]))$term.labels
+  #   ncovs <- length(test)
+  #   time <- all.vars(formula[[i]],data)[1]
+  #   event <- all.vars(formula[[i]],data)[2]
+  #   if (ncovs>0) {
+  #     Xraw <- model.frame(formula[[i]],data)
+  #     w <- (which(sapply(Xraw,is.factor)==1))-1
+  #     if (length(w)>=1) {
+  #       factors <- gsub("as.factor[( )]","",test[w]) 
+  #       factors <- gsub("[( )]","",factors)
+  #       covs <- test[-w]
+  #       if (length(covs)==0) {
+  #         covs <- NULL
+  #       }
+  #     } else {
+  #       factors <- NULL
+  #       covs <- test
+  #     }
+  #   } else {
+  #     covs <- factors <- NULL
+  #   }
+  #   # If there are covariates, creates a matrix and sets the dimension
+  #   if(!is.null(covs)) {
+  #     X <- data[,pmatch(covs,colnames(data))]
+  #     K <- ifelse(!is.null(dim(X)[2]),dim(X)[2],1)
+  #   }
+  #   # If there are categorical covariates (in the vector 'factors'), makes sure they have the right form
+  #   if(!is.null(factors)) {
+  #     cols <- pmatch(factors,colnames(data))
+  #     H <- length(cols)
+  #     D <- numeric()
+  #     for (i in 1:H) {
+  #       data[,cols[i]] <- as.factor(data[,cols[i]])
+  #       nlevs <- length(levels(data[,cols[i]]))
+  #       D[i] <- nlevs
+  #     } 
+  #   } else {
+  #     D <- 0
+  #   }
+  #   vars[[i]] <- list(time=time,event=event,factors=factors,covs=covs,nlevs=D)
+  # }
+  # 
+  # # Loads the pre-compiled models
+  # dso <- stanmodels
+  # 
+  # time2run <- numeric()
+  # # Selects the precompiled polyweibull model (CHECK IF THE ORDER IN availables.hmc CHANGES!!)
+  # dso <- dso[["PolyWeibull"]] 
+  # 
+  # data.stan <- list(t=data[,vars[[1]]$time], d=data[,vars[[1]]$event])
+  # data.stan$n <- length(data.stan$t)
+  # data.stan$M <- M
+  # X <- lapply(1:data.stan$M,function(i) model.matrix(formula[[i]],data))
+  # # max number of covariates in all the model formulae
+  # data.stan$H <- max(unlist(lapply(1:data.stan$M,function(i) ncol(X[[i]]))))
+  # # NB: Stan doesn't allow matrices with 1 column, so if there's only one covariate (eg intercept only), needs a little trick
+  # if (data.stan$H==1) {data.stan$H <- data.stan$H+1}
+  # X <- lapply(1:data.stan$M,function(i) {
+  #   if(ncol(X[[i]])<data.stan$H) {
+  #     X[[i]] <- cbind(X[[i]],matrix(0,nrow=nrow(X[[i]]),ncol=(data.stan$H-ncol(X[[i]]))))
+  #   } else {
+  #     X[[i]] <- X[[i]]
+  #   }
+  # })
+  # data.stan$X <- array(NA,c(data.stan$M,data.stan$n,data.stan$H))
+  # for (m in 1:data.stan$M) {
+  #   data.stan$X[m,,] <- X[[m]]
+  # }
+  # data.stan$mu_beta <- matrix(0,nrow=data.stan$H,ncol=data.stan$M)
+  # data.stan$sigma_beta <- matrix(10,data.stan$H,data.stan$M)
+  # 
+  # # These are modified if the user gives values in the call to poly.weibull
+  # if(exists("priors",where=exArgs)) {
+  #   priors <- exArgs$priors
+  #   # Linear predictor coefficients
+  #   if(!is.null(priors$mu_beta)) {
+  #     data.stan$mu_beta <- priors$mu_beta
+  #   }
+  #   if(!is.null(priors$sigma_beta)) {
+  #     data.stan$sigma_beta <- priors$sigma_beta
+  #   }
+  # }
+  # 
+  # # Now runs Stan to sample from the posterior distributions
+  # tic <- proc.time()
+  # out <- rstan::sampling(dso,data.stan,chains=chains,iter=iter,warmup=warmup,thin=thin,seed=seed,control=control,
+  #                        pars=pars,include=include,cores=cores)
+  # toc <- proc.time()-tic
+  # time2run <- toc[3]
+  # list(out=out,data.stan=data.stan,time2run=time2run)
+  # 
+  # if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan <- FALSE}
+  # time_survHE <- time2run
+  # time_stan <- sum(rstan::get_elapsed_time(out))
+  # time2run <- min(time_survHE,time_stan)
+  # names(time2run) <- "PolyWeibull"
+  # 
+  # # Computes the log-likelihood 
+  # beta <- rstan::extract(out)$beta
+  # alpha <- rstan::extract(out)$alpha
+  # # NB: To make more robust estimate of AIC, BIC and DIC uses the median here (instead of the mean)
+  # #     This is likely to be a better approximation to the MLE when the underlying distributions are highly skewed!
+  # beta.hat <- apply(beta,c(2,3),median)
+  # alpha.hat <- apply(alpha,2,median)
+  # linpred <- lapply(1:data.stan$M,function(m) {
+  #   beta[,m,]%*%t(data.stan$X[m,,])
+  # })
+  # linpred.hat <- lapply(1:data.stan$M,function(m) {
+  #   beta.hat[m,]%*%t(data.stan$X[m,,])
+  # })
+  # 
+  # h <- log_s <- array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
+  # h_bar <- log_s_bar <- matrix(NA,data.stan$n,data.stan$M)
+  # for (m in 1:data.stan$M) {
+  #   h_bar[,m] <- alpha.hat[m]*exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m]-1)
+  #   log_s_bar[,m] <- exp(linpred.hat[[m]])*data.stan$t^(alpha.hat[m])
+  #   for (i in 1:nrow(linpred[[m]])) {
+  #     h[i,,m] <- alpha[i,m]*exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m]-1)
+  #     log_s[i,,m] <- exp(linpred[[m]][i,])*data.stan$t^(alpha[i,m])
+  #   }
+  # }
+  # d_log_sum_h <- matrix(NA,nrow(alpha),data.stan$n)
+  # for (i in 1:nrow(alpha)) {
+  #   d_log_sum_h[i,] <- data.stan$d * log(rowSums(h[i,,]))
+  # }
+  # loglik.bar <- sum(data.stan$d*log(rowSums(h_bar))-rowSums(log_s_bar))
+  # loglik <- rowSums(d_log_sum_h) - rowSums(log_s,2)
+  # D.theta <- -2*loglik
+  # D.bar <- -2*loglik.bar
+  # pD <- mean(D.theta) - D.bar
+  # pV <- 0.5*var(D.theta)  # Uses Gelman's definition of pD!
+  # dic <- mean(D.theta)+pD
+  # # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
+  # npars <- data.stan$M + sum(unlist(lapply(1:data.stan$M,function(m) {sum(1-apply(data.stan$X[m,,],2,function(x) all(x==0)))})))
+  # aic <- D.bar+2*npars
+  # bic <- D.bar+npars*log(data.stan$n)
+  # 
+  # # Now defines the outputs of the function
+  # model.fitting <- list(aic=aic,bic=bic,dic=dic)
+  # km <- list(time=data.stan$t)
+  # misc <- list(time2run=time2run,formula=formula,data=data,km=km)
+  # misc$vars <- vars; misc$data.stan=data.stan
+  # # If save.stan is set to TRUE, then saves the Stan model file(s) & data
+  # if(save.stan==TRUE) {
+  #   model_code <- attr(mod$out@stanmodel,"model_code")
+  #   con <- "PolyWeibull.stan"
+  #   writeLines(model_code,con=con)
+  #   txt <- paste0("Model code saved to the file: ",con,"\n")
+  #   cat(txt)
+  # }
+  # mod <- list(out)
+  # names(mod) <- "PolyWeibull"
+  # # Finally prepares the output object
+  # res <- list(models=mod,model.fitting=model.fitting,method="hmc",misc=misc)
+  # # And sets its class attribute to "survHE"
+  # class(res) <- "survHE"
+  # return(res)
 }

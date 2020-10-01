@@ -11,6 +11,7 @@
 #' @author William Browne
 #' @keywords survival hplot
 #' @export test.linear.assumptions
+#' @noRd 
 test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   ## THIS IS INTERESTING, BUT NEEDS TO COMPLETE WITH THE OTHER DISTRIBUTIONS!!!
   

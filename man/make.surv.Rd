@@ -47,13 +47,19 @@ data(bc)
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
 p.mle = make.surv(mle)
+psa.plot(p.mle)
+# Can also use the main 'plot' function to visualise the survival curves
+# and include uncertainty by using a number 'nsim' of simulations
+plot(mle,nsim=10)
 
 }
 \references{
-Something will go here
+G Baio (2019). survHE: Survival analysis for health economic evaluation 
+and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
+14, 1-47. <doi:10.18637/jss.v095.i14>
 }
 \seealso{
-Something will go here
+\code{fit.models}, \code{psa.plot}, \code{write.surv}
 }
 \author{
 Gianluca Baio

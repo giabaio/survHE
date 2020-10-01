@@ -9,21 +9,33 @@
 #' (with times, estimates and interval limits)
 #' @param file a string with the full path to the file name to be saved
 #' @param sheet a string with the name of the sheet to be created
-#' @param what a string to describe what to be exported
-#' @return Something will go here
-#' @note Something will go here
+#' @param what a string to describe what to be exported. Can either be 
+#' 'surv' (default), which outputs the simulation(s) for the survival curves
+#' or 'sim', which outputs the simulation(s) for the underlying model 
+#' parameters. If there are several 'profiles', they get written in 
+#' separate spreadsheets and a clear indication is given as the name of the
+#' spreadsheet
+#' @return A spreadsheet file with the simulation(s) of the relevant quantity
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
-#' @keywords Excel
+#' @seealso \code{make.surv}
+#' @template refs
+#' @keywords Excel PSA
 #' @examples
 #' 
-#' # Something will go here
+#' # Loads an example dataset from 'flexsurv'
+#' data(bc)
+#' 
+#' # Fits the same model using the 3 inference methods
+#' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr="exp",method="mle")
+#' p.mle = make.surv(mle)
+#' write.surv(p.mle,file="test.xlsx")
 #' 
 #' @export write.surv
 write.surv <- function(object,file,sheet=NULL,what="surv") {
   # Writes the survival summary to an excel file (helpful to then call the values in the Markov model)
-  # object = a summary.flexsurvreg object containing the survival curves (with times, estimates and interval limits)
+  # object = a summary.flexsurvreg object containing the survival curves (with times, estimates and interval limits) - that's actually
+  # the result of the PSA from 'make.surv'
   # file = a string with the full path to the file name to be saved
   # sheet = a string with the name of the sheet to be created
   # what = the object to be exported. Possible values are:
@@ -42,44 +54,33 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     # Extracts the relevant component of the make.surv output
     if(what=="surv") {
       export <- object$mat
-      export.lab <- paste0(object$nsim," simulation(s) for the survival curve:")
-      nobjs <- length(export)
-      profile.lab <- unlist(lapply(1:nobjs,function(i) paste0("[[",i,"]] = ",rownames(object$des.mat)[i],"\n")))
-      dims <- dim(export[[1]])
-      # Finds the total number of rows necessary to write the simulations to the output file
-      tot.rows <- dims[1]*nobjs + nobjs
-      cn <- as.character(object$S[[1]][[1]][,1])
-      for (i in 1:nobjs) {
-        colnames(export[[i]]) <- paste0("t_",cn)
-      }
+      export.lab <- paste0(" ",object$nsim," simulation(s) for the survival curve")
+    } else {
+      export=object$sim
+      export.lab <- paste0(" ",object$nsim," simulation(s) for the model parameters")
     }
-    
-    # # Gets the extension of the file --- then decides whether to do write.csv or xlsx (do we want more formats??)
-    # exts <- tools::file_ext(file)
-    # if(exts=="csv") {
-    #   out=export[[1]]
-    #   if (nobjs>1) {
-    #     for (i in 2:nobjs) {
-    #       out <- rbind(out,rep(NA,ncol(out)),export[[i]])
-    #     }
-    #   }
-    #   write.csv(out,file=file)
-    # }
-    
-    if(is.null(sheet)) {sheet <- "Sheet 1"}
+    nobjs <- length(export)
+    profile.lab=lapply(1:nrow(object$des.mat),function(x){
+      object$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
+        round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
+    }) %>% bind_rows(.) %>% pull(strata)
+    dims <- dim(export[[1]])
+    # Finds the total number of rows necessary to write the simulations to the output file
+    tot.rows <- dims[1]*nobjs + nobjs
+
+    if(is.null(sheet)) {
+      sheet = profile.lab
+    }
     
     # If it already exists, we need to append the data to a different sheet
     if (file.exists(file)) {
       wb <- xlsx::loadWorkbook(file)
       # If worksheet already exists needs to replace it & overwrite it
-      if (sheet %in% names(xlsx::getSheets(wb))) {xlsx::removeSheet(wb,sheetName=sheet)}
-      sheet <- xlsx::createSheet(wb,sheet)
-      sr <- seq(from=1,by=(dims[1]+2),to=tot.rows)
-      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=sr[i],startColumn=1,row.names=T,col.names=T))
-      # sc <- seq(from=1,by=5,length.out=nobjs)
-      # for (i in 1:nobjs) {
-      #   xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=1,startColumn=sc[i],row.names=F)
-      # }
+      for (i in 1:length(sheet)){
+        if(sheet[i] %in% names(xlsx::getSheets(wb))) {xlsx::removeSheet(wb,sheetName=sheet[i])}
+      }
+      sheet <- lapply(sheet,function(i) xlsx::createSheet(wb,i))
+      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet[[i]],startRow=1,startColumn=1,row.names=T,col.names=T))
       xlsx::saveWorkbook(wb,file)
     }
     
@@ -88,17 +89,12 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
       exts <- tools::file_ext(file)
       ## Should put some restriction as to what file extensions we want?
       wb <- xlsx::createWorkbook(type=exts)
-      sheet <- xlsx::createSheet(wb,sheet)
-      sr <- seq(from=1,by=(dims[1]+2),to=tot.rows)
-      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet,startRow=sr[i],startColumn=1,row.names=T,col.names=T))
-      # sc <- seq(from=1,by=5,length.out=nobjs)
-      # for (i in 1:nobjs) {
-      #   xlsx::addDataFrame(object[[i]],sheet=sheet,startRow=1,startColumn=sc[i],row.names=F)
-      # }
+      sheet <- lapply(sheet,function(i) xlsx::createSheet(wb,i))
+      ex <- lapply(1:nobjs,function(i) xlsx::addDataFrame(export[[i]],sheet=sheet[[i]],startRow=1,startColumn=1,row.names=T,col.names=T))
       xlsx::saveWorkbook(wb,file)
     }
     
-    msg <- paste0("Written to file: ",file)
-    cat(export.lab,"\n",profile.lab,"\n",msg,"\n")
+    msg <- paste0("written to file: '",file,"'")
+    cat(export.lab,msg,"\n","Profile(s):",paste("\n  ",profile.lab),"\n")
   }
 }

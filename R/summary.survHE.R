@@ -17,10 +17,9 @@
 #' @param \dots Additional options
 #' @return \item{mean.surv}{ A matrix with the simulated values for the mean
 #' survival times } \item{tab}{ A summary table }
-#' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso Something will go here
-#' @references Something will go here
+#' @seealso \code{fit.models}, \code{make.surv}
+#' @template refs
 #' @keywords Parametric survival models Mean survival time
 #' @examples
 #' 
@@ -73,24 +72,33 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   exArgs <- list(...)
   if (!exists("newdata",where=exArgs)) {newdata <- NULL} else {newdata <- exArgs$newdata}
   if (!exists("labs",where=exArgs)) {labs <- NULL} else {labs <- exArgs$labs}
-  if (is.null(t)) {t <- object$misc$km$time} else {t <- t}
+  if(is.null(t)) {
+    if(object$misc$model_name[mod]=="pow") {
+      t <- sort(unique(object$misc$km[[mod]]$time))
+    } else {
+      t <- sort(unique(object$misc$km$time))
+    }
+  }
   
   psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
   rlabs <- rownames(psa$des.mat)
   if (!is.null(rlabs)) {
     rlabs <- gsub("^1,","",rlabs)
   } else {
-    rlabs <- ""
+    rlabs <- rep("",length(psa$sim))
   }
   if(!is.null(labs) & length(labs)==length(rlabs)) {rlabs <- labs}
   
-  mean.surv <- matrix(unlist(lapply(1:psa$nsim,function(i) {
-    lapply(1:length(psa$S[[1]]),function(j) {
-      xvar <- psa$S[[i]][[j]][,1]
-      yvar <- psa$S[[i]][[j]][,2]
-      sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+  mean.surv=matrix(unlist(
+    lapply(psa$mat,function(i) {
+      lapply(1:psa$nsim,function(j) {
+        xvar=i$t
+        yvar=i[,(j+1)]
+        sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+      })
     })
-  })),nrow = psa$nsim,byrow=T)
+  ),nrow=psa$nsim,byrow=F)
+
   if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
     colnames(mean.surv) <- names(object$misc$km$strata)
   }
@@ -99,15 +107,15 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   if(psa$nsim>1) {
     tab <- make.stats(mean.surv)
     rownames(tab) <- rlabs
-    # if(!is.null(names(x$misc$km$strata))) {
-    #   if (ncol(mean.surv)==length(names(x$misc$km$strata))) {
-    #     rownames(tab) <- names(x$misc$km$strata)
-    #   } else {
-    #     rownames(tab) <- rlabs
-    #   }
-    # } else {
-    #   rownames(tab) <- rlabs
-    # }
+    if(!is.null(names(object$misc$km$strata))) {
+      if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
+        rownames(tab) <- names(object$misc$km$strata)
+      } else {
+        rownames(tab) <- rlabs
+      }
+    } else {
+      rownames(tab) <- rlabs
+    }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
     cat(paste0("\n*Computed over the range: [",paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))

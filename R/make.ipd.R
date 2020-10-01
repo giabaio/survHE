@@ -18,7 +18,13 @@
 #' @keywords Digitized Kaplan Meier curve
 #' @examples
 #' 
-#' # Something will go here
+#' # Defines the txt files to be used as inputs
+#' surv.inp <- system.file("extdata", "survival.txt", package = "survHE")
+#' nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
+#' # Runs 'digitise' to create the relevant output files
+#' digitise(surv.inp, nrisk.inp, ipd_output = "IPD.txt")
+#' # Now uses 'make.ipd' to create the pseudo-data
+#' make.ipd("IPD.txt", ctr = 1, var.labs = c("time", "event", "arm"))
 #' 
 #' @export make.ipd
 make.ipd <- function(ipd_files,ctr=1,var.labs=c("time","event","arm")) {

@@ -14,10 +14,15 @@ write.surv(object, file, sheet = NULL, what = "surv")
 
 \item{sheet}{a string with the name of the sheet to be created}
 
-\item{what}{a string to describe what to be exported}
+\item{what}{a string to describe what to be exported. Can either be 
+'surv' (default), which outputs the simulation(s) for the survival curves
+or 'sim', which outputs the simulation(s) for the underlying model 
+parameters. If there are several 'profiles', they get written in 
+separate spreadsheets and a clear indication is given as the name of the
+spreadsheet}
 }
 \value{
-Something will go here
+A spreadsheet file with the simulation(s) of the relevant quantity
 }
 \description{
 Writes the survival summary to an excel file (helpful to then call the
@@ -26,21 +31,28 @@ values in the Markov model)
 \details{
 Something will go here
 }
-\note{
-Something will go here
-}
 \examples{
 
-# Something will go here
+# Loads an example dataset from 'flexsurv'
+data(bc)
+
+# Fits the same model using the 3 inference methods
+mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+    distr="exp",method="mle")
+p.mle = make.surv(mle)
+write.surv(p.mle,file="test.xlsx")
 
 }
 \references{
-Something will go here
+G Baio (2019). survHE: Survival analysis for health economic evaluation 
+and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
+14, 1-47. <doi:10.18637/jss.v095.i14>
 }
 \seealso{
-Something will go here
+\code{make.surv}
 }
 \author{
 Gianluca Baio
 }
 \keyword{Excel}
+\keyword{PSA}

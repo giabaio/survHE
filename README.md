@@ -34,10 +34,10 @@ install.packages(pkgs,repos=repos,dependencies = "Depends")
 ```
 before installing the package using `devtools`:
 ```R
-devtools::install_github("giabaio/survHE")
+devtools::install_github("giabaio/survHE", ref="devel")
 ```
 Under Linux or MacOS, it is sufficient to install the package via `devtools`:
 ```R
 install.packages("devtools")
-devtools:install_github("giabaio/survHE")
+devtools:install_github("giabaio/survHE", ref="devel")
 ```

@@ -11,24 +11,35 @@ aiding in health economic modelling (extrapolation, model checking and PSA)
 }
 \details{
 \tabular{ll}{ Package: \tab survHE\cr Type: \tab Package\cr Version: \tab
-1.0.66\cr Date: \tab 2019-09-12\cr License: \tab GPL2 \cr LazyLoad: \tab
+1.1.1\cr Date: \tab 2020-10-01\cr License: \tab GPL2 \cr LazyLoad: \tab
 yes\cr } Contains a suite of functions to perform survival analysis with the
 aim of aiding in health economic modelling (extrapolation, model checking
 and PSA)
 }
 \examples{
 
-# Something will go here
-
+# Loads some survival data
+data(bc)
+# Fits a parametric model
+m <- fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+    distr="exp",method="mle")
+# Print output in tabular format
+print(m)
+# Visualise output in terms of survival curves
+plot(m)
 }
 \references{
-Something will go here
-}
-\seealso{
-Something will go here
+G Baio (2019). survHE: Survival analysis for health economic evaluation 
+and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
+14, 1-47. <doi:10.18637/jss.v095.i14>
 }
 \author{
 Gianluca Baio
 
 Maintainer: Gianluca Baio
 }
+\keyword{Economic}
+\keyword{Evaluation}
+\keyword{Health}
+\keyword{Modelling}
+\keyword{Survival}

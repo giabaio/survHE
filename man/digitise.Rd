@@ -4,8 +4,12 @@
 \alias{digitise}
 \title{Format digitised data for use in survival analysis}
 \usage{
-digitise(surv_inp, nrisk_inp, km_output = "KMdata.txt",
-  ipd_output = "IPDdata.txt")
+digitise(
+  surv_inp,
+  nrisk_inp,
+  km_output = "KMdata.txt",
+  ipd_output = "IPDdata.txt"
+)
 }
 \arguments{
 \item{surv_inp}{a txt file obtained for example by DigitizeIT and containing
@@ -25,11 +29,17 @@ digitised Kaplan Meier curves obtained by DigitizeIT
 }
 \examples{
 
-# Something will go here
+# Defines the txt files to be used as inputs
+surv.inp <- system.file("extdata", "survival.txt", package = "survHE")
+nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
+# Runs 'digitise' to create the relevant output files
+digitise(surv.inp, nrisk.inp)
 
 }
 \references{
-Something will go here
+G Baio (2019). survHE: Survival analysis for health economic evaluation 
+and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
+14, 1-47. <doi:10.18637/jss.v095.i14>
 }
 \author{
 Patricia Guyot and Gianluca Baio
