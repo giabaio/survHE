@@ -14,7 +14,7 @@
 runINLA <- function(x,exArgs) {
   # First checks whether INLA is installed (it's only a suggestion, not a full dependency)
   if (!isTRUE(requireNamespace("INLA", quietly = TRUE))) {
-    stop("You need to install the packages 'INLA'. Please run in your R terminal:\n install.packages('INLA', repos='https://www.math.ntnu.no/inla/R/stable')")
+    stop("You need to install the packages 'INLA'. Please run in your R terminal:\n install.packages('INLA', repos='https://inla.r-inla-download.org/R/stable')")
   }
   # If INLA is installed but not loaded then attach the Namespace (so that all the relevant functions are available)
   if (isTRUE(requireNamespace("INLA", quietly = TRUE))) {
