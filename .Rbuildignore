@@ -1,4 +1,8 @@
+^.*.yml
+man-roxygen
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.travis.yml$
+^\.travis\.yml$
 ^configure
-^.*.yml
+^README.md
