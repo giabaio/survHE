@@ -21,7 +21,7 @@
 #' @template refs
 #' @keywords Excel PSA
 #' @examples
-#' 
+#' \dontrun{
 #' # Loads an example dataset from 'flexsurv'
 #' data(bc)
 #' 
@@ -30,7 +30,7 @@
 #'     distr="exp",method="mle")
 #' p.mle = make.surv(mle)
 #' write.surv(p.mle,file="test.xlsx")
-#' 
+#' }
 #' @export write.surv
 write.surv <- function(object,file,sheet=NULL,what="surv") {
   # Writes the survival summary to an excel file (helpful to then call the values in the Markov model)
