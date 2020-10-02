@@ -40,7 +40,7 @@ may be other arguments that can be added (using 'ggplot' facilities)}
 Plots the results of model fit.
 }
 \examples{
-
+\dontrun{
 data(bc)
 
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
@@ -48,6 +48,7 @@ mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="inla")
 plot(MLE=mle,INLA=inla)
+}
 
 }
 \references{
