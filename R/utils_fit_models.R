@@ -738,7 +738,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
     D.bar <- -2*loglik.bar
     data.stan$n <- data.stan$n_obs+data.stan$n_cens
   } else if(distr3=="pow") {
-    # If the model is Poly-Weibull, then computes these quantites directly
+    # If the model is Poly-Weibull, then computes these quantities directly
     h <- log_s <- array(NA,c(nrow(alpha),data.stan$n,data.stan$M))
     h_bar <- log_s_bar <- matrix(NA,data.stan$n,data.stan$M)
     for (m in 1:data.stan$M) {
@@ -888,10 +888,10 @@ lik_gga <- function(x,linpred,linpred.hat,model,data.stan) {
   q.bar = median(q)
   scale = as.numeric(rstan::extract(model)$sigma)
   scale.bar = median(scale)
-  lo <- exp(linpred$lo)
-  lc <- exp(linpred$lc)
-  lo.bar <- exp(linpred.hat$lo.bar)
-  lc.bar <- exp(linpred.hat$lc.bar)
+  lo <- (linpred$lo)
+  lc <- (linpred$lc)
+  lo.bar <- (linpred.hat$lo.bar)
+  lc.bar <- (linpred.hat$lc.bar)
   f = matrix(
     unlist(lapply(1:nrow(lo), function(i)
       dgengamma(data.stan$t, lo[i, ], scale[i], q[i]))), 
@@ -920,10 +920,10 @@ lik_gef <- function(x,linpred,linpred.hat,model,data.stan) {
   P.bar = median(P)
   sigma = as.numeric(rstan::extract(model)$sigma)
   sigma.bar = mean(sigma)
-  lo <- exp(linpred$lo)
-  lc <- exp(linpred$lc)
-  lo.bar <- exp(linpred.hat$lo.bar)
-  lc.bar <- exp(linpred.hat$lc.bar)
+  lo <- (linpred$lo)
+  lc <- (linpred$lc)
+  lo.bar <- (linpred.hat$lo.bar)
+  lc.bar <- (linpred.hat$lc.bar)
   f = matrix(
     unlist(lapply(1:nrow(lo), function(i) 
       dgenf(data.stan$t, lo[i, ], sigma[i], Q[i], P[i]))), 
