@@ -83,36 +83,30 @@ Runs the survival analysis with several useful options, using either MLE
 On object in the class \code{survHE} containing the following elements
 }
 \examples{
-
+\dontrun{
 # Loads an example dataset from 'flexsurv'
 data(bc)
 
 # Fits the same model using the 3 inference methods
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
-\donttest{
 inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="inla")
 hmc = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="hmc")
-}
+    
 # Prints the results in comparable fashion using the survHE method
 print(mle)
-\donttest{
 print(inla)
 print(hmc)
-}
 
 # Or visualises the results using the original packages methods
 print(mle,original=TRUE)
-\donttest{
 print(inla,original=TRUE)
 print(hmc,original=TRUE)
-}
 
 # Plots the survival curves and estimates
 plot(mle)
-\donttest{
 plot(mle,inla,hmc,labs=c("MLE","INLA","HMC"),colors=c("black","red","blue"))
 }
 

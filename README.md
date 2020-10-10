@@ -1,4 +1,4 @@
-# survHE [![Travis-CI Build Status](https://travis-ci.org/giabaio/survHE.svg?branch=master)](https://travis-ci.org/giabaio/survHE)[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/giabaio/survHE?branch=master&svg=true)](https://ci.appveyor.com/project/giabaio/survHE)[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](http://cranlogs.r-pkg.org/badges/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)
+# survHE [![Travis-CI Build Status](https://travis-ci.org/giabaio/survHE.svg?branch=devel)](https://travis-ci.org/giabaio/survHE)[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/giabaio/survHE?branch=devel&svg=true)](https://ci.appveyor.com/project/giabaio/survHE)[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](http://cranlogs.r-pkg.org/badges/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)
 ## Survival analysis in health economic evaluation
 
 Contains a suite of functions to systematise the workflow involving survival analysis in health economic evaluation. survHE can fit a large range of survival models using both a frequentist approach (by calling the R package [flexsurv](https://CRAN.R-project.org/package=flexsurv)) and a Bayesian perspective. For a selected range of models, both Integrated Nested Laplace Integration (via the R package [INLA](http://www.r-inla.org/)) and Hamiltonian Monte Carlo (via the R package [rstan](https://CRAN.R-project.org/package=rstan)) are possible. HMC models are pre-compiled so that they can run in a very efficient and fast way. In addition to model fitting, survHE provides a set of specialised functions, for example to perform Probabilistic Sensitivity Analysis, export the results of the modelling to a spreadsheet, plotting survival curves and uncertainty around the mean estimates.
@@ -34,10 +34,10 @@ install.packages(pkgs,repos=repos,dependencies = "Depends")
 ```
 before installing the package using `devtools`:
 ```R
-devtools::install_github("giabaio/survHE")
+devtools::install_github("giabaio/survHE", ref="devel")
 ```
 Under Linux or MacOS, it is sufficient to install the package via `devtools`:
 ```R
 install.packages("devtools")
-devtools:install_github("giabaio/survHE")
+devtools:install_github("giabaio/survHE", ref="devel")
 ```

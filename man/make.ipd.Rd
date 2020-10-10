@@ -23,7 +23,7 @@ Piles in the simulated IPD resulting from running digitise for more than one
 treatment arm
 }
 \examples{
-
+\dontrun{
 # Defines the txt files to be used as inputs
 surv.inp <- system.file("extdata", "survival.txt", package = "survHE")
 nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
@@ -31,7 +31,7 @@ nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
 digitise(surv.inp, nrisk.inp, ipd_output = "IPD.txt")
 # Now uses 'make.ipd' to create the pseudo-data
 make.ipd("IPD.txt", ctr = 1, var.labs = c("time", "event", "arm"))
-
+}
 }
 \references{
 Something will go here

@@ -32,7 +32,7 @@ values in the Markov model)
 Something will go here
 }
 \examples{
-\dontrun{
+\dontrun
 # Loads an example dataset from 'flexsurv'
 data(bc)
 
@@ -41,7 +41,7 @@ mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
 p.mle = make.surv(mle)
 write.surv(p.mle,file="test.xlsx")
-}
+
 }
 \references{
 G Baio (2019). survHE: Survival analysis for health economic evaluation 

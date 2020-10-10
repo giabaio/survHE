@@ -81,11 +81,11 @@
 #' # Fits the same model using the 3 inference methods
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
-
 #' inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="inla")
 #' hmc = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="hmc")
+#'     
 #' # Prints the results in comparable fashion using the survHE method
 #' print(mle)
 #' print(inla)

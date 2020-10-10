@@ -28,13 +28,13 @@ Produces txt files with Kaplan Meier and individual level survival data from
 digitised Kaplan Meier curves obtained by DigitizeIT
 }
 \examples{
-
+\dontrun{
 # Defines the txt files to be used as inputs
 surv.inp <- system.file("extdata", "survival.txt", package = "survHE")
 nrisk.inp <- system.file("extdata", "nrisk.txt", package = "survHE")
 # Runs 'digitise' to create the relevant output files
 digitise(surv.inp, nrisk.inp)
-
+}
 }
 \references{
 G Baio (2019). survHE: Survival analysis for health economic evaluation 
