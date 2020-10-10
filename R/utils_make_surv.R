@@ -132,11 +132,17 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
   iter_stan <- m@stan_args[[1]]$iter
   
   beta=rstan::extract(m)$beta
-  # RPS has a weird construction and needs to remove the intercept if it's present
+  # Takes care of a couple of exceptions...
+  # 1. If the model is intercept only then needs to remove the extra column added as trick in 'make_data_stan'
+  if (ncol(X)==1) {
+    beta=beta[,1]
+  }
+  # 2. RPS has a weird construction and needs to remove the intercept if it's present
   if(dist=="rps" & any(grepl("Intercept",colnames(X)))) {
     X <- as.matrix(as_tibble(X) %>% select(-`(Intercept)`))
     beta=beta[,-ncol(beta)]
   }
+  
   linpred <-  beta %*% t(X)
   # Stores the values returned by rstan into the list 'sim'
   sim <- lapply(1:nrow(X),function(x) {
