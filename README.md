@@ -42,6 +42,6 @@ install.packages("devtools")
 devtools:install_github("giabaio/survHE")
 ```
 
-The current GitHub `master` version of `survHE` is aligned with the CRAN release. We'll update it to fix minor issues *if and when* we discover them, so we recommend that users install this to ensure a smoother workflow. 
+The current GitHub `master` version of `survHE` is aligned with the [CRAN release](https://cran.r-project.org/web/packages/survHE/index.html). We'll update it to fix minor issues *if and when* we discover them, so we recommend that users install this to ensure a smoother workflow. 
 
 There is also a **development** version of `survHE`, which is available under [https://github.com/giabaio/survHE/tree/devel](https://github.com/giabaio/survHE/tree/devel). This will be continously updated, but it will be less stable than the `master` version, as we will use it to test new functionalities. We recommend you use it only if you are an experienced `R` user.
