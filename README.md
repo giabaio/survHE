@@ -41,3 +41,5 @@ Under Linux or MacOS, it is sufficient to install the package via `devtools`:
 install.packages("devtools")
 devtools:install_github("giabaio/survHE", ref="devel")
 ```
+
+For "real" work, we recommend the use of the [`master` branch](https://github.com/giabaio/survHE/tree/master) in the GitHub repository. This will be updated more frequently than the official [CRAN release](https://cran.r-project.org/web/packages/survHE/index.html), to fix minor issues or inconsitencies. The `devel` branch will be continuously updated but may be less stable as it will include functions/functionalities *under development* and subject to current testing.
