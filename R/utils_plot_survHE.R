@@ -101,8 +101,8 @@ plot_ggplot_survHE <- function(exArgs) {
                      add.km=add.km
       )[[2]] %>% mutate(object_name=as.factor(names(survHE_objs)[i]))
     }) %>% bind_rows() %>% 
-      group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() %>% 
-      filter(mods_id%in%mods)
+      group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() #%>% 
+      #filter(mods_id%in%mods)
   } else {
     datakm=NULL
   }
