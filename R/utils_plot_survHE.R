@@ -101,8 +101,8 @@ plot_ggplot_survHE <- function(exArgs) {
                      add.km=add.km
       )[[2]] %>% mutate(object_name=as.factor(names(survHE_objs)[i]))
     }) %>% bind_rows() %>% 
-      group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() %>% 
-      filter(mods_id%in%mods)
+      group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() # %>% 
+      #filter(mods_id%in%mods)
   } else {
     datakm=NULL
   }
@@ -191,7 +191,8 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
   if(is.null(t)) {
     t <- sort(unique(x$misc$km$time))
   }
-  s=lapply(1:length(x$models),function(i) {
+  #s=lapply(1:length(x$models),function(i) {
+  s=lapply(mods,function(i) {
     make.surv(x,mod=i,t=t,nsim=nsim,newdata=newdata)
   })
   strata=lapply(1:length(s),function(i) {
@@ -201,9 +202,15 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
     }) %>% bind_rows(.) %>% select(strata)
   })
 
+  # toplot=lapply(1:length(mods),function(i) {
+  #   lapply(1:length(s[[mods[i]]]$S),function(j) {
+  #     s[[mods[i]]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[mods[i]]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
+  #   })
+  # }) %>% bind_rows(.)
+  # out=list(toplot)
   toplot=lapply(1:length(mods),function(i) {
-    lapply(1:length(s[[mods[i]]]$S),function(j) {
-      s[[mods[i]]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[mods[i]]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
+    lapply(1:length(s[[i]]$S),function(j) {
+      s[[i]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[i]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
     })
   }) %>% bind_rows(.)
   out=list(toplot)
