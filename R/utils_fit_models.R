@@ -361,14 +361,14 @@ make_data_stan=function(formula,data,distr3,exArgs) {
   }
   
   # Ancillary parameters
-  if(!is.null(priors$a_sigma)) {a_sigma=priors$a_sigma}
-  if(!is.null(priors$b_sigma)) {b_sigma=priors$b_sigma}
-  if(!is.null(priors$mu_P)) {mu_P=priors$mu_P}
-  if(!is.null(priors$sigma_P)) {sigma_P=priors$sigma_P}
-  if(!is.null(priors$mu_Q)) {mu_Q=priors$mu_Q}
-  if(!is.null(priors$sigma_Q)) {sigma_Q=priors$sigma_Q}
-  if(!is.null(priors$a_alpha)) {a_alpha=priors$a_alpha}
-  if(!is.null(priors$b_alpha)) {b_alpha=priors$b_alpha}
+  if(!is.null(priors$a_sigma)) {data.stan$a_sigma=priors$a_sigma}
+  if(!is.null(priors$b_sigma)) {data.stan$b_sigma=priors$b_sigma}
+  if(!is.null(priors$mu_P)) {data.stan$mu_P=priors$mu_P}
+  if(!is.null(priors$sigma_P)) {data.stan$sigma_P=priors$sigma_P}
+  if(!is.null(priors$mu_Q)) {data.stan$mu_Q=priors$mu_Q}
+  if(!is.null(priors$sigma_Q)) {data.stan$sigma_Q=priors$sigma_Q}
+  if(!is.null(priors$a_alpha)) {data.stan$a_alpha=priors$a_alpha}
+  if(!is.null(priors$b_alpha)) {data.stan$b_alpha=priors$b_alpha}
   
   # Returns the list of data
   data.stan
