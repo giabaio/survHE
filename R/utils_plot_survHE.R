@@ -78,17 +78,45 @@ plot_ggplot_survHE <- function(exArgs) {
   if(exists("annotate",where=exArgs)){annotate=exArgs$annotate} else {annotate=FALSE}
   
   # Makes the dataframe with the data to plot
-  toplot = lapply(1:length(survHE_objs),function(i){
+  # toplot = lapply(1:length(survHE_objs),function(i){
+  #   make_data_surv(survHE_objs[[i]],
+  #                  mods=1:length(survHE_objs[[i]]$models),
+  #                  nsim=nsim,
+  #                  t=t,
+  #                  newdata=newdata,
+  #                  add.km=add.km
+  #   )[[1]] %>% mutate(object_name=as.factor(names(survHE_objs)[i]))
+  # }) %>% bind_rows() %>%
+  #   group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() %>%
+  #   filter(mods_id%in%mods)
+  
+  ##############################################################################################
+  # Tries to only select the relevant models based on the choice indicated by the user
+  # Makes a tibble with the *only* objects + the models selected in each of them
+  all_models=tibble(
+    obj=unlist(
+      lapply(1:length(survHE_objs),function(x) {
+        rep(names(survHE_objs)[x],length(survHE_objs[[i]]$models))
+      })
+    ),
+    mod=unlist(lapply(survHE_objs,function(x) 1:length(x$models)))
+  ) %>% slice(mods) %>% arrange(obj)
+  
+  # Makes a vector with the index of *only* the objects selected
+  sel_mods=unique(match(all_models$obj,names(survHE_objs)))
+  
+  # Makes the dataset to plot, including *only* the objects and models selected
+  toplot = lapply(sel_mods,function(i){
     make_data_surv(survHE_objs[[i]],
-                   mods=1:length(survHE_objs[[i]]$models), 
+                   mods=all_models %>% filter(obj==names(survHE_objs)[i]) %>% pull(mod), 
                    nsim=nsim,
                    t=t,
                    newdata=newdata,
                    add.km=add.km 
     )[[1]] %>% mutate(object_name=as.factor(names(survHE_objs)[i]))
   }) %>% bind_rows() %>% 
-    group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() %>% 
-    filter(mods_id%in%mods)
+    group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() 
+  ##############################################################################################
   
   # If so, then builds the relevant data
   if(add.km==TRUE) {
