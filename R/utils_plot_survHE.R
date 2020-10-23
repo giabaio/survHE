@@ -96,7 +96,7 @@ plot_ggplot_survHE <- function(exArgs) {
   all_models=tibble(
     obj=unlist(
       lapply(1:length(survHE_objs),function(x) {
-        rep(names(survHE_objs)[x],length(survHE_objs[[i]]$models))
+        rep(names(survHE_objs)[x],length(survHE_objs[[x]]$models))
       })
     ),
     mod=unlist(lapply(survHE_objs,function(x) 1:length(x$models)))
