@@ -80,14 +80,15 @@ plot_ggplot_survHE <- function(exArgs) {
   # Makes the dataframe with the data to plot
   toplot = lapply(1:length(survHE_objs),function(i){
     make_data_surv(survHE_objs[[i]],
-                   mods=mods, 
+                   mods=1:length(survHE_objs[[i]]$models), 
                    nsim=nsim,
                    t=t,
                    newdata=newdata,
                    add.km=add.km 
     )[[1]] %>% mutate(object_name=as.factor(names(survHE_objs)[i]))
   }) %>% bind_rows() %>% 
-    group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() 
+    group_by(object_name,model_name) %>% mutate(mods_id=cur_group_id()) %>% ungroup() %>% 
+    filter(mods_id%in%mods)
   
   # If so, then builds the relevant data
   if(add.km==TRUE) {
