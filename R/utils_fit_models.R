@@ -733,9 +733,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   # Now computes the log-likelihood and then deviance and DIC, AIC, BIC
   if (distr3 %in% c("gam","gga","gef")) {
     loglik <- compute.loglik(f,s)
-    D.theta <- -2*loglik 
     loglik.bar <- compute.loglik(f.bar,s.bar)
-    D.bar <- -2*loglik.bar
     data.stan$n <- data.stan$n_obs+data.stan$n_cens
   } else if(distr3=="pow") {
     # If the model is Poly-Weibull, then computes these quantities directly
