@@ -31,7 +31,7 @@ data {
   vector[n] d;            // censoring indicator (1=observed, 0=censored)
   int H;                  // number of covariates
   matrix[n,H] X;          // matrix of covariates (with n rows and H columns)
-  vector[H] mu_beta;	  // mean of the covariates coefficients
+  vector[H] mu_beta;	    // mean of the covariates coefficients
   vector<lower=0> [H] sigma_beta;   // sd of the covariates coefficients
 
 }

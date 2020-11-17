@@ -35,13 +35,13 @@ data {
   matrix[n,H] X;                  // matrix of covariates (with n rows and H columns)
   vector[H] mu_beta;	            // mean of the covariates coefficients
   vector<lower=0> [H] sigma_beta; // sd of the covariates coefficients
-  real a_alpha;                   // mu_alpha
+  real<lower=0> a_alpha;          // mu_alpha
   real<lower=0> b_alpha;          // sigma_alpha
 }
 
 parameters {
   vector[H] beta;                 // Coefficients in the linear predictor (including intercept)
-  real alpha;                     // shape parameter
+  real<lower=0> alpha;            // shape parameter
 }
 
 transformed parameters {
@@ -54,7 +54,7 @@ transformed parameters {
 }
 
 model {
-  alpha ~ normal(a_alpha,b_alpha);
+  alpha ~ gamma(a_alpha,b_alpha);
   beta ~ normal(mu_beta,sigma_beta);
   t ~ surv_gompertz(d,alpha,mu);
 }
