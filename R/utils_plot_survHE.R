@@ -93,6 +93,8 @@ plot_ggplot_survHE <- function(exArgs) {
   ##############################################################################################
   # Tries to only select the relevant models based on the choice indicated by the user
   # Makes a tibble with the *only* objects + the models selected in each of them
+  # Initialises 'obj' and 'mod' to avoid binding issues
+  obj <- mod <- NULL
   all_models=tibble(
     obj=unlist(
       lapply(1:length(survHE_objs),function(x) {

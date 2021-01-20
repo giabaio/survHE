@@ -11,7 +11,7 @@ aiding in health economic modelling (extrapolation, model checking and PSA)
 }
 \details{
 \tabular{ll}{ Package: \tab survHE\cr Type: \tab Package\cr Version: \tab
-1.1.2\cr Date: \tab 2020-10-23\cr License: \tab GPL2 \cr LazyLoad: \tab
+1.1.3\cr Date: \tab 2021-01-21\cr License: \tab GPL2 \cr LazyLoad: \tab
 yes\cr } Contains a suite of functions to perform survival analysis with the
 aim of aiding in health economic modelling (extrapolation, model checking
 and PSA)
