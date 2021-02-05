@@ -29,12 +29,13 @@ Plots a summary of the model fit for all the models fitted
 Something will go here
 }
 \examples{
-
+\dontrun{ 
 data(bc)
 
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr=c("exp","wei","lno"),method="mle")
 model.fit.plot(mle)
+}
 
 }
 \references{

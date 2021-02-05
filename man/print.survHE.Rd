@@ -24,12 +24,13 @@ Prints the summary table for the model(s) fitted, with the estimate of the
 parameters
 }
 \examples{
-
+\dontrun{ 
 data(bc)
 
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
 print(mle)
+}
 
 }
 \references{

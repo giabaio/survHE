@@ -34,12 +34,13 @@ Calculates the mean survival time as the area under the survival curve
 A list comprising of the following elements
 }
 \examples{
-
+\dontrun{
 data(bc)
 
 mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
 summary(mle,nsim=100)
+}
 
 }
 \references{

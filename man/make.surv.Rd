@@ -39,7 +39,7 @@ curve}
 Creates the survival curves for the fitted model(s)
 }
 \examples{
-
+\dontrun{ 
 # Loads an example dataset from 'flexsurv'
 data(bc)
 
@@ -51,6 +51,7 @@ psa.plot(p.mle)
 # Can also use the main 'plot' function to visualise the survival curves
 # and include uncertainty by using a number 'nsim' of simulations
 plot(mle,nsim=10)
+}
 
 }
 \references{

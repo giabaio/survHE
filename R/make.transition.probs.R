@@ -18,8 +18,9 @@
 #' @references Something will go here
 #' @keywords Transition probabilities Markov models
 #' @examples
-#' 
+#' \dontrun{
 #' # Something will go here
+#' }
 #' 
 #' @export make.transition.probs
 make.transition.probs <- function(x,...) {

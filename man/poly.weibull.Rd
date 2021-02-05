@@ -57,6 +57,8 @@ On object in the class \code{survHE} containing the following elements
 Something will go here
 }
 \examples{
+\dontrun{
+}
 
 #See Baio (2019) for extended example
 

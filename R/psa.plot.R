@@ -17,7 +17,7 @@
 #' @seealso \code{make.surv}, \code{write.surv}
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
 #' @examples
-#' 
+#' \dontrun{ 
 #' data(bc)
 #' 
 #' # Fits the same model using the 3 inference methods
@@ -25,6 +25,7 @@
 #'     distr="exp",method="mle")
 #' p.mle = make.surv(mle,nsim=100)
 #' psa.plot(p.mle)
+#' }
 #' 
 #' @export psa.plot
 psa.plot <- function(psa,...) {

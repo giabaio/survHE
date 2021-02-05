@@ -22,7 +22,7 @@ the \code{plot} method (with options), which allows a finer depiction
 of the results.
 }
 \examples{
-
+\dontrun{ 
 data(bc)
 
 # Fits the same model using the 3 inference methods
@@ -30,6 +30,7 @@ mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
     distr="exp",method="mle")
 p.mle = make.surv(mle,nsim=100)
 psa.plot(p.mle)
+}
 
 }
 \references{

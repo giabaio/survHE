@@ -22,12 +22,13 @@
 #' @template refs
 #' @keywords Parametric survival models Mean survival time
 #' @examples
-#' 
+#' \dontrun{
 #' data(bc)
 #' 
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
 #' summary(mle,nsim=100)
+#' }
 #' 
 #' @export summary.survHE
 summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {

@@ -28,8 +28,9 @@ Something will go here
 Something will go here
 }
 \examples{
-
+\dontrun{
 # Something will go here
+}
 
 }
 \references{

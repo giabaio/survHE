@@ -30,7 +30,7 @@
 #' @template refs
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
 #' @examples
-#' 
+#' \dontrun{ 
 #' # Loads an example dataset from 'flexsurv'
 #' data(bc)
 #' 
@@ -42,6 +42,7 @@
 #' # Can also use the main 'plot' function to visualise the survival curves
 #' # and include uncertainty by using a number 'nsim' of simulations
 #' plot(mle,nsim=10)
+#' }
 #' 
 #' @export make.surv
 make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {

@@ -17,12 +17,13 @@
 #' @template refs
 #' @keywords Parametric survival models
 #' @examples
-#' 
+#' \dontrun{ 
 #' data(bc)
 #' 
 #' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="mle")
 #' print(mle)
+#' }
 #' 
 #' @export print.survHE
 print.survHE <- function(x,mod=1,...) {

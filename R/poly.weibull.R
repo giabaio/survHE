@@ -46,6 +46,8 @@
 #' @keywords Parametric survival models Bayesian inference via Hamiltonian
 #' Monte Carlo Poly-Weibull model
 #' @examples
+#' \dontrun{
+#' }
 #' 
 #' #See Baio (2019) for extended example
 #' 
