@@ -239,7 +239,7 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
   # out=list(toplot)
   toplot=lapply(1:length(mods),function(i) {
     lapply(1:length(s[[i]]$S),function(j) {
-      s[[i]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[i]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
+      s[[i]]$S[[j]] %>% bind_cols(strata=as.factor(as.character(strata[[i]][j,])),model_name=as.factor(names(x$models)[mods[i]]))
     })
   }) %>% bind_rows(.)
   out=list(toplot)

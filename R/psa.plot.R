@@ -49,7 +49,7 @@ psa.plot <- function(psa,...) {
       round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
   }) %>% bind_rows(.) %>% select(strata)
   toplot=lapply(1:length(psa$S),function(i) {
-    psa$S[[i]] %>% bind_cols(strata=as.factor(strata[i,]))
+    psa$S[[i]] %>% bind_cols(strata=as.factor(as.character(strata[i,])))
   }) %>% bind_rows(.)
 
   if(exists("alpha",where=exArgs)){alpha=exArgs$alpha} else {alpha=0.2}
