@@ -325,9 +325,9 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     data.stan$a_sigma = data.stan$b_sigma = 0.1
     data.stan$mu_Q = 0
     data.stan$sigma_Q = 100
-  } else if (distr3 %in% c("gam", "llo", "wei", "wph")) {
+  } else if (distr3 %in% c("gam", "llo", "wei", "wph", "gom")) {
     data.stan$a_alpha = data.stan$b_alpha = 0.1
-  } else if (distr3 %in% c("lno", "gom")) {
+  } else if (distr3 %in% c("lno")) {
     data.stan$a_alpha = 0
     data.stan$b_alpha = 5
   }
