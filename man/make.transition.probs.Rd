@@ -4,25 +4,29 @@
 \alias{make.transition.probs}
 \title{make.transition.probs}
 \usage{
-make.transition.probs(x, ...)
+make.transition.probs(fit, ...)
 }
 \arguments{
-\item{x}{an object obtained as output of the call to \code{make.surv}}
+\item{fit}{an object obtained as output of the call to \code{fit.models}}
 
-\item{...}{additional arguments. Includes labs = a string vector of names
-for the elements of the list (strata for the survival analysis)}
+\item{...}{additional arguments. Includes the standard inputs to the 
+call to \code{make.surv}, so \code{mod} (the index of the possibly many
+models stored in the 'survHE' object), \code{t} (the vector of times 
+over which to compute the survival curves), \code{newdata} (a list that
+defines the profile of covariates) and \code{nsim} (the number of 
+simulations to use - default is \code{nsim}=1)}
 }
 \value{
-Something will go here
+A tibble 'lambda' with an indicator for the treatment arm,
+the times at which the probabilities have been computed and \code{nsim}
+columns each with a simulation of the transition probabilities for 
+all the times specified by the user
 }
 \description{
 Computes the transition probabilities (to be passed to a Markov model) from
-the survival curves obtained using \code{fit.models} and \code{make.surv},
-using the formula p(t)=1-S(t+k)/S(t), where k is the Markov model cycle
-length and t is a generic time
-}
-\details{
-Something will go here
+the survival curves obtained using \code{fit.models}, using the formula 
+p(t)=1-S(t+k)/S(t), where k is the Markov model cycle length and t is a 
+generic time
 }
 \note{
 Something will go here
@@ -37,7 +41,7 @@ Something will go here
 Something will go here
 }
 \seealso{
-Something will go here
+make.surv
 }
 \author{
 Gianluca Baio
