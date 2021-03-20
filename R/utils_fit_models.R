@@ -1045,4 +1045,5 @@ check_distributions <- function(method,distr) {
        Please set this option in your call to 'fit.models'"))
     }
   }
+  return(method)
 }

@@ -126,8 +126,8 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
   
   # Check whether the selected distribution(s) can be implemented with the selected method
   # (and if not, falls back to 'mle')
-  check_distributions(method,distr)
-  
+  method=check_distributions(method,distr)
+
   # MLE -----
   # If method = MLE, then fits the model(s) using flexsurvreg
   if (method=="mle") {
