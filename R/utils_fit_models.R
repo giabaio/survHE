@@ -42,6 +42,7 @@ runINLA <- function(x,exArgs) {
   if(exists("control.fixed",where=exArgs)) {
     control.fixed <- exArgs$control.fixed
   } else {
+    # Default priors
     control.fixed <- INLA::inla.set.control.fixed.default()
     # prior mean = 0 for *all* fixed effects
     # prior var = 1000 for *all* fixed effects
@@ -70,6 +71,8 @@ runINLA <- function(x,exArgs) {
   # 4. Finally runs INLA
   # Ensures that the formula is in INLA terms. If not, make it 
   if(!grepl("inla.surv",deparse(formula))) {formula <- as.formula(gsub("Surv","INLA::inla.surv",deparse(formula)))}
+    ## NB: here could automatically rescale the times in 0-1 to avoid INLA crashing when times are too large?
+  
   # As of 9 Jan 2017, INLA is creating new distribution names for survival models, so needs to update the name.
   # Also, there are two variants of the Weibull model (PH vs AFT) so need to identify that too
   if(d3=="wph") {
@@ -84,6 +87,7 @@ runINLA <- function(x,exArgs) {
                       control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                       control.fixed=control.fixed,control.family=cf,verbose=verbose
   )
+  ## Now should rescale the estimates if I've made the times between 0-1!!
   
   # Now re-writes the formula in general terms (without linking to INLA::inla.surv)
   formula <- as.formula(gsub("INLA::inla.surv","Surv",deparse(formula)))
@@ -195,7 +199,7 @@ runHMC <- function(x,exArgs) {
     aic=ics$aic,
     bic=ics$bic,
     dic=ics$dic,
-    dic=ics$dic2,
+    dic2=ics$dic2,
     time2run=pmin(time_survHE,time_stan),
     data.stan=data.stan,
     save.stan=save.stan,
@@ -570,7 +574,8 @@ load_availables <- function() {
            "weibullPH" = "wph",
            "lognormal" = "lno",
            "loglogistic" = "llo",
-           "rps" = "rps"
+           "rps" = "rps",
+           "gompertz" = "gom"      # added Mar 19, 2021
     ),
     hmc=c("Exponential" = "exp",
           "Gamma" = "gam",
@@ -1020,7 +1025,7 @@ check_distributions <- function(method,distr) {
   availables <- load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
   distr3 <- manipulate_distributions(distr)$distr3
-  
+
   # If 'method' is either 'inla' or 'hmc but we're trying to run a model that is not available, then
   # falls back to 'mle'
   if(method %in% c("inla","hmc")) {
@@ -1033,11 +1038,11 @@ check_distributions <- function(method,distr) {
         paste(modelsString, collapse = ", "),
         " parametric survival models. Falling back on MLE analysis")
       )
+      method <- "mle"
     }
-    method <- "mle"
   }
   
-  # 'mle' can implement all the possible models, excpet the PolyWeibull
+  # 'mle' can implement all the possible models, except the PolyWeibull
   # In this case, I choose to *stop* execution, rather than falling back to 'hmc'!
   if (method == "mle") {
     if(!all(distr3 %in% availables[[method]])) {

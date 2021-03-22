@@ -446,6 +446,11 @@ rescale.inla <- function(linpred,alpha,distr) {
     sim <- cbind(mulog,sdlog) 
     colnames(sim) <- c("meanlog","sdlog")
   }
+  if (distr=="gom") {
+    shape <- alpha
+    rate <- exp(linpred)
+    sim = cbind(shape,rate)
+  }
   return(sim)
 }
 

@@ -502,6 +502,39 @@ rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gompertz model
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA Gompertz
+#' @noRd 
+rescale_stats_inla_gom <- function(x,mod,nsim=1000,rescale.time) {
+  shape_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
+  fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
+  })
+  shape=shape_sim %>% make_stats %>% matrix(.,ncol=4)
+  rate=exp(fixeff_sim[[1]]) %>% make_stats %>% matrix(.,ncol=4)
+  rownames(shape)="shape"
+  rownames(rate)="rate"
+  res=rbind(shape,rate)
+  if(length(fixeff_sim)>1) {
+    effects=lapply(2:nrow(x$models[[mod]]$summary.fixed),function(i) {
+      -fixeff_sim[[i]]
+    })
+    effects=matrix(unlist(lapply(effects,function(i) i %>% make_stats)),
+                   nrow=length(fixeff_sim)-1,ncol=4,byrow=T)
+    rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+    res=rbind(res,effects)
+  }
+  colnames(res)=c("mean","se","L95%","U95%")
+  return(res)
+}
+
 #' Helper function to create summary stats
 #' 
 #' @param x A vector of simulations

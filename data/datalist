@@ -1,1 +1,3 @@
 data: ID_patient time censored arm sex age imd ethnic
+ta174: patid treat prog death prog_t death_t prog_ty death_ty
+msmdata: id  from    to trans Tstart Tstop     time status treat patid  prog death prog_t death_t prog_ty death_ty
