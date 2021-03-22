@@ -95,10 +95,13 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     # Now creates the profile of covariates for which to compute the survival curves
     X <- make_profile_surv(fit$misc$formula,data,newdata)
     
+    # This is needed to rescale correctly the INLA models (which are fitted on a range [0-1] for numerical stability)
+    time_max=max(fit$misc$km$time)
+    
     # Draws a sample of nsim simulations from the distribution of the model parameters
     sim <- do.call(paste0("make_sim_",fit$method),
                    args=list(m=m,t=t,X=X,nsim=nsim,newdata=newdata,dist=dist,data=data,
-                             formula=fit$misc$formula,summary_stat=summary_stat)
+                             formula=fit$misc$formula,summary_stat=summary_stat,time_max=time_max)
     )
     # Computes the survival curves - first in matrix form with all the simulations
     # Needs to add more inputs for the case of hmc/rps

@@ -68,11 +68,15 @@ runINLA <- function(x,exArgs) {
   }
   if(exists("verbose",where=exArgs)) {verbose <- exArgs$verbose} else {verbose <- FALSE}
   
+  # Gets the name of the time variable so that the times can be rescaled in [0-1]
+  time_name=all.vars(formula)[1]
+  d_name=all.vars(formula)[2]
+  time_max=data %>% select(!!sym(time_name)) %>% with(max(.))
+  
   # 4. Finally runs INLA
   # Ensures that the formula is in INLA terms. If not, make it 
   if(!grepl("inla.surv",deparse(formula))) {formula <- as.formula(gsub("Surv","INLA::inla.surv",deparse(formula)))}
-    ## NB: here could automatically rescale the times in 0-1 to avoid INLA crashing when times are too large?
-  
+
   # As of 9 Jan 2017, INLA is creating new distribution names for survival models, so needs to update the name.
   # Also, there are two variants of the Weibull model (PH vs AFT) so need to identify that too
   if(d3=="wph") {
@@ -83,11 +87,13 @@ runINLA <- function(x,exArgs) {
   if(d3=="llo") {
     cf$variant=1
   }
-  model <- INLA::inla(formula,family=paste0(d,"surv"),data=data,control.compute=list(config=TRUE,dic=TRUE),
+  model <- INLA::inla(formula,family=paste0(d,"surv"),#data=data,
+                      # Rescales the times in [0-1] on the fly
+                      data=data %>% mutate(!!sym(time_name) := !!sym(time_name) / max(!!sym(time_name))),
+                      control.compute=list(config=TRUE,dic=TRUE),
                       control.inla=list(int.strategy="grid",dz=dz,diff.logdens=diff.logdens),
                       control.fixed=control.fixed,control.family=cf,verbose=verbose
   )
-  ## Now should rescale the estimates if I've made the times between 0-1!!
   
   # Now re-writes the formula in general terms (without linking to INLA::inla.surv)
   formula <- as.formula(gsub("INLA::inla.surv","Surv",deparse(formula)))
@@ -96,15 +102,241 @@ runINLA <- function(x,exArgs) {
   # And reset if original name *was* 'WeibullPH'
   if(d3=="wph") {d="weibullPH"} 
   
+  # Now computes the densities using the helper functions
+  t=data %>% select(!!sym(time_name)) %>% pull
+  d=data %>% select(!!sym(d_name)) %>% pull
+  out=do.call(what=paste0("lik_",d3,"_inla"),args=list(model,nsim=1000,time_max,t,d,formula,data))
+  # Extracts relevant variables from the list (See if there's a better way to do it!)
+  logf=out$logf
+  logf.hat=out$logf.hat
+  npars=out$npars
+  # Now computes the log-likelihood
+  loglik <- apply(logf,1,sum)
+  loglik.bar <- apply(logf.hat,1,sum)
+  
+  D.theta <- -2*loglik
+  D.bar <- -2*loglik.bar
+  pD <- mean(D.theta) - D.bar
+  pV <- 0.5*var(D.theta)
+  dic <- mean(D.theta)+pD
+  dic2 <- mean(D.theta)+pV
+  # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
+  aic <- D.bar+2*npars
+  bic <- D.bar+npars*log(nrow(data))
+  
   # Finally returns the output
   list(
     model=model,
-    aic=2*model$dic$p.eff+model$dic$deviance.mean,
-    bic=model$dic$deviance.mean+model$dic$p.eff*log(model$size.linear.predictor$n),
-    dic=model$dic$dic,
+# These would be the values automatically computed by INLA - but they are not OK because the model is on the [0-1]
+# rather than the original time scales!
+#    aic=2*model$dic$p.eff+model$dic$deviance.mean,
+#    bic=model$dic$deviance.mean+model$dic$p.eff*log(model$size.linear.predictor$n),
+#    dic=model$dic$dic,
+    aic=aic,
+    bic=bic,
+    dic=dic,
+    dic2=dic2,
     time2run=model$cpu.used["Total"],
     model_name=model_name
   )
+}
+
+# Little utility function to compute the mode of a vector
+Mode <- function(x) {
+  if (is.numeric(x)) {
+    x_table <- table(x)
+    return(as.numeric(names(x_table)[which.max(x_table)]))
+  }
+}
+
+### These are utility functions to compute the log-density for the models fitted by INLA
+lik_wei_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  shape=INLA::inla.rmarginal(nsim,model$marginals.hyperpar[[1]])
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
+  # original INLA model is run on times in [0-1], instead of the original ones
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=beta[,grep("(Intercept)",colnames(model$model.matrix))]-log(time_max)
+  }
+  shape.hat = mean(shape)
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hweibull(t, shape = shape[i], scale = exp(-linpred[i, ]))) +
+        log(1 - pweibull(t, shape[i], scale = exp(-linpred[i, ])))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hweibull(t, shape.hat, exp(-linpred.hat))) +
+      log(1 - pweibull(t, shape.hat, exp(-linpred.hat))),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 2 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL)
+}
+
+lik_wph_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  shape=INLA::inla.rmarginal(nsim,model$marginals.hyperpar[[1]])
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
+  # original INLA model is run on times in [0-1], instead of the original ones
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=(beta[,grep("(Intercept)",colnames(model$model.matrix))]+log(time_max))*(-shape)
+  }
+  shape.hat = mean(shape)
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hweibullPH(t, shape = shape[i], scale = exp(linpred[i, ]))) +
+        log(1 - pweibullPH(t, shape[i], scale = exp(linpred[i, ])))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hweibullPH(t, shape.hat, exp(linpred.hat))) +
+      log(1 - pweibullPH(t, shape.hat, exp(linpred.hat))),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 2 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL)
+}
+
+lik_exp_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
+  # original INLA model is run on times in [0-1], instead of the original ones
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=(beta[,grep("(Intercept)",colnames(model$model.matrix))]-log(time_max))
+  }
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hexp(t, rate = exp(linpred[i, ]))) +
+        log(1 - pexp(t, rate = exp(linpred[i, ])))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hexp(t, exp(linpred.hat))) +
+      log(1 - pexp(t, exp(linpred.hat))),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 1 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL)
+}
+
+lik_lno_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  prec=INLA::inla.rmarginal(nsim,model$marginals.hyperpar[[1]])
+  sdlog=sqrt(1/prec)
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
+  # original INLA model is run on times in [0-1], instead of the original ones
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=(beta[,grep("(Intercept)",colnames(model$model.matrix))]+log(time_max))
+  }
+  sdlog.hat = mean(sdlog)
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hlnorm(t, meanlog=(linpred[i, ]), sdlog=sdlog[i])) +
+        log(1 - plnorm(t, meanlog=(linpred[i, ]), sdlog=sdlog[i]))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hlnorm(t, (linpred.hat), sdlog.hat)) +
+      log(1 - plnorm(t, (linpred.hat), sdlog.hat)),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 2 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL)
+}
+
+lik_llo_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  shape=INLA::inla.rmarginal(nsim,model$marginals.hyperpar[[1]])
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
+  # original INLA model is run on times in [0-1], instead of the original ones
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=beta[,grep("(Intercept)",colnames(model$model.matrix))]-log(time_max)
+  }
+  shape.hat = mean(shape)
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hllogis(t, shape = shape[i], scale = exp(-linpred[i, ]))) +
+        log(1 - pllogis(t, shape[i], scale = exp(-linpred[i, ])))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hllogis(t, shape.hat, exp(-linpred.hat))) +
+      log(1 - pllogis(t, shape.hat, exp(-linpred.hat))),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 2 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL)
+}
+
+lik_gom_inla <- function(model,nsim,time_max,t,d,formula,data) {
+  shape=INLA::inla.rmarginal(nsim,model$marginals.hyperpar[[1]])/time_max
+  beta=lapply(1:nrow(model$summary.fixed),function(i) {
+    INLA::inla.rmarginal(nsim,model$marginals.fixed[[i]])
+  })
+  names(beta)=colnames(model$model.matrix)
+  beta=beta %>% bind_cols()
+  if(grep("(Intercept)",colnames(model$model.matrix))>0) {
+    beta[,grep("(Intercept)",colnames(model$model.matrix))]=beta[,grep("(Intercept)",colnames(model$model.matrix))]-log(time_max)
+  }
+  shape.hat = mean(shape)
+  beta.hat=beta %>% summarise_all(mean) %>% as.numeric()
+  linpred=as.matrix(beta)%*%t(model.matrix(formula,data))
+  linpred.hat=beta.hat%*%t(model.matrix(formula,data))
+  
+  logf <- matrix(
+    unlist(lapply(1:nrow(linpred), function(i) {
+      d * log(hgompertz(t, shape = shape[i], rate = exp(linpred[i, ]))) +
+        log(1 - pgompertz(t, shape[i], rate = exp(linpred[i, ])))
+    })), 
+    nrow = nrow(linpred), byrow = T)
+  logf.hat <- matrix(
+    d * log(hgompertz(t, shape.hat, exp(linpred.hat))) +
+      log(1 - pgompertz(t, shape.hat, exp(linpred.hat))),
+    nrow = 1)
+  # Number of parameters (for AIC): shape, rate + covariates
+  npars <- 2 + (length(all.vars(formula))-1)
+  list(logf=logf,logf.hat=logf.hat,npars=npars,f=NULL,f.bar=NULL,s=NULL,s.bar=NULL)
 }
 
 
@@ -528,6 +760,9 @@ format_output_fit.models <- function(output,method,distr,formula,data) {
     misc$data.stan <- lapply(output,function(x) x$data.stan)
     model.fitting$dic2 <- unlist(lapply(output,function(x) x$dic2))
   }
+  if(method=="inla") {
+    model.fitting$dic2 = unlist(lapply(output,function(x) x$dic2))
+  }
   
   # Names the elements of the list
   names(models) <- labs
@@ -773,7 +1008,7 @@ compute_ICs_stan <- function(model,distr3,data.stan) {
   # Approximates AIC & BIC using the mean deviance and the number of nominal parameters
   aic <- D.bar+2*npars                   #mean(D.theta)+2*pD
   bic <- D.bar+npars*log(data.stan$n)    #mean(D.theta)+pD*log(data.stan$n)
-    
+  
   list(aic=aic,bic=bic,dic=dic,dic2=dic2)
 }
 
@@ -848,7 +1083,7 @@ lik_gom <- function(x,linpred,linpred.hat,model,data.stan) {
   logf <- matrix(
     unlist(lapply(1:nrow(linpred), function(i) {
       data.stan$d * log(hgompertz(data.stan$t, shape = shape[i], rate = exp(linpred[i, ]))) +
-        log(1 - pgompertz(shape = data.stan$t, shape[i], rate = exp(linpred[i, ])))
+        log(1 - pgompertz(data.stan$t, shape[i], rate = exp(linpred[i, ])))
     })), 
     nrow = nrow(linpred), byrow = T)
   logf.hat <- matrix(

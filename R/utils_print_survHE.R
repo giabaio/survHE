@@ -351,7 +351,9 @@ rescale_stats_inla_wei <- function(x,mod,nsim=1000) {
   })
   shape=shape_sim %>% make_stats %>% matrix(.,ncol=4)
   ## NB: INLA has a weird parameterisation and with Weibull AFT, the coefficients have the wrong sign
-  scale=exp(-fixeff_sim[[1]]) %>% make_stats%>% matrix(.,ncol=4)
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+    scale=exp(-fixeff_sim[[1]]+log(max(x$misc$km$time))) %>% make_stats%>% matrix(.,ncol=4)
+  }
   rownames(scale) <- "scale"
   rownames(shape) <- "shape"
   res=rbind(shape,scale)
@@ -387,7 +389,9 @@ rescale_stats_inla_wph <- function(x,mod,nsim=1000) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
   })
   shape=shape_sim %>% make_stats %>% matrix(.,ncol=4)
-  scale=exp(fixeff_sim[[1]]) %>% make_stats%>% matrix(.,ncol=4)
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+    scale=exp(fixeff_sim[[1]]+log(max(x$misc$km$time)))^(-shape_sim) %>% make_stats%>% matrix(.,ncol=4)
+  }
   rownames(scale) <- "scale"
   rownames(shape) <- "shape"
   res=rbind(shape,scale)
@@ -419,7 +423,9 @@ rescale_stats_inla_exp <- function(x,mod,nsim=1000) {
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
   })
-  rate=exp(fixeff_sim[[1]]) %>% make_stats %>% matrix(.,ncol=4)
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+    rate=exp(fixeff_sim[[1]]-log(max(x$misc$km$time))) %>% make_stats %>% matrix(.,ncol=4)
+  }
   rownames(rate)="rate"
   res=rate
   if(length(fixeff_sim)>1) {
@@ -450,7 +456,9 @@ rescale_stats_inla_lno <- function(x,mod,nsim=1000) {
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
   })
-  meanlog=fixeff_sim[[1]] %>% make_stats %>% matrix(.,ncol=4)
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+    meanlog=(fixeff_sim[[1]]+log(max(x$misc$km$time))) %>% make_stats %>% matrix(.,ncol=4)
+  }
   sdlog=sqrt(1/prec_sim) %>% make_stats %>% matrix(.,ncol=4)
   rownames(meanlog)="meanlog"
   rownames(sdlog)="sdlog"
@@ -485,7 +493,9 @@ rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
   })
   shape=shape_sim %>% make_stats %>% matrix(.,ncol=4)
-  scale=exp(-fixeff_sim[[1]]) %>% make_stats %>% matrix(.,ncol=4)
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+    scale=exp(-fixeff_sim[[1]]+log(max(x$misc$km$time))) %>% make_stats %>% matrix(.,ncol=4)
+  }
   rownames(shape)="shape"
   rownames(scale)="scale"
   res=rbind(shape,scale)
@@ -512,19 +522,22 @@ rescale_stats_inla_llo <- function(x,mod,nsim=1000) {
 #' @references Baio (2020). survHE
 #' @keywords INLA Gompertz
 #' @noRd 
-rescale_stats_inla_gom <- function(x,mod,nsim=1000,rescale.time) {
-  shape_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])
+rescale_stats_inla_gom <- function(x,mod,nsim=1000) {
+  shape_sim=INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.hyperpar[[1]])/max(x$misc$km$time)
   fixeff_sim=lapply(1:nrow(x$models[[mod]]$summary.fixed),function(i) {
     INLA::inla.rmarginal(nsim,x$models[[mod]]$marginals.fixed[[i]])
   })
   shape=shape_sim %>% make_stats %>% matrix(.,ncol=4)
-  rate=exp(fixeff_sim[[1]]) %>% make_stats %>% matrix(.,ncol=4)
+  # Need to rescale only if there is an intercept
+  if(attributes(terms(x$misc$formula))$intercept==1) {
+   rate=exp(fixeff_sim[[1]]-log(max(x$misc$km$time))) %>% make_stats %>% matrix(.,ncol=4)
+  }
   rownames(shape)="shape"
   rownames(rate)="rate"
   res=rbind(shape,rate)
   if(length(fixeff_sim)>1) {
     effects=lapply(2:nrow(x$models[[mod]]$summary.fixed),function(i) {
-      -fixeff_sim[[i]]
+      fixeff_sim[[i]]
     })
     effects=matrix(unlist(lapply(effects,function(i) i %>% make_stats)),
                    nrow=length(fixeff_sim)-1,ncol=4,byrow=T)

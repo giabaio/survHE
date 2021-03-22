@@ -68,23 +68,19 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
 #' @seealso make.surv
 #' @keywords INLA
 #' @noRd 
-make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
+make_sim_inla <- function(m,t,X,nsim,newdata,dist,time_max,...) {
   # Simulates from the distribution of the model parameters
   
   exArgs_inla <- list(...)
   
   # If 'nsim'=1 then use the point estimates for the coefficients
   if(nsim==1) {
-    beta=m$summary.fixed[,"mean"]
-    linpred=beta%*% t(X)
+    beta=matrix(m$summary.fixed[,"mean"],nrow=1)
     if(!is.null(m$summary.hyperpar)) {
       alpha=m$summary.hyperpar$mean
     } else {
       alpha=0
     }
-    # Now uses the helper function to rescale the parameters and retrieve the correct simulations
-    sim <- lapply(1:ncol(linpred),function(x) rescale.inla(linpred[,x],alpha,dist))
-    
   } else {
     # Selects the variables to sample from the posterior distributions (excludes the linear predictor)
     selection <- eval(parse(text=paste0('list(Predictor=-c(1:',nrow(exArgs_inla$data),'),',
@@ -93,17 +89,43 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,...) {
     jpost <- INLA::inla.posterior.sample(nsim,m,selection=selection)
     # Then computes the linear predictor
     beta <- matrix(unlist(lapply(jpost,function(x){x$latent})),ncol=length(jpost[[1]]$latent),nrow=nsim,byrow=T)
-    linpred <- beta %*% t(X)
     # And the ancillary parameters (which may or may not exist for a given model)
     if(!is.null(jpost[[1]]$hyperpar)) {
       alpha <- matrix(unlist(lapply(jpost,function(x){x$hyperpar})),ncol=length(jpost[[1]]$hyperpar),nrow=nsim,byrow=T)
     } else {
       alpha <- 0
     }
-    
-    # Now uses the helper function to rescale the parameters and retrieve the correct simulations
-    sim <- lapply(1:ncol(linpred),function(x) rescale.inla(linpred[,x],alpha,dist))
   }
+  
+  ###############################################################################################################
+  ## Needs to rescale the parameters because INLA is run on a time range [0-1] for computational stability
+  if(dist%in%c("wei","exp","llo")) {
+    if(grep("Intercept",colnames(X))>0){
+      beta[,grep("Intercept",colnames(X))]=beta[,grep("Intercept",colnames(X))]-log(time_max)
+    }
+  }
+  if(dist=="wph") {
+    if(grep("Intercept",colnames(X))>0){
+      beta[,grep("Intercept",colnames(X))]=(beta[,grep("Intercept",colnames(X))]+log(time_max))*(-alpha)
+    }
+  }
+  if(dist=="lno") {
+    if(grep("Intercept",colnames(X))>0){
+      beta[,grep("Intercept",colnames(X))]=(beta[,grep("Intercept",colnames(X))]+log(time_max))
+    }
+  }
+  if(dist=="gom") {
+    alpha=alpha/time_max
+    if(grep("Intercept",colnames(X))>0){
+      beta[,grep("Intercept",colnames(X))]=beta[,grep("Intercept",colnames(X))]-log(time_max)
+    }
+  }
+  ###############################################################################################################
+  linpred <- beta %*% t(X)
+  
+  # Now uses the helper function to rescale the parameters and retrieve the correct simulations
+  sim <- lapply(1:ncol(linpred),function(x) rescale.inla(linpred[,x],alpha,dist))
+  
   return(sim)
 }
 
@@ -450,9 +472,11 @@ rescale.inla <- function(linpred,alpha,distr) {
     shape <- alpha
     rate <- exp(linpred)
     sim = cbind(shape,rate)
+    colnames(sim) <- c("shape","rate")
   }
   return(sim)
 }
+
 
 #' Helper function to make the compute the survival curves
 #' 
