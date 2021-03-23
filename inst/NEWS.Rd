@@ -1,4 +1,6 @@
-Changes in version 1.1.3
+# survHE 
+
+## Changes in version 1.1.3
 
 * Updates in INLA means now the Gompertz model is also available for
 survival modelling. fit.models(), make.surv() and print() have now
