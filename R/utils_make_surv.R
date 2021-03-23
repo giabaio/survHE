@@ -96,7 +96,6 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,time_max,...) {
       alpha <- 0
     }
   }
-  
   ###############################################################################################################
   ## Needs to rescale the parameters because INLA is run on a time range [0-1] for computational stability
   if(dist%in%c("wei","exp","llo")) {

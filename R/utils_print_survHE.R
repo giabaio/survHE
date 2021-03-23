@@ -628,6 +628,10 @@ original_table_mle <- function(x,mod,digits) {
 #' @noRd 
 original_table_inla <- function(x,mod,digits) {
   print(summary(x$models[[mod]]),digits=digits)
+  cat("\n")
+  cat("NB: notice that INLA models are fitted to data rescaled in [0-1] for computational stability.")
+  cat("\nThe estimates are rescaled on the original scale, applying a suitable back-transformation.") 
+  cat("\nThe numbers shown when 'original=TRUE' will be different than those shown in the 'survHE' format.")
 }
 
 #' Helper function to create the original summary table
