@@ -30,5 +30,8 @@ framework.
 3-states Markov model, based on survival curves that are then
 mapped onto transition probabilities (this function is under
 testing, though).
+   \item Adds two new datasets (TA174 and msmdata), both from 
+the MDM paper by Williams et al (2017) that can be used for
+analysis of multi-state data.
  }
 }

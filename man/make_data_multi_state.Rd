@@ -11,7 +11,7 @@ make_data_multi_state(
   death = "death",
   prog_t = "prog_t",
   death_t = "death_t",
-  treat = "treat",
+  keep = NULL,
   ...
 )
 }
@@ -36,7 +36,9 @@ the dataset}
 \item{death_t}{The death time. Defaults to the column named 
 'death_t' in the dataset}
 
-\item{treat}{The variable indicating the treatment arm}
+\item{keep}{A vector of strings with the names of the additional 
+variables from the original dataset to keep into the multistate
+dataset. If 'NULL' (default), then keeps all}
 
 \item{...}{additional arguments.}
 }
