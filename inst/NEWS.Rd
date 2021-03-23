@@ -1,7 +1,7 @@
 \name{survHE}
 \title{Changes log}
 
-\section{Version 1.1.3}
+\section{Version 1.1.3}{
 \subsection{
 \itemize{
 \item Updates in INLA means now the Gompertz model is also available for
@@ -34,4 +34,6 @@ framework.
 3-states Markov model, based on survival curves that are then
 mapped onto transition probabilities (this function is under
 testing, though).
+}
+}
 }
