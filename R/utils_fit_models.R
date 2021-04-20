@@ -651,11 +651,36 @@ runMLE <- function(x,exArgs) {
     if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
     if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
     if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
-    model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
-                                      timescale=timescale)
+    model <- do.call(
+      flexsurv::flexsurvspline,
+      args=list(
+        formula=formula,
+        data=data,
+        k=k,
+        knots=knots,
+        bknots=bknots,
+        scale=scale,
+        timescale=timescale,
+        weights=weights,
+        subset=subset
+      )
+    )
+    ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
+    ###                                  timescale=timescale)
   } else {
     # If it's one of the other available models under MLE, then simply runs flexsurv::flexsurvreg
-    model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=x)
+    # But allows to use weight and subset
+    if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights=NULL}
+    if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
+    
+    ###model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=x,weights=weights)
+    model <- do.call(flexsurv::flexsurvreg,args=list(
+      formula=formula,
+      data=data,
+      dist=x,
+      weights=weights,
+      subset=subset
+    ))
   }
   toc <- proc.time()-tic
   

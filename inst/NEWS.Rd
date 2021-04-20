@@ -7,6 +7,9 @@
     \item Updates in INLA means now the Gompertz model is also available for
 survival modelling. fit.models(), make.surv() and print() have now
 been updated so that the Gompertz model can be run under 'survHE'.
+In order to run the Gompertz model using INLA, the *testing* 
+version (>=21.03.21) needs to be installed (see instructions 
+here: https://www.r-inla.org/download-install).
     \item Related to this, to improve computational stability, *all* the 
 INLA models are now run by 'survHE' using the following trick: 
 first the times are rescaled (on the fly) in the interval [0-1] 
