@@ -655,7 +655,7 @@ runMLE <- function(x,exArgs) {
       flexsurv::flexsurvspline,
       args=list(
         formula=formula,
-        data=data,
+        data=quote(data),
         k=k,
         knots=knots,
         bknots=bknots,
@@ -667,20 +667,24 @@ runMLE <- function(x,exArgs) {
     )
     ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
     ###                                  timescale=timescale)
+    if(!is.null(weights)) {model$call$weights='user-specified'} else {model$call$weights=NULL}
+    if(!is.null(subset)) {model$call$subset='user-specified'} else {model$call$subset=NULL}
   } else {
     # If it's one of the other available models under MLE, then simply runs flexsurv::flexsurvreg
     # But allows to use weight and subset
     if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights=NULL}
     if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
-    
+
     ###model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=x,weights=weights)
-    model <- do.call(flexsurv::flexsurvreg,args=list(
+    model <- do.call("flexsurvreg",args=list(
       formula=formula,
-      data=data,
+      data=quote(data),
       dist=x,
       weights=weights,
       subset=subset
     ))
+    if(!is.null(weights)) {model$call$weights='user-specified'} else {model$call$weights=NULL}
+    if(!is.null(subset)) {model$call$subset='user-specified'} else {model$call$subset=NULL}
   }
   toc <- proc.time()-tic
   
