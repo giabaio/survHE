@@ -103,12 +103,17 @@
 #' 
 #' @export fit.models
 fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...) {
+  # Captures the call
+  call=match.call()
+  
   # Lists all the additional inputs
   exArgs <- list(...)
   # Adds the 'formula' to exArgs, so it can be used by 'runHMC' and 'runINLA'
   exArgs$formula <- formula
   # Adds the 'data' to exArgs so it can be used by 'runHMC', 'runMLE' and 'runINLA'
   exArgs$data=data
+  # Adds the 'call' to exArgs
+  exArgs$call=call
   
   # Avoids the 'no visible binding for global variable' error, when compiling
   #model <- NULL

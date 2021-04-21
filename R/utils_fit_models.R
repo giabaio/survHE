@@ -667,8 +667,8 @@ runMLE <- function(x,exArgs) {
     )
     ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
     ###                                  timescale=timescale)
-    if(!is.null(weights)) {model$call$weights='user-specified'} else {model$call$weights=NULL}
-    if(!is.null(subset)) {model$call$subset='user-specified'} else {model$call$subset=NULL}
+    if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
+    if(!is.null(subset)) {model$call$subset=exArgs$call$subset} else {model$call$subset=NULL}
   } else {
     # If it's one of the other available models under MLE, then simply runs flexsurv::flexsurvreg
     # But allows to use weight and subset
@@ -683,8 +683,9 @@ runMLE <- function(x,exArgs) {
       weights=weights,
       subset=subset
     ))
-    if(!is.null(weights)) {model$call$weights='user-specified'} else {model$call$weights=NULL}
-    if(!is.null(subset)) {model$call$subset='user-specified'} else {model$call$subset=NULL}
+    # Fix the 'call' by using parts of the original call to fit.models
+    if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
+    if(!is.null(subset)) {model$call$subset=exArgs$call$subset} else {model$call$subset=NULL}
   }
   toc <- proc.time()-tic
   
