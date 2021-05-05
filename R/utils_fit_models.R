@@ -484,7 +484,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     data.stan$X_obs <- matrix(model.matrix(formula,data)[(mf %>% filter(event==1))$ID,],nrow=data.stan$n_obs)
     data.stan$X_cens <- matrix(model.matrix(formula,data)[(mf %>% filter(event==0))$ID,],nrow=data.stan$n_cens)
     data.stan$H=ncol(data.stan$X_obs)
-    
+
     # NB: Stan allows data of 0 size in the 'data' block, so can simply use the definitions above even when there are 
     #     no censored observations! However, in that case, there needs to be a 'if' condition to remove the model for 'cens'
 

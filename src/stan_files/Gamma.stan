@@ -39,10 +39,7 @@ model {
   alpha ~ gamma(a_alpha,b_alpha);
   beta ~ normal(mu_beta,sigma_beta);
   // Data model
-  if(n_cens>0){
-  // cens is relevant only if there actually are censored observations
-     cens ~ gamma(alpha,lambda_cens);
-  }
+  cens ~ gamma(alpha,lambda_cens);
   t ~ gamma(alpha,lambda_obs);
 }
 
