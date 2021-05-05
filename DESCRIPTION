@@ -1,12 +1,10 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
 Version: 1.1.3
-Date: 2021-03-23
-Authors@R: 
-    person(given = "Gianluca",
-           family = "Baio",
-           role = c("aut", "cre"),
-           email = "g.baio@ucl.ac.uk")
+Date: 2021-05-05
+Authors@R:c( 
+    person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
+    person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"))
 URL: https://github.com/giabaio/survHE, http://www.statistica.it/gianluca/
 BugReports: https://github.com/giabaio/survHE/issues
 Description: Contains a suite of functions for survival analysis in health economics. 
