@@ -7,7 +7,9 @@
 markov_trace(mm, interventions = NULL, ...)
 }
 \arguments{
-\item{mm}{}
+\item{mm}{The output of a call to \code{three_state_mm}}
+
+\item{interventions}{A vector of labels for the interventions}
 
 \item{...}{additional arguments.}
 }
@@ -15,10 +17,7 @@ markov_trace(mm, interventions = NULL, ...)
 
 }
 \description{
-Computes the transition probabilities (to be passed to a Markov model) from
-the survival curves obtained using \code{fit.models}, using the formula 
-p(t)=1-exp(H(t+k)-H(t), where k is the Markov model cycle length and t is a 
-generic time
+Plots the Markov Trace from an object generated using \code{three_state_mm}
 }
 \note{
 Something will go here
@@ -33,7 +32,7 @@ Something will go here
 Something will go here
 }
 \seealso{
-make.surv
+make.surv, three_state_mm
 }
 \author{
 Gianluca Baio

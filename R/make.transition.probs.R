@@ -219,19 +219,19 @@ make_data_multi_state=function(data,id="id",prog="prog",death="death",prog_t="pr
 #' 'Pre-progression' (state 1) to 'Progressed' (state 2). Given the 
 #' individual level data with the complete event history (in the object
 #' 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-#' and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==1),...)'
+#' and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==1),...)}
 #' @param m_13 A 'survHE' object (output to a call to \code{fit.models})
 #' estimating the parameters of a model for the transition from 
 #' 'Pre-progression' (state 1) to 'Death' (state 3).  Given the 
 #' individual level data with the complete event history (in the object
 #' 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-#' and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==2),...)'
+#' and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==2),...)}
 #' @param m_23 A 'survHE' object (output to a call to \code{fit.models})
 #' estimating the parameters of a model for the transition from 
 #' 'Progressed' (state 2) to 'Death' (state 3).  Given the 
 #' individual level data with the complete event history (in the object
 #' 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-#' and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==3),...)'
+#' and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==3),...)}
 #' @param nsim The number of simulations for the model parameters that are 
 #' used to compute the survival curves. Defaults to \code{nsim}=1,
 #' which simply creates one survival curve for each treatment arm.
@@ -415,19 +415,16 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
 
 #' markov_trace
 #' 
-#' Computes the transition probabilities (to be passed to a Markov model) from
-#' the survival curves obtained using \code{fit.models}, using the formula 
-#' p(t)=1-exp(H(t+k)-H(t), where k is the Markov model cycle length and t is a 
-#' generic time
+#' Plots the Markov Trace from an object generated using \code{three_state_mm}
 #' 
 #' @aliases markov_trace
-#' @param mm 
-#' @interventions 
+#' @param mm  The output of a call to \code{three_state_mm}
+#' @param interventions A vector of labels for the interventions
 #' @param ...  additional arguments. 
 #' @return 
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso make.surv
+#' @seealso make.surv, three_state_mm
 #' @references Something will go here
 #' @keywords Transition probabilities Markov models Markov trace
 #' @examples

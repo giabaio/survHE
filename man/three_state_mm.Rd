@@ -20,21 +20,21 @@ estimating the parameters of a model for the transition from
 'Pre-progression' (state 1) to 'Progressed' (state 2). Given the 
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==1),...)'}
+and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==1),...)}}
 
 \item{m_13}{A 'survHE' object (output to a call to \code{fit.models})
 estimating the parameters of a model for the transition from 
 'Pre-progression' (state 1) to 'Death' (state 3).  Given the 
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==2),...)'}
+and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==2),...)}}
 
 \item{m_23}{A 'survHE' object (output to a call to \code{fit.models})
 estimating the parameters of a model for the transition from 
 'Progressed' (state 2) to 'Death' (state 3).  Given the 
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
-and then 'fit.models(Surv(time,status)~...,data=x %>% filter(trans==3),...)'}
+and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==3),...)}}
 
 \item{nsim}{The number of simulations for the model parameters that are 
 used to compute the survival curves. Defaults to \code{nsim}=1,
@@ -92,5 +92,5 @@ Gianluca Baio
 \keyword{Transition}
 \keyword{cancer}
 \keyword{model}
-\keyword{models}
-\keyword{probabilities}
+\keyword{models,}
+\keyword{probabilities,}
