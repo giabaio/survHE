@@ -475,7 +475,7 @@ make_data_stan=function(formula,data,distr3,exArgs) {
   # Now arrange data in list to pass to 'stan'
   # NB: Need different formatting depending on the underlying sampling distribution
   if (distr3 %in% c("gam","gga","gef")) {
-    # If model is Gamma, GenGamma or GenF, then use the "obs vs" censored format
+    # If model is Gamma, GenGamma or GenF, then use the "obs vs censored" format
     data.stan <- list(t=(mf %>% filter(event==1))$time,
                       d=(mf %>% filter(event==0))$time,
                       n_obs=mf %>% filter(event==1) %>% with(nrow(.)),
@@ -485,6 +485,9 @@ make_data_stan=function(formula,data,distr3,exArgs) {
     data.stan$X_cens <- matrix(model.matrix(formula,data)[(mf %>% filter(event==0))$ID,],nrow=data.stan$n_cens)
     data.stan$H=ncol(data.stan$X_obs)
     
+    # NB: Stan allows data of 0 size in the 'data' block, so can simply use the definitions above even when there are 
+    #     no censored observations! However, in that case, there needs to be a 'if' condition to remove the model for 'cens'
+
     # NB: Stan doesn't allow vectors of size 1, so if there's only one covariate (eg intercept only), needs a little trick
     if (data.stan$H==1) {
       data.stan$X_obs <- cbind(data.stan$X_obs,rep(0,data.stan$n_obs))
