@@ -1,6 +1,0 @@
-Interval	time	lower	upper	nrisk 	
-1	0	1	7	61
-2	4	8	14	55
-3	8	15	21	49
-4	12	22	27	31
-5	16	28	31	13

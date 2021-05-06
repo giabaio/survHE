@@ -89,7 +89,7 @@ make.surv <- function(fit,mod=1,t=NULL,newdata=NULL,nsim=1,...) {
     # curve impossible to compute
     if(exists("summary_stat",exArgs)){summary_stat=exArgs$summary_stat} else {summary_stat="mean"}
 
-    # Makes sure the distribution name(s) vector is in a usable format
+    # Makes sure the distribution name(s) vector is in a useable format
     dist <- fit$misc$model_name[mod]
     
     # Now creates the profile of covariates for which to compute the survival curves

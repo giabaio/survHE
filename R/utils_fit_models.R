@@ -316,8 +316,6 @@ lik_gom_inla <- function(model,nsim,time_max,t,d,formula,data) {
   })
   names(beta)=colnames(model$model.matrix)
   beta=beta %>% bind_cols()
-  # If there is an intercept, then rescale it using the suitable back-transformation to account for the fact that the
-  # original INLA model is run on times in [0-1], instead of the original ones
   if(grep("(Intercept)",colnames(model$model.matrix))>0) {
     beta[,grep("(Intercept)",colnames(model$model.matrix))]=beta[,grep("(Intercept)",colnames(model$model.matrix))]-log(time_max)
   }
