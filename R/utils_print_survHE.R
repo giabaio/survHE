@@ -191,8 +191,8 @@ rescale_stats_hmc_gam <- function(table,x) {
   rownames(rate) <- "rate"
   shape <- matrix(table[grep("alpha",rownames(table)),],ncol=4)
   rownames(shape) <- "shape"
-  effects=add_effects_hmc(table)
-  res <- rbind(shape,rate,effects,x)
+  effects=add_effects_hmc(table,x)
+  res <- rbind(shape,rate,effects)
   if (is.null(dim(res))) {names(res) <- c("mean","se","L95%","U95%")} else {colnames(res) <- c("mean","se","L95%","U95%")}
   return(res)
 }
