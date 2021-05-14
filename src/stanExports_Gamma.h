@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_Gamma");
-    reader.add_event(51, 49, "end", "model_Gamma");
+    reader.add_event(57, 55, "end", "model_Gamma");
     return reader;
 }
 #include <stan_meta_header.hpp>
@@ -333,21 +333,24 @@ public:
             stan::math::initialize(lambda_cens, DUMMY_VAR__);
             stan::math::fill(lambda_cens, DUMMY_VAR__);
             // transformed parameters block statements
-            current_statement_begin__ = 27;
-            stan::math::assign(loglambda_cens, add(multiply(X_cens, beta), stan::math::log(d)));
             current_statement_begin__ = 28;
-            for (int i = 1; i <= n_cens; ++i) {
+            if (as_bool(logical_gt(n_cens, 0))) {
                 current_statement_begin__ = 29;
-                stan::model::assign(lambda_cens, 
-                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            stan::math::exp(get_base1(loglambda_cens, i, "loglambda_cens", 1)), 
-                            "assigning variable lambda_cens");
+                stan::math::assign(loglambda_cens, add(multiply(X_cens, beta), stan::math::log(d)));
+                current_statement_begin__ = 30;
+                for (int i = 1; i <= n_cens; ++i) {
+                    current_statement_begin__ = 31;
+                    stan::model::assign(lambda_cens, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                stan::math::exp(get_base1(loglambda_cens, i, "loglambda_cens", 1)), 
+                                "assigning variable lambda_cens");
+                }
             }
-            current_statement_begin__ = 31;
+            current_statement_begin__ = 34;
             stan::math::assign(loglambda_obs, multiply(X_obs, beta));
-            current_statement_begin__ = 32;
+            current_statement_begin__ = 35;
             for (int i = 1; i <= n_obs; ++i) {
-                current_statement_begin__ = 33;
+                current_statement_begin__ = 36;
                 stan::model::assign(lambda_obs, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             stan::math::exp(get_base1(loglambda_obs, i, "loglambda_obs", 1)), 
@@ -393,13 +396,16 @@ public:
                 }
             }
             // model body
-            current_statement_begin__ = 39;
-            lp_accum__.add(gamma_log<propto__>(alpha, a_alpha, b_alpha));
-            current_statement_begin__ = 40;
-            lp_accum__.add(normal_log<propto__>(beta, mu_beta, sigma_beta));
             current_statement_begin__ = 42;
-            lp_accum__.add(gamma_log<propto__>(cens, alpha, lambda_cens));
+            lp_accum__.add(gamma_log<propto__>(alpha, a_alpha, b_alpha));
             current_statement_begin__ = 43;
+            lp_accum__.add(normal_log<propto__>(beta, mu_beta, sigma_beta));
+            current_statement_begin__ = 46;
+            if (as_bool(logical_gt(n_cens, 0))) {
+                current_statement_begin__ = 47;
+                lp_accum__.add(gamma_log<propto__>(cens, alpha, lambda_cens));
+            }
+            current_statement_begin__ = 49;
             lp_accum__.add(gamma_log<propto__>(t, alpha, lambda_obs));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -511,21 +517,24 @@ public:
             stan::math::initialize(lambda_cens, DUMMY_VAR__);
             stan::math::fill(lambda_cens, DUMMY_VAR__);
             // do transformed parameters statements
-            current_statement_begin__ = 27;
-            stan::math::assign(loglambda_cens, add(multiply(X_cens, beta), stan::math::log(d)));
             current_statement_begin__ = 28;
-            for (int i = 1; i <= n_cens; ++i) {
+            if (as_bool(logical_gt(n_cens, 0))) {
                 current_statement_begin__ = 29;
-                stan::model::assign(lambda_cens, 
-                            stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
-                            stan::math::exp(get_base1(loglambda_cens, i, "loglambda_cens", 1)), 
-                            "assigning variable lambda_cens");
+                stan::math::assign(loglambda_cens, add(multiply(X_cens, beta), stan::math::log(d)));
+                current_statement_begin__ = 30;
+                for (int i = 1; i <= n_cens; ++i) {
+                    current_statement_begin__ = 31;
+                    stan::model::assign(lambda_cens, 
+                                stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
+                                stan::math::exp(get_base1(loglambda_cens, i, "loglambda_cens", 1)), 
+                                "assigning variable lambda_cens");
+                }
             }
-            current_statement_begin__ = 31;
+            current_statement_begin__ = 34;
             stan::math::assign(loglambda_obs, multiply(X_obs, beta));
-            current_statement_begin__ = 32;
+            current_statement_begin__ = 35;
             for (int i = 1; i <= n_obs; ++i) {
-                current_statement_begin__ = 33;
+                current_statement_begin__ = 36;
                 stan::model::assign(lambda_obs, 
                             stan::model::cons_list(stan::model::index_uni(i), stan::model::nil_index_list()), 
                             stan::math::exp(get_base1(loglambda_obs, i, "loglambda_obs", 1)), 
@@ -556,16 +565,16 @@ public:
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 47;
+            current_statement_begin__ = 53;
             double rate;
             (void) rate;  // dummy to suppress unused var warning
             stan::math::initialize(rate, DUMMY_VAR__);
             stan::math::fill(rate, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 48;
+            current_statement_begin__ = 54;
             stan::math::assign(rate, stan::math::exp(get_base1(beta, 1, "beta", 1)));
             // validate, write generated quantities
-            current_statement_begin__ = 47;
+            current_statement_begin__ = 53;
             vars__.push_back(rate);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

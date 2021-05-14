@@ -24,9 +24,12 @@ transformed parameters {
   vector[n_cens] loglambda_cens;          // loglinear predictor for the censored cases
   vector[n_obs] lambda_obs;               // rescaled predictor (rate) for the observed cases
   vector[n_cens] lambda_cens;             // rescaled predictor (rate) for the censored cases
-  loglambda_cens = X_cens*beta + log(d);
-  for (i in 1:n_cens) {
-    lambda_cens[i] = exp(loglambda_cens[i]);
+  // Only run this if n_cens>0, in which case needs to account for censoring
+  if(n_cens>0) {
+    loglambda_cens = X_cens*beta + log(d);
+    for (i in 1:n_cens) {
+      lambda_cens[i] = exp(loglambda_cens[i]);
+    }
   }
   loglambda_obs = X_obs*beta;
   for (i in 1:n_obs) {
@@ -39,7 +42,10 @@ model {
   alpha ~ gamma(a_alpha,b_alpha);
   beta ~ normal(mu_beta,sigma_beta);
   // Data model
-  cens ~ gamma(alpha,lambda_cens);
+  // Only does the censoring part if n_cens>0
+  if(n_cens>0) {
+    cens ~ gamma(alpha,lambda_cens);
+  }
   t ~ gamma(alpha,lambda_obs);
 }
 

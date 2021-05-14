@@ -89,7 +89,10 @@ model {
   Q ~ normal(mu_Q,sigma_Q);
   beta ~ normal(mu_beta,sigma_beta);
   // Data model
-  cens ~ genf_cens(X_cens*beta,sigma,Q,P,d);
+  // This is only run if n_cens>0, in which case it matters to account for censoring
+  if(n_cens>0) {
+    cens ~ genf_cens(X_cens*beta,sigma,Q,P,d); 
+  }
   t ~ genf(X_obs*beta,sigma,Q,P);
 }
 

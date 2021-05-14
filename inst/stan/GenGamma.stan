@@ -68,7 +68,10 @@ model {
   sigma ~ gamma(a_sigma,b_sigma);
   beta ~ normal(mu_beta,sigma_beta);
   // Data model
-  cens ~ gen_gamma_cens(X_cens*beta,sigma,Q,d);
+  // Only does the censoring part if n_cens>0
+  if(n_cens>0) {
+     cens ~ gen_gamma_cens(X_cens*beta,sigma,Q,d);
+  }
   t ~ gen_gamma(X_obs*beta,sigma,Q);
 }
 

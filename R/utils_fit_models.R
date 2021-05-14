@@ -482,8 +482,13 @@ make_data_stan=function(formula,data,distr3,exArgs) {
                       n_cens=mf %>% filter(event==0) %>% with(nrow(.))
     )
     data.stan$X_obs <- matrix(model.matrix(formula,data)[(mf %>% filter(event==1))$ID,],nrow=data.stan$n_obs)
-    data.stan$X_cens <- matrix(model.matrix(formula,data)[(mf %>% filter(event==0))$ID,],nrow=data.stan$n_cens)
     data.stan$H=ncol(data.stan$X_obs)
+    # If n_cens=0 then void the censoring part in the 'gam', 'gga' and 'gef' models
+    if(data.stan$n_cens>0) {
+      data.stan$X_cens <- matrix(model.matrix(formula,data)[(mf %>% filter(event==0))$ID,],nrow=data.stan$n_cens)
+    } else {
+      data.stan$X_cens <- matrix(0, nrow = 0, ncol = data.stan$H)
+    }
 
     # NB: Stan allows data of 0 size in the 'data' block, so can simply use the definitions above even when there are 
     #     no censored observations! However, in that case, there needs to be a 'if' condition to remove the model for 'cens'
