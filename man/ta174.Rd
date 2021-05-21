@@ -7,27 +7,27 @@
 \format{
 A tibble with 810 rows and 8 variables:
 \describe{
-  \item{patid}{A numeric patient identifier}
-  \item{treat}{The treatment indicator. 1=rituximab 
-  in combination with fludarabine andcyclophosphamide 
-  (RFC); 0=fludarabine and cyclo-phosphamide alone (FC)}
-  \item{prog}{An indicator to describe whether the 
-  patient has experience a progression}
-  \item{death}{An indicator to describe whether the 
-  patient has experience death}
-  \item{prog_t}{The observed time at progression, or
-  the time at which the patient has been censored; 
-  measured in months}
-  \item{death_t}{The observed time at death, or
-  the time at which the patient has been censored; 
-  measured in months}
-  \item{prog_ty}{The observed time at progression, or
-  the time at which the patient has been censored; 
-  measured in years}
-  \item{death_ty}{The observed time at death, or
-  the time at which the patient has been censored; 
-  measured in years}
-  }
+\item{patid}{A numeric patient identifier}
+\item{treat}{The treatment indicator. 1=rituximab
+in combination with fludarabine andcyclophosphamide
+(RFC); 0=fludarabine and cyclo-phosphamide alone (FC)}
+\item{prog}{An indicator to describe whether the
+patient has experience a progression}
+\item{death}{An indicator to describe whether the
+patient has experience death}
+\item{prog_t}{The observed time at progression, or
+the time at which the patient has been censored;
+measured in months}
+\item{death_t}{The observed time at death, or
+the time at which the patient has been censored;
+measured in months}
+\item{prog_ty}{The observed time at progression, or
+the time at which the patient has been censored;
+measured in years}
+\item{death_ty}{The observed time at death, or
+the time at which the patient has been censored;
+measured in years}
+}
 }
 \usage{
 ta174

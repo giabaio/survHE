@@ -30,13 +30,13 @@ the dataset}
 has died and 0 otherwise. Defaults to the column named 'death' in
 the dataset}
 
-\item{prog_t}{The progression time. Defaults to the column named 
+\item{prog_t}{The progression time. Defaults to the column named
 'prog_t' in the dataset}
 
-\item{death_t}{The death time. Defaults to the column named 
+\item{death_t}{The death time. Defaults to the column named
 'death_t' in the dataset}
 
-\item{keep}{A vector of strings with the names of the additional 
+\item{keep}{A vector of strings with the names of the additional
 variables from the original dataset to keep into the multistate
 dataset. If 'NULL' (default), then keeps all}
 
@@ -44,20 +44,20 @@ dataset. If 'NULL' (default), then keeps all}
 }
 \value{
 A tibble containing the event history for each individual
-and with the following variables: id = Patients ID; from = Initial 
-state (1=Pre-progression, 2=Progression, 3=Death); to = End state 
+and with the following variables: id = Patients ID; from = Initial
+state (1=Pre-progression, 2=Progression, 3=Death); to = End state
 (1=Pre-progression, 2=Progression, 3=Death); trans = Transition ID:
 1=Pre-progression -> Progression; 2=Pre-Progression -> Death;
-3=Progression -> Death; Tstart = Entry time (either entry or 
-progression); Tstop = Exit time (time of event or censoring time); 
-status = Event indicator (1=yes, 0=censored), **for the specific
-event under consideration**; treat = Treatment indicator
+3=Progression -> Death; Tstart = Entry time (either entry or
+progression); Tstop = Exit time (time of event or censoring time);
+status = Event indicator (1=yes, 0=censored), \strong{for the specific
+event under consideration}; treat = Treatment indicator
 All the other original variables are appended to these, but can be
 removed
 }
 \description{
 Takes as input an individual-level dataset including data on both
-progression and death time (**jointly**) and manipulates it using
+progression and death time (\strong{jointly}) and manipulates it using
 \code{dplyr} functions to create a full "multi-state" dataset, in
 which all the transitions are tracked. This can then be used
 to fit survival models and compute all the estimates for the

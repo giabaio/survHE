@@ -14,10 +14,10 @@ write.surv(object, file, sheet = NULL, what = "surv")
 
 \item{sheet}{a string with the name of the sheet to be created}
 
-\item{what}{a string to describe what to be exported. Can either be 
+\item{what}{a string to describe what to be exported. Can either be
 'surv' (default), which outputs the simulation(s) for the survival curves
-or 'sim', which outputs the simulation(s) for the underlying model 
-parameters. If there are several 'profiles', they get written in 
+or 'sim', which outputs the simulation(s) for the underlying model
+parameters. If there are several 'profiles', they get written in
 separate spreadsheets and a clear indication is given as the name of the
 spreadsheet}
 }
@@ -44,9 +44,9 @@ write.surv(p.mle,file="test.xlsx")
 }
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{make.surv}

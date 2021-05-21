@@ -16,7 +16,7 @@ argument for distr (so many models are fitted & stored in the same object)}
 
 \item{\dots}{additional options, including: \code{digits} = number of
 significant digits to be shown in the summary table (default = 6)
-\code{original} = a flag to say whether the *original* table
+\code{original} = a flag to say whether the \emph{original} table
 from either \code{flexsurv} or \code{INLA} or \code{rstan} should be printed}
 }
 \description{
@@ -34,9 +34,9 @@ print(mle)
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \author{
 Gianluca Baio

@@ -18,7 +18,7 @@ censoring, then \code{event} is a column of 1s.}
 
 \item{\dots}{Additional options (for INLA or HMC).
 
-**HMC** specific options \code{chains} = number of chains to run in the HMC
+\strong{HMC} specific options \code{chains} = number of chains to run in the HMC
 (default = 2) \code{iter} = total number of iterations (default = 2000)
 \code{warmup} = number of warmup iterations (default = iter/2) \code{thin} =
 number of thinning (default = 1) \code{control} = a list specifying
@@ -64,9 +64,9 @@ Something will go here
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{fit.models}, \code{make.surv}

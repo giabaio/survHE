@@ -16,46 +16,46 @@ three_state_mm(
 }
 \arguments{
 \item{m_12}{A 'survHE' object (output to a call to \code{fit.models})
-estimating the parameters of a model for the transition from 
-'Pre-progression' (state 1) to 'Progressed' (state 2). Given the 
+estimating the parameters of a model for the transition from
+'Pre-progression' (state 1) to 'Progressed' (state 2). Given the
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
 and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==1),...)}}
 
 \item{m_13}{A 'survHE' object (output to a call to \code{fit.models})
-estimating the parameters of a model for the transition from 
-'Pre-progression' (state 1) to 'Death' (state 3).  Given the 
+estimating the parameters of a model for the transition from
+'Pre-progression' (state 1) to 'Death' (state 3).  Given the
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
 and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==2),...)}}
 
 \item{m_23}{A 'survHE' object (output to a call to \code{fit.models})
-estimating the parameters of a model for the transition from 
-'Progressed' (state 2) to 'Death' (state 3).  Given the 
+estimating the parameters of a model for the transition from
+'Progressed' (state 2) to 'Death' (state 3).  Given the
 individual level data with the complete event history (in the object
 'data'), can be done with a call like 'x=make_data_multi_state(data)'
 and then \code{fit.models(Surv(time,status)~...,data=x \%>\% filter(trans==3),...)}}
 
-\item{nsim}{The number of simulations for the model parameters that are 
+\item{nsim}{The number of simulations for the model parameters that are
 used to compute the survival curves. Defaults to \code{nsim}=1,
 which simply creates one survival curve for each treatment arm.}
 
-\item{start}{A vector of initial state occupancy. By default assumes 1000 
+\item{start}{A vector of initial state occupancy. By default assumes 1000
 individuals, all initially allocated to 'Pre-progression'}
 
-\item{basecase}{Should the base case be computed as well, based on the 
+\item{basecase}{Should the base case be computed as well, based on the
 point estimate of the underlying model parameters? (Default=FALSE)}
 
 \item{...}{additional arguments.}
 }
 \value{
 A list including the state occupancy simulations in an object 'm'.
-This is a tibble with the number of individuals in each of the 3 states 
+This is a tibble with the number of individuals in each of the 3 states
 at each of the times specified by the user. If \code{nsim}>1, then the tibble
-also contains a simulation index to keep track of that. The list also 
+also contains a simulation index to keep track of that. The list also
 includes the computation time to obtain the state occupancy tibble (in the
 object 'running_time'). If \code{basecase==TRUE}, then the function also
-computes the "base case scenario" (based on 1 simulation from of the 
+computes the "base case scenario" (based on 1 simulation from of the
 underlying survival curves, i.e. the point estimate of the model parameters)
 and stores it in the object 'base_case'
 }
@@ -63,9 +63,9 @@ and stores it in the object 'base_case'
 General purpose function to run a standard three-state Markov model
 (typically used in cancer modelling). The states are typically
 'Pre-progression', 'Progressed' and 'Death'. No backward transition
-from 'Progressed' to 'Pre-progression' is allowed and 'Death' is 
+from 'Progressed' to 'Pre-progression' is allowed and 'Death' is
 obviously an absorbing state. All other transitions are possible.
-The crucial assumption is that *individual-level data* are available
+The crucial assumption is that \emph{individual-level data} are available
 recording an indicator and the time of progression and death for each
 individual. The function returns the full transition matrix
 }

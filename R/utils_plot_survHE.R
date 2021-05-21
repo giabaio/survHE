@@ -178,11 +178,20 @@ plot_ggplot_survHE <- function(exArgs) {
       geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
       annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5) +
+      # Constrains the y-axis to [0-1] only if the required plot is the survival curve
       if(what=="survival") {ylim(-0.01,ymax)} + 
       geom_rect(data=data.frame(xmin=-Inf,xmax=cutoff,ymin=-Inf,ymax=Inf),
                 aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),fill="grey",alpha=.1)
   } else{
-    surv.curv=surv.curv+if(what=="survival") {ylim(0,ymax)} 
+    surv.curv=surv.curv+
+      # Constrains the y-axis to [0-1] only if the required plot is the survival curve
+      if(what=="survival") {ylim(0,ymax)} 
+  }
+  # If the scale is 'hazard' then adds a caption to the plot to highlight the fact that
+  #  the hazard function is computed as a *numerical* derivative
+  if(what=="hazard") {
+    msg=paste0("NB: The hazard function is computed as the **numerical** derivative of -log(Survival)")
+    surv.curv=surv.curv+labs(caption=msg)
   }
   if(exists("legend.position",exArgs)){
     surv.curv=surv.curv+theme(legend.position=exArgs$legend.position)

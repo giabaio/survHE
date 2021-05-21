@@ -33,12 +33,12 @@ and then run the model.}
 
 \item{\dots}{Additional options (for INLA or HMC).
 
-**INLA** specific options \code{dz} = defines the step length for the grid
+\strong{INLA} specific options \code{dz} = defines the step length for the grid
 search over the hyperparameters space (default = 0.1) \code{diff.logdens} =
 defines the difference in the log-density for the hyperparameters to stop
 integration (default = 5) \code{control.fixed} = defines the default for the
 priors, unless specified by the user.  Default values are prior mean = 0 for
-*all* fixed effects prior var = 1000 for *all* fixed effects prior mean = 0
+\emph{all} fixed effects prior var = 1000 for \emph{all} fixed effects prior mean = 0
 for the intercept prior prec -> 0 for the intercept \code{control.family} =
 a list of options. If distr is a vector, then can be provided as a named
 list of options, for example something like this:
@@ -46,7 +46,7 @@ list of options, for example something like this:
 the names of the elements of the list need to be the same as those given in
 the vector \code{distr}
 
-**HMC** specific options \code{chains} = number of chains to run in the HMC
+\strong{HMC} specific options \code{chains} = number of chains to run in the HMC
 (default = 2) \code{iter} = total number of iterations (default = 2000)
 \code{warmup} = number of warmup iterations (default = iter/2) \code{thin} =
 number of thinning (default = 1) \code{control} = a list specifying
@@ -112,9 +112,9 @@ plot(mle,inla,hmc,labs=c("MLE","INLA","HMC"),colors=c("black","red","blue"))
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{make.surv}

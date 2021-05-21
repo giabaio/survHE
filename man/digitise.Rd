@@ -13,10 +13,22 @@ digitise(
 }
 \arguments{
 \item{surv_inp}{a txt file obtained for example by DigitizeIT and containing
-the input survival times from graph reading}
+the input survival times from graph reading. This file contains 3 columns
+'ID' = the row-ID
+'time' = the vector of times captured by the digitisation process
+'survival' = the vector of survival probabilities captured by the digitisation
+process}
 
 \item{nrisk_inp}{a txt file obtained by DigitizeIT and containing the
-reported number at risk}
+reported number at risk. This contains the following columns:
+'Interval' = the ID of the various intervals included in the analysis (
+eg 1, 2, 3, ...)
+'Time' = the actual time shown on the x-axis in the digitsed graph
+'Lower' = the row of the extracted co-ordinates that the time corresponds
+to
+'Upper' = the row of the extracted co-ordinates for which the time is less
+than the following time at which we have a number at risk
+'nrisk' = the actual number at risk as specified in the original data}
 
 \item{km_output}{the name of the file to which the KM data will be written}
 
@@ -37,9 +49,9 @@ digitise(surv.inp, nrisk.inp)
 }
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \author{
 Patricia Guyot and Gianluca Baio

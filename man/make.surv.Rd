@@ -21,7 +21,7 @@ at which the computation is performed. For example
 \code{list(list(arm=0),list(arm=1))} will create two survival curves, one
 obtained by setting the covariate \code{arm} to the value 0 and the other by
 setting it to the value 1. In line with \code{flexsurv} notation, the user
-needs to either specify the value for *all* the covariates or for none (in
+needs to either specify the value for \emph{all} the covariates or for none (in
 which case, \code{newdata=NULL}, which is the default). If some value is
 specified and at least one of the covariates is continuous, then a single
 survival curve will be computed in correspondence of the average values of
@@ -55,9 +55,9 @@ plot(mle,nsim=10)
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{fit.models}, \code{psa.plot}, \code{write.surv}

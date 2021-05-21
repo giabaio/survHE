@@ -16,8 +16,8 @@ colors for the lines to be plotted \code{alpha} = the level of transparency
 for the curves (default = 0.2)}
 }
 \description{
-Plots the survival curves for all the PSA simulations. The function is 
-actually deprecated - similar graphs can be obtained directly using 
+Plots the survival curves for all the PSA simulations. The function is
+actually deprecated - similar graphs can be obtained directly using
 the \code{plot} method (with options), which allows a finer depiction
 of the results.
 }
@@ -34,9 +34,9 @@ psa.plot(p.mle)
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{make.surv}, \code{write.surv}

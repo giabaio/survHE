@@ -13,7 +13,7 @@ model.fit.plot(..., type = "aic", scale = "absolute", stacked = FALSE)
 \item{type}{should the AIC, the BIC or the DIC plotted? (values = \code{"aic"},
 \code{"bic"} or \code{"dic"})}
 
-\item{scale}{If \code{scale='absolute'} (default), then plot the absolute value 
+\item{scale}{If \code{scale='absolute'} (default), then plot the absolute value
 of the *IC. If \code{scale='relative'} then plot a rescaled version taking
 the percentage increase in the *IC in comparison with the best-fitting model}
 
@@ -39,9 +39,9 @@ model.fit.plot(mle)
 
 }
 \references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation 
+G Baio (2019). survHE: Survival analysis for health economic evaluation
 and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. <doi:10.18637/jss.v095.i14>
+14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
 \code{fit.models}

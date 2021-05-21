@@ -9,10 +9,8 @@ using namespace Rcpp;
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4Exponential_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4Gamma_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4Gamma2_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4GenF_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4GenGamma_mod();
-RcppExport SEXP _rcpp_module_boot_stan_fit4GenGamma2_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4Gompertz_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4PolyWeibull_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4RP_mod();
@@ -24,10 +22,8 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4logNormal_mod();
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4Exponential_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4Exponential_mod, 0},
     {"_rcpp_module_boot_stan_fit4Gamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4Gamma_mod, 0},
-    {"_rcpp_module_boot_stan_fit4Gamma2_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4Gamma2_mod, 0},
     {"_rcpp_module_boot_stan_fit4GenF_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4GenF_mod, 0},
     {"_rcpp_module_boot_stan_fit4GenGamma_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4GenGamma_mod, 0},
-    {"_rcpp_module_boot_stan_fit4GenGamma2_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4GenGamma2_mod, 0},
     {"_rcpp_module_boot_stan_fit4Gompertz_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4Gompertz_mod, 0},
     {"_rcpp_module_boot_stan_fit4PolyWeibull_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4PolyWeibull_mod, 0},
     {"_rcpp_module_boot_stan_fit4RP_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4RP_mod, 0},
