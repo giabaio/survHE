@@ -190,7 +190,7 @@ plot_ggplot_survHE <- function(exArgs) {
   # If the scale is 'hazard' then adds a caption to the plot to highlight the fact that
   #  the hazard function is computed as a *numerical* derivative
   if(what=="hazard") {
-    msg=paste0("NB: The hazard function is computed as the **numerical** derivative of -log(Survival)")
+    msg=bquote(~bold(.("NB")): "The hazard function is computed as the" ~bold(.("numerical"))~"derivative of -log(Survival)")
     surv.curv=surv.curv+labs(caption=msg)
   }
   if(exists("legend.position",exArgs)){
