@@ -18,6 +18,9 @@
 #' or the combination of the categorical covariates. \code{xlim} = a vector 
 #' determining the limits for the x-axis \code{colors} = a vector of characters 
 #' defining the colours in which to plot the different survival curves 
+#' \code{what} = a string indicating whether the survival, hazard or 
+#' cumulative hazard curve should be plotted. Defaults to 'survival', but the 
+#' other two options can be specified as 'hazard' or 'cumhazard'
 #' \code{lab.profile} = a vector of characters defining the names of the models fitted 
 #' \code{add.km} = TRUE (whether to also add the Kaplan Meier estimates of the data) 
 #' \code{annotate} = FALSE (whether to also add text to highlight the observed vs

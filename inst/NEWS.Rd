@@ -1,9 +1,12 @@
 \name{survHE NEWS}
 \title{News for package survHE}
 
-\section{Changes in version 1.1.3 (2021-05-14)}{
+\section{Changes in version 1.1.3 (2021-05-21)}{
 
  \itemize{
+    \item Adds an option 'what' to plot so that 'survival', 'hazard' and
+    'cumhazard' can be specified (and the plot is modified to the various
+    different scales)
     \item Updates the Gamma, GenGamma and GenF models in HMC to include
 for the possibility that the data contain no censoring. Also fix a small
 typo in the print method for Gamma/HMC models.

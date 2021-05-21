@@ -77,6 +77,10 @@ plot_ggplot_survHE <- function(exArgs) {
   # Should the graph be annotated with extrapolation vs observed data?
   if(exists("annotate",where=exArgs)){annotate=exArgs$annotate} else {annotate=FALSE}
   
+  # What scale should the plot be done? ('survival' is default, but other options are 'hazard' and 
+  # 'cumulative hazard')
+  if(exists("what",where=exArgs)){what=exArgs$what} else {what="survival"}
+  
   # Makes the dataframe with the data to plot
   # toplot = lapply(1:length(survHE_objs),function(i){
   #   make_data_surv(survHE_objs[[i]],
@@ -137,7 +141,7 @@ plot_ggplot_survHE <- function(exArgs) {
   }
 
   # Now makes the plot using the helper function
-  surv.curv=make_surv_curve_plot(toplot,datakm,mods)
+  surv.curv=make_surv_curve_plot(toplot,datakm,mods,what=what)
 
   # Optional arguments
   if(exists("lab.profile",exArgs)){
@@ -165,6 +169,7 @@ plot_ggplot_survHE <- function(exArgs) {
   if(exists("main",where=exArgs)) {
     surv.curv=surv.curv+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
   }
+  ymax=1
   if(annotate==TRUE){
     cutoff=max(survHE_objs[[1]]$misc$km$time)
     surv.curv=surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
@@ -173,11 +178,11 @@ plot_ggplot_survHE <- function(exArgs) {
       geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
       annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5) +
-      ylim(-0.01,1) + 
+      if(what=="survival") {ylim(-0.01,ymax)} + 
       geom_rect(data=data.frame(xmin=-Inf,xmax=cutoff,ymin=-Inf,ymax=Inf),
                 aes(xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax),fill="grey",alpha=.1)
   } else{
-    surv.curv=surv.curv+ylim(0,1)
+    surv.curv=surv.curv+if(what=="survival") {ylim(0,ymax)} 
   }
   if(exists("legend.position",exArgs)){
     surv.curv=surv.curv+theme(legend.position=exArgs$legend.position)
@@ -279,7 +284,7 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
 #' @author Gianluca Baio
 #' @keywords Parametric survival models
 #' @noRd 
-make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
+make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
   # Does the model have covariates?
   if (all(toplot$strata=="=")) {
     # In this case not (intercept only), so remove the linetype as not needed
@@ -288,6 +293,19 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
     # If it does have covariates then use 'strata' to plot a curve per profile
     linetype=toplot$strata
   }
+  
+  ylab="Survival"
+  # Change the scale from the survival to the (approximated) hazard function (computed as the numerical derivative of the cumulative hazard)
+  if(what=="hazard") {
+    toplot=toplot %>% group_by(model_name,strata) %>% mutate(S=lag(-log(S))/lag(t)) %>% ungroup()
+    ylab="Hazard"
+  }
+  # Change the scale from the survival to the cumulative hazard
+  if(what=="cumhazard") {
+    toplot=toplot %>% group_by(model_name,strata) %>% mutate(S=-log(S)) %>% ungroup()
+    ylab="Cumulative hazard"
+  }
+  
   surv.curv=ggplot() 
   # Am I plotting a single 'survHE' object?
   if(length(levels(toplot$object_name))==1) {
@@ -315,7 +333,7 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods) {
           #legend.title = element_blank(),
           legend.text = element_text(colour="black", size=14, face="plain"),
           legend.background=element_blank()) +
-    labs(y="Survival",x="Time",title=NULL,
+    labs(y=ylab,x="Time",title=NULL,
          color=ifelse(length(mods)==1,"Model","Models"),
          linetype="Profile") + 
     # This ensures that the model legend is always before the profile legend

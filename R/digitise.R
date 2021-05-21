@@ -5,9 +5,21 @@
 #' 
 #' 
 #' @param surv_inp a txt file obtained for example by DigitizeIT and containing
-#' the input survival times from graph reading
+#' the input survival times from graph reading. This file contains 3 columns
+#' 'ID' = the row-ID
+#' 'time' = the vector of times captured by the digitisation process
+#' 'survival' = the vector of survival probabilities captured by the digitisation
+#' process
 #' @param nrisk_inp a txt file obtained by DigitizeIT and containing the
-#' reported number at risk
+#' reported number at risk. This contains the following columns:
+#' 'Interval' = the ID of the various intervals included in the analysis (
+#' eg 1, 2, 3, ...)
+#' 'Time' = the actual time shown on the x-axis in the digitsed graph
+#' 'Lower' = the row of the extracted co-ordinates that the time corresponds 
+#' to
+#' 'Upper' = the row of the extracted co-ordinates for which the time is less 
+#' than the following time at which we have a number at risk
+#' 'nrisk' = the actual number at risk as specified in the original data
 #' @param km_output the name of the file to which the KM data will be written
 #' @param ipd_output the name of the file to which the individual level data
 #' data will be written
