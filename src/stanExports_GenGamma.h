@@ -33,7 +33,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model_GenGamma");
-    reader.add_event(80, 78, "end", "model_GenGamma");
+    reader.add_event(83, 81, "end", "model_GenGamma");
     return reader;
 }
 template <bool propto, typename T0__, typename T1__, typename T2__, typename T3__>
@@ -503,9 +503,12 @@ public:
             lp_accum__.add(gamma_log<propto__>(sigma, a_sigma, b_sigma));
             current_statement_begin__ = 69;
             lp_accum__.add(normal_log<propto__>(beta, mu_beta, sigma_beta));
-            current_statement_begin__ = 71;
-            lp_accum__.add(gen_gamma_cens_lpdf<propto__>(cens, multiply(X_cens, beta), sigma, Q, d, pstream__));
             current_statement_begin__ = 72;
+            if (as_bool(logical_gt(n_cens, 0))) {
+                current_statement_begin__ = 73;
+                lp_accum__.add(gen_gamma_cens_lpdf<propto__>(cens, multiply(X_cens, beta), sigma, Q, d, pstream__));
+            }
+            current_statement_begin__ = 75;
             lp_accum__.add(gen_gamma_lpdf<propto__>(t, multiply(X_obs, beta), sigma, Q, pstream__));
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -587,16 +590,16 @@ public:
             if (!include_gqs__ && !include_tparams__) return;
             if (!include_gqs__) return;
             // declare and define generated quantities
-            current_statement_begin__ = 76;
+            current_statement_begin__ = 79;
             double mu;
             (void) mu;  // dummy to suppress unused var warning
             stan::math::initialize(mu, DUMMY_VAR__);
             stan::math::fill(mu, DUMMY_VAR__);
             // generated quantities statements
-            current_statement_begin__ = 77;
+            current_statement_begin__ = 80;
             stan::math::assign(mu, get_base1(beta, 1, "beta", 1));
             // validate, write generated quantities
-            current_statement_begin__ = 76;
+            current_statement_begin__ = 79;
             vars__.push_back(mu);
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

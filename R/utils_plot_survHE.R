@@ -307,11 +307,20 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
   # Change the scale from the survival to the (approximated) hazard function (computed as the numerical derivative of the cumulative hazard)
   if(what=="hazard") {
     toplot=toplot %>% group_by(model_name,strata) %>% mutate(S=lag(-log(S))/lag(t)) %>% ungroup()
+    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower and upper end to plot the ribbon
+    if("low" %in% names(toplot)) {
+      toplot=toplot %>% group_by(model_name,strata) %>% mutate(low=lag(-log(low))/lag(t), upp=lag(-log(upp))/lag(t)) %>% ungroup()
+    }
+    
     ylab="Hazard"
   }
   # Change the scale from the survival to the cumulative hazard
   if(what=="cumhazard") {
     toplot=toplot %>% group_by(model_name,strata) %>% mutate(S=-log(S)) %>% ungroup()
+    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower and upper end to plot the ribbon
+    if("low" %in% names(toplot)) {
+      toplot=toplot %>% group_by(model_name,strata) %>% mutate(low=-log(low), upp=-log(upp)) %>% ungroup()
+    }
     ylab="Cumulative hazard"
   }
   
