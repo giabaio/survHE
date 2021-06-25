@@ -554,17 +554,6 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
       })
     }
   } else {
-    what=exArgs$what
-    ## Can change here to allow computation of survival, hazard or cumulative hazard
-    # if(what=="survival") {
-    #   1-do.call(paste0("p",distr),args=eval(parse(text=args[[distr]])))
-    # } 
-    # if(what=="hazard") {
-    #   do.call(paste0("h",distr),args=eval(parse(text=args[[distr]])))
-    # }
-    # if(what=="cumhazard") {
-    #   do.call(paste0("H",distr),args=eval(parse(text=args[[distr]])))
-    # }
     mat <- lapply(sim,function(x) {
       matrix(
         unlist(

@@ -1,7 +1,7 @@
 \name{survHE NEWS}
 \title{News for package survHE}
 
-\section{Changes in version 1.1.3 (2021-05-21)}{
+\section{Changes in version 1.1.3 (2021-06-25)}{
 
  \itemize{
     \item Adds an option 'what' to plot so that 'survival', 'hazard' and
