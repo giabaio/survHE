@@ -38,10 +38,11 @@ LinkingTo:
     Rcpp (>= 0.12.19),
     RcppEigen (>= 0.3.3.4.0),
     rstan (>= 2.18.1),
-    StanHeaders (>= 2.18.0)
+    StanHeaders (>= 2.18.0),
+    RcppParallel (>= 5.0.2)
 Additional_repositories: https://inla.r-inla-download.org/R/stable
 Encoding: UTF-8
 LazyData: true
 NeedsCompilation: yes
 SystemRequirements: GNU make
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

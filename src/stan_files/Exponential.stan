@@ -3,16 +3,16 @@
 functions {
   // Defines the log hazard
   vector log_h (vector t, vector rate) {
-    vector[num_elements(t)] log_h;
-    log_h = log(rate);
-    return log_h;
+    vector[num_elements(t)] log_hvec;
+    log_hvec = log(rate);
+    return log_hvec;
   }
   
   // Defines the log survival
   vector log_S (vector t, vector rate) {
-    vector[num_elements(t)] log_S;
-    log_S = -rate .* t;
-    return log_S;
+    vector[num_elements(t)] log_Svec;
+    log_Svec = -rate .* t;
+    return log_Svec;
   }
   
   // Defines the sampling distribution
