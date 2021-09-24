@@ -3,22 +3,22 @@
 functions {
   // Defines the log survival
   vector log_S (vector t, vector mean, real sd) {
-    vector[num_elements(t)] log_S;
+    vector[num_elements(t)] log_Svec;
     for (i in 1:num_elements(t)) {
-      log_S[i] = log(1-Phi((log(t[i])-mean[i])/sd));
+      log_Svec[i] = log(1-Phi((log(t[i])-mean[i])/sd));
     }
-    return log_S;
+    return log_Svec;
   }
   
   // Defines the log hazard
   vector log_h (vector t, vector mean, real sd) {
-    vector[num_elements(t)] log_h;
+    vector[num_elements(t)] log_hvec;
     vector[num_elements(t)] ls;
     ls = log_S(t,mean,sd);
     for (i in 1:num_elements(t)) {
-      log_h[i] = lognormal_lpdf(t[i]|mean[i],sd) - ls[i];
+      log_hvec[i] = lognormal_lpdf(t[i]|mean[i],sd) - ls[i];
     }
-    return log_h;
+    return log_hvec;
   }
 
   // Defines the sampling distribution

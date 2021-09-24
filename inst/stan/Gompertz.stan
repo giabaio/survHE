@@ -3,18 +3,18 @@
 functions {
   // Defines the log hazard
   vector log_h (vector t, real shape, vector rate) {
-    vector[num_elements(t)] log_h;
-    log_h = log(rate) + (shape * t);
-    return log_h;
+    vector[num_elements(t)] log_hvec;
+    log_hvec = log(rate) + (shape * t);
+    return log_hvec;
   }
   
   // Defines the log survival
   vector log_S (vector t, real shape, vector rate) {
-    vector[num_elements(t)] log_S;
+    vector[num_elements(t)] log_Svec;
     for (i in 1:num_elements(t)) {
-      log_S[i] = -rate[i]/shape * (exp(shape * t[i]) - 1);
+      log_Svec[i] = -rate[i]/shape * (exp(shape * t[i]) - 1);
     }
-    return log_S;
+    return log_Svec;
   }
   
   // Defines the sampling distribution
