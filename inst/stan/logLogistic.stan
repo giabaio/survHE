@@ -3,20 +3,20 @@
 functions {
   // Defines the log hazard
   vector log_h (vector t, real shape, vector scale) {
-    vector[num_elements(t)] log_h;
+    vector[num_elements(t)] log_hvec;
     for (i in 1:num_elements(t)) {
-      log_h[i] = log(shape)-log(scale[i])+(shape-1)*(log(t[i])-log(scale[i]))-log(1+pow((t[i]/scale[i]),shape));
+      log_hvec[i] = log(shape)-log(scale[i])+(shape-1)*(log(t[i])-log(scale[i]))-log(1+pow((t[i]/scale[i]),shape));
     }
-    return log_h;
+    return log_hvec;
   }
   
   // Defines the log survival
   vector log_S (vector t, real shape, vector scale) {
-    vector[num_elements(t)] log_S;
+    vector[num_elements(t)] log_Svec;
     for (i in 1:num_elements(t)) {
-      log_S[i] = -log(1+pow((t[i]/scale[i]),shape));
+      log_Svec[i] = -log(1+pow((t[i]/scale[i]),shape));
     }
-    return log_S;
+    return log_Svec;
   }
   
   // Defines the sampling distribution

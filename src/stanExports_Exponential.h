@@ -50,14 +50,14 @@ log_h(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& t,
     try {
         {
         current_statement_begin__ = 6;
-        validate_non_negative_index("log_h", "num_elements(t)", num_elements(t));
-        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> log_h(num_elements(t));
-        stan::math::initialize(log_h, DUMMY_VAR__);
-        stan::math::fill(log_h, DUMMY_VAR__);
+        validate_non_negative_index("log_hvec", "num_elements(t)", num_elements(t));
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> log_hvec(num_elements(t));
+        stan::math::initialize(log_hvec, DUMMY_VAR__);
+        stan::math::fill(log_hvec, DUMMY_VAR__);
         current_statement_begin__ = 7;
-        stan::math::assign(log_h, stan::math::log(rate));
+        stan::math::assign(log_hvec, stan::math::log(rate));
         current_statement_begin__ = 8;
-        return stan::math::promote_scalar<fun_return_scalar_t__>(log_h);
+        return stan::math::promote_scalar<fun_return_scalar_t__>(log_hvec);
         }
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -87,14 +87,14 @@ log_S(const Eigen::Matrix<T0__, Eigen::Dynamic, 1>& t,
     try {
         {
         current_statement_begin__ = 13;
-        validate_non_negative_index("log_S", "num_elements(t)", num_elements(t));
-        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> log_S(num_elements(t));
-        stan::math::initialize(log_S, DUMMY_VAR__);
-        stan::math::fill(log_S, DUMMY_VAR__);
+        validate_non_negative_index("log_Svec", "num_elements(t)", num_elements(t));
+        Eigen::Matrix<local_scalar_t__, Eigen::Dynamic, 1> log_Svec(num_elements(t));
+        stan::math::initialize(log_Svec, DUMMY_VAR__);
+        stan::math::fill(log_Svec, DUMMY_VAR__);
         current_statement_begin__ = 14;
-        stan::math::assign(log_S, elt_multiply(minus(rate), t));
+        stan::math::assign(log_Svec, elt_multiply(minus(rate), t));
         current_statement_begin__ = 15;
-        return stan::math::promote_scalar<fun_return_scalar_t__>(log_S);
+        return stan::math::promote_scalar<fun_return_scalar_t__>(log_Svec);
         }
     } catch (const std::exception& e) {
         stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());

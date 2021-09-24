@@ -1,5 +1,14 @@
 \name{survHE NEWS}
 \title{News for package survHE}
+\section{Changes in version 1.1.4 (2021-09-24)}{
+\itemize{
+\item Contribution by Andrew Jones to update compatibility with the newer 
+version of stan. Changes on StanHeaders + stan models to avoid complaints by 
+the compiler because of declared variables with the same name of a function
+that was being defined. None of these are directly "visible" to the final
+user, though...
+}
+}
 
 \section{Changes in version 1.1.3 (2021-06-25)}{
 
