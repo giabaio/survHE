@@ -1,12 +1,15 @@
 \name{survHE NEWS}
 \title{News for package survHE}
-\section{Changes in version 1.1.4 (2021-09-24)}{
+\section{Changes in version 1.1.4 (2021-09-29)}{
 \itemize{
 \item Contribution by Andrew Jones to update compatibility with the newer 
 version of stan. Changes on StanHeaders + stan models to avoid complaints by 
 the compiler because of declared variables with the same name of a function
 that was being defined. None of these are directly "visible" to the final
 user, though...
+\item Changes to '.Rbuildignore' to allow 'rstantool' to automatically 
+configuring on package install. Also improves compatibility across versions of
+'rstan'. See https://github.com/giabaio/survHE/pull/42
 }
 }
 
