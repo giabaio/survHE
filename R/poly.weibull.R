@@ -112,9 +112,9 @@ poly.weibull <- function(formula=NULL,data,...) {
   if(exists("save.stan",where=exArgs)) {save.stan <- exArgs$save.stan} else {save.stan=FALSE}
 
   # Loads in the available models in each method
-  availables <- load_availables()
+  availables <- survHE:::load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
-  d3 <- manipulate_distributions(distr)$distr3
+  d3 <- survHE:::manipulate_distributions(distr)$distr3
   method <- "hmc"
   
   # Recomputes the three-letters code for the distributions and the HMC-specific name

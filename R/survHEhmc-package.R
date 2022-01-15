@@ -22,19 +22,19 @@ NULL
 
 
 
-#' Survival Analysis in Health Economic Evaluation
+#' Survival Analysis in Health Economic Evaluation using HMC
 #' 
 #' Contains a suite of functions to perform survival analysis with the aim of
 #' aiding in health economic modelling (extrapolation, model checking and PSA)
 #' 
-#' \tabular{ll}{ Package: \tab survHE\cr Type: \tab Package\cr Version: \tab
-#' 1.1.4\cr Date: \tab 2021-09-29\cr License: \tab GPL2 \cr LazyLoad: \tab
+#' \tabular{ll}{ Package: \tab survHEhmc\cr Type: \tab Package\cr Version: \tab
+#' 0.0.1\cr Date: \tab 2022-01-15\cr License: \tab GPL2 \cr LazyLoad: \tab
 #' yes\cr } Contains a suite of functions to perform survival analysis with the
 #' aim of aiding in health economic modelling (extrapolation, model checking
 #' and PSA)
 #' 
-#' @name survHE-package
-#' @aliases survHE-package survHE
+#' @name survHEhmc-package
+#' @aliases survHEhmc-package survHEhmc
 #' @docType package
 #' @author Gianluca Baio
 #' 
@@ -47,7 +47,7 @@ NULL
 #' data(bc)
 #' # Fits a parametric model
 #' m <- fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
-#'     distr="exp",method="mle")
+#'     distr="exp",method="hmc")
 #' # Print output in tabular format
 #' print(m)
 #' # Visualise output in terms of survival curves
