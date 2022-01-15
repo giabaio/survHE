@@ -1,45 +1,37 @@
-# survHE [![Travis-CI Build Status](https://travis-ci.org/giabaio/survHE.svg?branch=devel)](https://travis-ci.org/giabaio/survHE)[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/giabaio/survHE?branch=devel&svg=true)](https://ci.appveyor.com/project/giabaio/survHE)[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](http://cranlogs.r-pkg.org/badges/survHE)](https://cran.r-project.org/package=survHE)[![CRAN_Download_Badge](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)](https://cranlogs.r-pkg.org:443/badges/grand-total/survHE?color=orange)
-## Survival analysis in health economic evaluation
+# survHEinla [![Travis-CI Build Status](https://travis-ci.org/giabaio/survHE.svg?branch=inla)](https://travis-ci.org/giabaio/survHE)[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/giabaio/survHE?branch=inla&svg=true)](https://ci.appveyor.com/project/giabaio/survHE)
+## Survival analysis in health economic evaluation using INLA
 
-Contains a suite of functions to systematise the workflow involving survival analysis in health economic evaluation. survHE can fit a large range of survival models using both a frequentist approach (by calling the R package [flexsurv](https://CRAN.R-project.org/package=flexsurv)) and a Bayesian perspective. For a selected range of models, both Integrated Nested Laplace Integration (via the R package [INLA](http://www.r-inla.org/)) and Hamiltonian Monte Carlo (via the R package [rstan](https://CRAN.R-project.org/package=rstan)) are possible. HMC models are pre-compiled so that they can run in a very efficient and fast way. In addition to model fitting, survHE provides a set of specialised functions, for example to perform Probabilistic Sensitivity Analysis, export the results of the modelling to a spreadsheet, plotting survival curves and uncertainty around the mean estimates.
+This is a module to complement the package `survHE` and expand its functionalities to run survival analysis in health economic evaluation from a Bayesian perspective, using Integrated Nested Laplace Integration (via the R package [INLA](http://www.r-inla.org/)). `survHEinla` "depends" on the main installation of `survHE`. This means that you shouldn't use `survHEinla` as a standalone package --- rather you use all the functions of `survHE` (to fit the models and the post-process the results); installing `survHEinla` basically opens up a new option in the `survHE` function `fit.models`, which allow the use of INLA to run the underlying survival analysis.
 
 ## Installation
-There are two ways of installing `survHE`. A "stable" version is packaged and binary files are available for Windows and as source. To install the stable version on a Windows machine, run the following commands
+`survHEinla` can be installed from this GitHub repository using the package `remotes`:
 ```R
-install.packages("survHE",
-	repos=c("http://www.statistica.it/gianluca/R",
-		"https://cran.rstudio.org",
-                "https://inla.r-inla-download.org/R/stable"),
-	dependencies=TRUE
-)
-```
-Note that you need to specify a vector of repositories - the first one hosts `survHE`, while the second one should be an official [CRAN mirror](https://cran.r-project.org/index.html). You can select whichever one you like, but a CRAN mirror must be provided, so that `install.packages()` can also install the "dependencies" (e.g. other packages that are required for `survHE` to work). The third one is used to install the package [`INLA`](http://www.r-inla.org/), which is used to do one version of the Bayesian analysis. This process can be quite lengthy, if you miss many of the relevant packages.
-
-To install from source (e.g. on a Linux machine), run
-```R
-install.packages("survHE",
-	repos=c("http://www.statistica.it/gianluca/R",
-		"https://cran.rstudio.org",
-		"https://inla.r-inla-download.org/R/stable"),
-	type="source",
-	dependencies=TRUE
-)
+remotes::install_github("giabaio/survHE", ref="inla")
 ```
 
-The second way involves using the "development" version of `survHE` - this will usually be updated more frequently and may be continuously tested. On Windows machines, you need to install a few dependencies, including [Rtools](https://cran.r-project.org/bin/windows/Rtools/) first, e.g. by running
+## Usage
+Once `survHEinla` is available, then you can refer to the whole manual/instructions for `survHE`. For instance, to fit a model using INLA, the following code would work:
 ```R
-pkgs <- c("flexsurv","Rcpp","rms","xlsx","rstan","INLA","Rtools","devtools")
-repos <- c("https://cran.rstudio.com", "https://inla.r-inla-download.org/R/stable") 
-install.packages(pkgs,repos=repos,dependencies = "Depends")
-```
-before installing the package using `devtools`:
-```R
-devtools::install_github("giabaio/survHE", ref="devel")
-```
-Under Linux or MacOS, it is sufficient to install the package via `devtools`:
-```R
-install.packages("devtools")
-devtools:install_github("giabaio/survHE", ref="devel")
+# Load survHE
+library(survHE)
+
+# Loads an example dataset from 'flexsurv'
+data(bc)
+     
+# Fits the same model using INLA
+# NB if survHEinla is installed, then the option 'method="inla"' automatically
+#    loads it up in the background
+inla = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+         distr="exp",method="inla")
+
+# Prints the results in comparable fashion using the survHE method
+print(inla)
+
+# Or visualises the results using the original package methods
+print(inla,original=TRUE)
+
+# Or plots the survival curves and estimates
+plot(inla)
 ```
 
-For "real" work, we recommend the use of the [`master` branch](https://github.com/giabaio/survHE/tree/master) in the GitHub repository. This will be updated more frequently than the official [CRAN release](https://cran.r-project.org/web/packages/survHE/index.html), to fix minor issues or inconsitencies. The `devel` branch will be continuously updated but may be less stable as it will include functions/functionalities *under development* and subject to current testing.
+Basically, the user doesn't even "see" that `survHEinla` is being used...
