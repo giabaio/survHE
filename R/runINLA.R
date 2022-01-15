@@ -10,7 +10,6 @@
 #' @seealso fit.models
 #' @references Baio (2020). survHE
 #' @keywords Parametric survival models Integrated Nested Laplace Approximation
-#' @noRd 
 runINLA <- function(x,exArgs) {
   # First checks whether INLA is installed (it's only a suggestion, not a full dependency)
   if (!isTRUE(requireNamespace("INLA", quietly = TRUE))) {
