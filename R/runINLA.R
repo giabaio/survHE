@@ -27,9 +27,9 @@ runINLA <- function(x,exArgs) {
   data=exArgs$data
   
   # Loads in the available models in each method
-  availables <- load_availables()
+  availables <- survHE:::load_availables()
   # Uses the helper 'manipulated_distributions' to create the vectors distr, distr3 and labs
-  d3 <- manipulate_distributions(x)$distr3
+  d3 <- survHE:::manipulate_distributions(x)$distr3
   method <- "inla"
   
   # Set up optional parameters to default values if the user hasn't done it themselves

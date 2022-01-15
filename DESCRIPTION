@@ -17,18 +17,7 @@ RoxygenNote: 7.1.2
 Biarch: true
 Depends: 
     survHE,
-    methods,
     R (>= 3.6.0),
-    flexsurv,
     dplyr
-Imports: 
-    rms,
-    xlsx,
-    Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.2)
-LinkingTo: 
-    Rcpp (>= 0.12.0),
-    RcppEigen (>= 0.3.3.3.0),
-    RcppParallel (>= 5.0.1)
 SystemRequirements: GNU make
 NeedsCompilation: yes
