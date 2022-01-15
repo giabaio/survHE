@@ -1,21 +1,16 @@
-Package: survHE
-Title: Survival Analysis in Health Economic Evaluation
-Version: 1.1.4
-Date: 2021-09-29
+Package: survHEhmc
+Title: Survival Analysis in Health Economic Evaluation using HMC/stan
+Version: 0.0.1
+Date: 2022-01-15
 Authors@R:c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
-    person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"))
-URL: https://github.com/giabaio/survHE, http://www.statistica.it/gianluca/
+URL: https://github.com/giabaio/survHE, https://gianluca.statistica.it/
 BugReports: https://github.com/giabaio/survHE/issues
-Description: Contains a suite of functions for survival analysis in health economics.
-    These can be used to run survival models under a frequentist (based on maximum likelihood)
-    or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian
-    Monte Carlo). The user can specify a set of parametric models using a common notation and
-    select the preferred mode of inference. The results can also be post-processed to produce
-    probabilistic sensitivity analysis and can be used to export the output to an Excel
-    file (e.g. for a Markov model, as often done by modellers and practitioners). <doi:10.18637/jss.v095.i14>.
+Description: A module to complement the backbone structure of the package survHE and 
+    expand its functionality to run survival models under a Bayesian approach (based 
+    on Hamiltonian Monte Carlo). <doi:10.18637/jss.v095.i14>.
 License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
@@ -23,16 +18,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Biarch: true
 Depends: 
-    methods,
+    survHE,
     R (>= 3.6.0),
-    flexsurv,
-    dplyr,
-    ggplot2
+    dplyr
 Imports: 
-    rms,
-    xlsx,
-    tools,
-    tibble,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.2),
     rstan (>= 2.18.1),
