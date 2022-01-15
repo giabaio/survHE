@@ -143,12 +143,30 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
   # INLA -----
   # If method = INLA, then fits model(s) using inla
   if (method=="inla") {
-    res <- format_output_fit.models(lapply(distr,function(x) runINLA(x,exArgs)),method,distr,formula,data)
+    if (!isTRUE(requireNamespace("survHEinla", quietly = TRUE))) {
+      stop("You need to install the packages 'survHEinla'. Please run in your R terminal:\n remotes::install.github('giabaio/survHE', ref='inla')")
+    }
+    # If survHEinla is installed but not loaded then attach the Namespace (so that all the relevant functions are available)
+    if (isTRUE(requireNamespace("survHEinla", quietly = TRUE))) {
+      if (!is.element("survHEinla", (.packages()))) {
+        attachNamespace("survHEinla")
+      }
+      res <- format_output_fit.models(lapply(distr,function(x) runINLA(x,exArgs)),method,distr,formula,data)
+    }
   }
-    
+  
   # HMC -----
   if (method == "hmc") {
-    res <- format_output_fit.models(lapply(distr,function(x) runHMC(x,exArgs)),method,distr,formula,data)
+    if (!isTRUE(requireNamespace("survHEhmc", quietly = TRUE))) {
+      stop("You need to install the packages 'survHEhmc'. Please run in your R terminal:\n remotes::install.github('giabaio/survHE', ref='hmc')")
+    }
+    # If survHEhmc is installed but not loaded then attach the Namespace (so that all the relevant functions are available)
+    if (isTRUE(requireNamespace("survHEhmc", quietly = TRUE))) {
+      if (!is.element("survHEhmc", (.packages()))) {
+        attachNamespace("survHEhmc")
+      }
+      res <- format_output_fit.models(lapply(distr,function(x) runHMC(x,exArgs)),method,distr,formula,data)
+    }
   }
 
   return(res)
