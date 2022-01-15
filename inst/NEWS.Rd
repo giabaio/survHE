@@ -1,5 +1,16 @@
 \name{survHE NEWS}
 \title{News for package survHE}
+\section{Changes in version 2.0 (2022-01-15)}{
+  \itemize{ 
+    \item This is a *major* change. In this version, the package is restructured
+    to only perform, in its basic version, MLE estimates using flexsurv as 
+    inferential engine. All the backbone functionalities are unchanged and the user
+    can also expand (to revert to the "full" survHE including Bayesian modelling),
+    by simply also adding the new packages survHEinla and/or survHEhmc. These 
+    now only contain the INLA and rstan calls and functionalities.
+  }
+}
+
 \section{Changes in version 1.1.4 (2021-09-29)}{
 \itemize{
 \item Contribution by Andrew Jones to update compatibility with the newer 
