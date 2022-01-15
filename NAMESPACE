@@ -1,5 +1,7 @@
 export(poly.weibull)
 export(runHMC)
+export(stanmodels)
+export(.onLoad)
 import(Rcpp)
 importFrom(rstan, sampling)
 useDynLib(survHEhmc, .registration = TRUE)
