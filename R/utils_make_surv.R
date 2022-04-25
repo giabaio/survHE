@@ -156,7 +156,9 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
   # Takes care of a couple of exceptions...
   # 1. If the model is intercept only then needs to remove the extra column added as trick in 'make_data_stan'
   if (ncol(X)==1) {
-    beta=beta[,1]
+    # Need to make this a matrix otherwise it breaks in the case of the rps when it tries to remove the 
+    # remaining column!
+    beta=beta[,1] %>% as.matrix()
   }
   # 2. RPS has a weird construction and needs to remove the intercept if it's present
   if(dist=="rps" & any(grepl("Intercept",colnames(X)))) {
