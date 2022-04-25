@@ -52,12 +52,12 @@ get_stats_hmc <- function(x,mod) {
   # Removes the node 'lp___'
   table=table[-grep("lp__",rownames(table)),]
   # If the model is intercept only, removes the unnecessary covariates created to suit 'stan' format
-  if("X_obs" %in% names(x$misc$data.stan[[1]])) {
-    if(any(apply(x$misc$data.stan[[1]]$X_obs,2,function(x) all(x==0)))) {
+  if("X_obs" %in% names(x$misc$data.stan[[mod]])) {
+    if(any(apply(x$misc$data.stan[[mod]]$X_obs,2,function(x) all(x==0)))) {
       table=table[-grep("beta\\[2\\]",rownames(table)),]
     }
   } else {
-    if(any(apply(x$misc$data.stan[[1]]$X,2,function(x) all(x==0)))) {
+    if(any(apply(x$misc$data.stan[[mod]]$X,2,function(x) all(x==0)))) {
       table=table[-grep("beta\\[2\\]",rownames(table)),]
     }
   }
