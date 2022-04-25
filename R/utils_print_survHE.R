@@ -58,7 +58,11 @@ get_stats_hmc <- function(x,mod) {
     }
   } else {
     if(any(apply(x$misc$data.stan[[mod]]$X,2,function(x) all(x==0)))) {
-      table=table[-grep("beta\\[2\\]",rownames(table)),]
+      if(x$misc$model_name[mod]=="rps") {
+        table=table[-grep("beta",rownames(table)),]
+      } else {
+        table=table[-grep("beta\\[2\\]",rownames(table)),]
+      }
     }
   }
   # Now calls the helper functions to make the results table
