@@ -9,5 +9,5 @@ Contains a suite of functions to systematise the workflow involving survival ana
 The most updated version can be installed using the following code.
 ```R
 install.packages("remotes")
-remotes:install_github("giabaio/survHE", ref="devel")
+remotes::install_github("giabaio/survHE", ref="devel")
 ```
