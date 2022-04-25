@@ -1,5 +1,19 @@
 \name{survHE NEWS}
 \title{News for package survHE}
+\section{Changes in version 2.0 (2022-04-25)}{
+  \itemize{ 
+    \item @Philip-Cooney found a little mistake in how the print method works
+    for hmc objects. The utility functions were accessing the data for the 
+    first model of the list of possible models (instead of the specific 'mod' 
+    one). Also, RPS would produce bizarre results if no covariates included.
+    \item @Philip-Cooney also found that 'make_sim_hmc' would break in the case
+    of a RPS model with no covariates, because the matrix of beta coefficients
+    would be turned into a vector, essentially, but the code would try to 
+    still subset a column. This has now been fixed so it's OK to make simulations
+    off an RPS with no intercept model and that propagates to plots too.
+  }
+}
+
 \section{Changes in version 2.0 (2022-01-15)}{
   \itemize{ 
     \item This is a *major* change. In this version, the package is restructured
