@@ -20,54 +20,62 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   if(is.character(mod)) stopifnot(mod %in% names(fit$models))
   
   m <- fit$models[[mod]]
-  dist <- tolower(ifelse(fit$method == "hmc", m@model_name, m$dlist$name))
+
+  get_dist <- function(fit)
+    tolower(ifelse(fit$method == "hmc", m@model_name, m$dlist$name))
+    
+  dist <- get_dist(fit)
   
-  stopifnot(dist %in% c("exp", "exponential", "weibull", "weibull.quiet", "weibullaf", "weibullph",
-                        "llogis", "loglogistic", "lognormal", "lnorm", "gompertz"))
+  if (!dist %in% c("exp", "exponential", "weibull", "weibull.quiet", "weibullaf", "weibullph",
+                   "llogis", "loglogistic", "lognormal", "lnorm", "gompertz"))
+    stop("Distribution not available.")
   
   model_strata <- rep(x = names(fit$misc$km$strata),
                       times = fit$misc$km$strata)
 
   times <- tapply(fit$misc$km$time,
-                  model_strata,
-                  I)
+                  model_strata, I)
   survs <- tapply(fit$misc$km$surv,
-                  model_strata,
-                  I)
-
+                  model_strata, I)
+  
+  params <- list()
   
   if (dist %in% c("exp", "exponential")) {
-    xlab <- "time"
-    ylab <- "log(S(t))"
-    legend_text <- "Exponential distributional assumption"
-    x <- times
-    y <- lapply(survs, log)
+    params <- list(
+      xlab <- "time",
+      ylab <- "log(S(t))",
+      legend_text <- "Exponential distributional assumption",
+      x <- times,
+      y <- lapply(survs, log))
   }
   
   if (dist %in% c("weibull", "weibull.quiet", "weibullaf", "weibullph")) {
-    xlab <- "log(time)"
-    ylab <- "log(-log(S(t))) = log cumulative hazard"
-    legend_text <- "Weibull distributional assumption"
-    x <- lapply(times, log)
-    y <- lapply(survs, function(x) log(-log(x)))
+    params <- list(
+      xlab <- "log(time)",
+      ylab <- "log(-log(S(t))) = log cumulative hazard",
+      legend_text <- "Weibull distributional assumption",
+      x <- lapply(times, log),
+      y <- lapply(survs, function(x) log(-log(x))))
   }
   
   
   if (dist %in% c("llogis", "loglogistic")) {
-    xlab <- "time"
-    ylab <- "log(S(t)/(1-S(t)))"
-    legend_text <- "log-Logistic distributional assumption"
-    x <- lapply(times, log)
-    y <- lapply(survs, function(x) log(x/(1 - x)))
+    params <- list(
+      xlab <- "time",
+      ylab <- "log(S(t)/(1-S(t)))",
+      legend_text <- "log-Logistic distributional assumption",
+      x <- lapply(times, log),
+      y <- lapply(survs, function(x) log(x/(1 - x))))
   }
   
   if (dist %in% c("lognormal", "lnorm")) {
-    xlab <- "time"
-    ylab <- "log(S(t))"
-    axes <- FALSE
-    legend_text <- "lognormal distributional assumption"
-    x <- times
-    y <- lapply(survs, function(x) qnorm(1 - x))
+    params <- list(
+      xlab <- "time",
+      ylab <- "log(S(t))",
+      axes <- FALSE,
+      legend_text <- "lognormal distributional assumption",
+      x <- times,
+      y <- lapply(survs, function(x) qnorm(1 - x)))
   }
   
   if (dist == "gompertz") {
@@ -92,9 +100,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
     #                                  times[[m]])))[V2 != 0, ]
   }
   
-  # actual plot
-  pts <- mapply(cbind, x, y)
-
+  # empty plot
   plot(x = 0,
        y = 0,
        type = "n",
@@ -106,7 +112,12 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   
   axis(1)
   axis(2)
-  
+
+  # actual plot
+  pts <- mapply(cbind, x, y)
+                  
+  do.call(plot, params)
+
   lapply(1:length(pts),
          function(x)
            points(pts[[x]],
