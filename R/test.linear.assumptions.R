@@ -17,10 +17,19 @@
 #' data(bc)
 #' 
 #' # exponential distribution
-#'
-#' mle <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#' fit_exp <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
 #'                   distr = "exp", method = "mle")
-#' test.linear.assumptions(mle)
+#' test.linear.assumptions(fit_exp)
+#'                  
+#' # weibull distribution
+#' fit_wei <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#'                   distr = "weibull", method = "mle")
+#' test.linear.assumptions(fit_wei)
+#'                  
+#' # loglogistic distribution
+#' fit_llog <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#'                   distr = "loglogistic", method = "mle")
+#' test.linear.assumptions(fit_llog)
 #'                  
 test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   
@@ -35,31 +44,32 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   if (!is.character(mod) && mod %in% names(fit$models))
     stop("")
   
-  m <- fit$models[[mod]]
+  dist <- get_distribution(fit, mod)
   
-  get_dist <- function(fit)
-    tolower(ifelse(fit$method == "hmc", m@model_name, m$dlist$name))
   
-  dist <- get_dist(fit)
-  
-  if (!dist %in% c("exp", "exponential", "weibull", "weibull.quiet", "weibullaf", "weibullph",
-                   "llogis", "loglogistic", "lognormal", "lnorm", "gompertz"))
+  if (!dist %in% unname(unlist(distn_names)))
     stop("Distribution not available.")
   
-  n_strata <- length(fit$misc$km$strata)
+  distn_names <- list(
+    "exp" = c("exp", "exponential"),
+    "weibull" = c("weibull", "weibull.quiet", "weibullaf", "weibullph"),
+    "loglogistic" = c("llogis", "loglogistic"),
+    "lognormal" = c("lognormal", "lnorm"),
+    "gompertz" = "gompertz")
   
-  model_strata <- rep(x = names(fit$misc$km$strata),
-                      times = fit$misc$km$strata)
+  fit_km <- fit$misc$km
   
-  times <- split(fit$misc$km$time,
-                 model_strata)
+  n_strata <- length(fit_km$strata)
   
-  survs <- split(fit$misc$km$surv,
-                 model_strata)
+  model_strata <- rep(x = names(fit_km$strata),
+                      times = fit_km$strata)
+  
+  times <- split(fit_km$time, model_strata)
+  survs <- split(fit_km$surv, model_strata)
   
   params <- list()
   
-  if (dist %in% c("exp", "exponential")) {
+  if (dist %in% distn_names[["exp"]]) {
     params <- list(
       FUN = "lines",
       xlab = "time",
@@ -72,28 +82,33 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
       type = "l")
   }
   
-  if (dist %in% c("weibull", "weibull.quiet", "weibullaf", "weibullph")) {
+  if (dist %in% distn_names[["weibull"]]) {
     params <- list(
       FUN = "lines",
       xlab = "log(time)",
       ylab = "log(-log(S(t))) = log cumulative hazard",
       main = "Weibull distributional assumption",
       x = lapply(times, log),
-      y = lapply(survs, function(x) log(-log(x))))
+      y = lapply(survs, function(x) log(-log(x))),
+      lty = 1:n_strata,
+      col = 1:n_strata,
+      type = "l")
   }
   
-  
-  if (dist %in% c("llogis", "loglogistic")) {
+  if (dist %in% distn_names[["loglogistic"]]) {
     params <- list(
       FUN = "lines",
       xlab = "time",
       ylab = "log(S(t)/(1-S(t)))",
       main = "log-Logistic distributional assumption",
       x = lapply(times, log),
-      y = lapply(survs, function(x) log(x/(1 - x))))
+      y = lapply(survs, function(x) log(x/(1 - x))),
+      lty = 1:n_strata,
+      col = 1:n_strata,
+      type = "l")
   }
   
-  if (dist %in% c("lognormal", "lnorm")) {
+  if (dist %in% distn_names[["lognormal"]]) {
     params <- list(
       FUN = "lines",
       xlab = "time",
@@ -104,8 +119,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
       y = lapply(survs, function(x) qnorm(1 - x)))
   }
   
-  if (dist == "gompertz") {
-    # placeholder
+  if (dist == distn_names[["gompertz"]]) {
     warning("Gompertz models are not yet implemented in test.linear.assumptions()")
     
     params <- list(
@@ -120,12 +134,6 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
       xlab = "log(time)",
       ylab = "h(t)",
       main = "Gompertz distributional assumption")
-    ### NEED TO CHECK --- WHAT IS V2???
-    # pts <- lapply(1:dim(split_mat)[1],
-    #               function(m)
-    #                 cbind(times[[m]],
-    #                       estimate.h(survs[[m]],
-    #                                  times[[m]])))[V2 != 0, ]
   }
   
   default_pars <- list(
@@ -149,7 +157,18 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   # plot lines
   do.call(mapply, modifyList(params, dots))
   
-  # if (isTRUE(label_plot)) {
-  #   legend("topright", legend_text, bty = "n")
-  # }
+  if (isTRUE(label_plot)) {
+    legend("topright", names(survs), col = params$col,
+           lty = params$lty, bty = "n")
+  }
+  
+  invisible(params)
 }
+
+
+#'
+get_distribution <- function(fit, mod) {
+  m <- fit$models[[mod]]
+  tolower(ifelse(fit$method == "hmc", m@model_name, m$dlist$name))
+}
+
