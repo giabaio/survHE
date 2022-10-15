@@ -1,23 +1,39 @@
-#' Tests the linear assumptions for the parametric model
+#' Linearly transformed survival plots
 #' 
 #' Tests the linear assumptions for the parametric model
 #' 
 #' 
 #' @param fit an object of class survHE
 #' @param mod index or name of a model in fit. Defaults to 1.
-#' @param label_plot if TRUE, labels assumptions. Defaults to FALSE.
-#' @param \dots further arguments, passed on to points()
-#' @return A diagnostic plot
+#' @param label_plot if TRUE, labels assumptions. Defaults to \code{FALSE}.
+#' @param \dots further arguments, passed on to plot.
+#' @return Diagnostic plot
 #' @author William Browne
 #' @keywords survival hplot
 #' @export test.linear.assumptions
 #' @noRd 
+#' @examples 
+#' 
+#' data(bc)
+#' 
+#' # exponential distribution
+#'
+#' mle <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#'                   distr = "exp", method = "mle")
+#' test.linear.assumptions(mle)
+#'                  
 test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
-  ## THIS IS INTERESTING, BUT NEEDS TO COMPLETE WITH THE OTHER DISTRIBUTIONS!!!
   
-  stopifnot(length(mod) == 1)
-  if(is.numeric(mod)) stopifnot(mod <= length(fit$models))
-  if(is.character(mod)) stopifnot(mod %in% names(fit$models))
+  dots <- list(...)
+  
+  if (length(mod) != 1)
+    stop("")
+  
+  if (!is.numeric(mod) && mod <= length(fit$models))
+    stop("")
+  
+  if (!is.character(mod) && mod %in% names(fit$models))
+    stop("")
   
   m <- fit$models[[mod]]
   
@@ -80,28 +96,30 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   if (dist %in% c("lognormal", "lnorm")) {
     params <- list(
       FUN = "lines",
-      xlab <- "time",
-      ylab <- "log(S(t))",
-      axes <- FALSE,
-      legend_text <- "lognormal distributional assumption",
-      x <- times,
-      y <- lapply(survs, function(x) qnorm(1 - x)))
+      xlab = "time",
+      ylab = "log(S(t))",
+      axes = FALSE,
+      main = "lognormal distributional assumption",
+      x = times,
+      y = lapply(survs, function(x) qnorm(1 - x)))
   }
   
   if (dist == "gompertz") {
     # placeholder
     warning("Gompertz models are not yet implemented in test.linear.assumptions()")
-    x <- 0
-    y <- 0
-    # estimate.h <- function(s, t) {
-    #   denom <- t - c(t[-1], max(t) + 1)
-    #   numerator <- log(s) - log(c(s[-1], 0))
-    #   return(-numerator/denom)
-    # }
     
-    xlab <- "log(time)"
-    ylab <- "h(t)"
-    legend_text <- "Gompertz distributional assumption"
+    params <- list(
+      x = 0,
+      y = 0,
+      # estimate.h <- function(s, t) {
+      #   denom <- t - c(t[-1], max(t) + 1)
+      #   numerator <- log(s) - log(c(s[-1], 0))
+      #   return(-numerator/denom)
+      # }
+      
+      xlab = "log(time)",
+      ylab = "h(t)",
+      main = "Gompertz distributional assumption")
     ### NEED TO CHECK --- WHAT IS V2???
     # pts <- lapply(1:dim(split_mat)[1],
     #               function(m)
@@ -110,24 +128,28 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
     #                                  times[[m]])))[V2 != 0, ]
   }
   
+  default_pars <- list(
+    x = NULL,
+    type = "n",
+    axes = FALSE,
+    xlab = params$xlab,
+    ylab = params$ylab,
+    main = params$main,
+    xlim = range(pretty(unlist(params$x))),
+    ylim = range(pretty(unlist(params$y))))
+  
+  setup_pars <- modifyList(
+    default_pars, dots[names(default_pars)])
+  
   # empty plot
-  plot(x = 0,
-       y = 0,
-       type = "n",
-       axes = FALSE,
-       xlab = xlab,
-       ylab = ylab,
-       xlim = range(pretty(unlist(x))),
-       ylim = range(pretty(unlist(y))))
+  do.call(plot, setup_pars)
   
-  axis(1)
-  axis(2)
+  axis(1); axis(2)
   
-  do.call(mapply, params)
+  # plot lines
+  do.call(mapply, modifyList(params, dots))
   
   # if (isTRUE(label_plot)) {
   #   legend("topright", legend_text, bty = "n")
   # }
-  
-  return(invisible())
 }
