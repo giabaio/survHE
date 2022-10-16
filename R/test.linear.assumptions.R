@@ -117,16 +117,16 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
     params <- list(
       FUN = "lines",
       xlab = "time",
-      ylab = "log(S(t))",
-      axes = FALSE,
+      ylab = expression(Phi^-1 ~ (1 - S(t))),
       main = "lognormal distributional assumption",
       x = times,
-      y = lapply(survs, function(x) qnorm(1 - x)))
+      y = lapply(survs, function(x) qnorm(1 - x)),
+      lty = 1:n_strata,
+      col = 1:n_strata,
+      type = "l")
   }
   
   if (dist %in% distn_names[["gompertz"]]) {
-    warning("Gompertz models are not yet implemented in test.linear.assumptions()")
-    
     params <- list(
       x = 0,
       y = 0,
@@ -135,7 +135,6 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
       #   numerator <- log(s) - log(c(s[-1], 0))
       #   return(-numerator/denom)
       # }
-      
       xlab = "log(time)",
       ylab = "h(t)",
       main = "Gompertz distributional assumption")
@@ -176,9 +175,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
       data.frame(time = unlist(params$x),
                  y = unlist(params$y)) |>
       tibble::rownames_to_column("Group") |> 
-      mutate(
-        # Group = gsub("group=", "", Group),
-          Group = gsub("\\d+", "", Group))
+      mutate(Group = gsub("\\d+", "", Group))
     
     p <- 
       ggplot(ggdata, aes(x = time, y = y, group = Group, col = Group)) +
