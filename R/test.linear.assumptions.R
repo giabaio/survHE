@@ -1,17 +1,17 @@
+
 #' Linearly transformed survival plots
 #' 
 #' Tests the linear assumptions for the parametric model
 #' 
-#' 
 #' @param fit an object of class survHE
 #' @param mod index or name of a model in fit. Defaults to 1.
-#' @param label_plot if TRUE, labels assumptions. Defaults to \code{FALSE}.
+#' @param label_plot if \code{TRUE}, labels assumptions. Defaults to \code{FALSE}.
+#' @param graph Type of plot: base or ggplot2.
 #' @param \dots further arguments, passed on to plot.
 #' @return Diagnostic plot
-#' @author William Browne
+#' @author William Browne, Nathan Green
 #' @keywords survival hplot
-#' @export test.linear.assumptions
-#' @noRd 
+#' @export
 #' @examples 
 #' 
 #' data(bc)
@@ -20,20 +20,26 @@
 #' fit_exp <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
 #'                   distr = "exp", method = "mle")
 #' test.linear.assumptions(fit_exp)
+#' test.linear.assumptions(fit_exp, graph = "ggplot2")
 #'                  
 #' # weibull distribution
 #' fit_wei <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
 #'                   distr = "weibull", method = "mle")
 #' test.linear.assumptions(fit_wei)
+#' test.linear.assumptions(fit_wei, graph = "ggplot2")
 #'                  
 #' # loglogistic distribution
 #' fit_llog <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
 #'                   distr = "loglogistic", method = "mle")
 #' test.linear.assumptions(fit_llog)
+#' test.linear.assumptions(fit_llog, graph = "ggplot2")
 #'                  
-test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
+test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
+                                    graph = "base", ...) {
   
   dots <- list(...)
+  
+  graph <- match.arg(graph, c("base", "ggplot2"))
   
   if (length(mod) != 1)
     stop("")
@@ -46,16 +52,15 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   
   dist <- get_distribution(fit, mod)
   
-  
-  if (!dist %in% unname(unlist(distn_names)))
-    stop("Distribution not available.")
-  
   distn_names <- list(
     "exp" = c("exp", "exponential"),
     "weibull" = c("weibull", "weibull.quiet", "weibullaf", "weibullph"),
     "loglogistic" = c("llogis", "loglogistic"),
     "lognormal" = c("lognormal", "lnorm"),
     "gompertz" = "gompertz")
+  
+  if (!dist %in% unname(unlist(distn_names)))
+    stop("Distribution not available.")
   
   fit_km <- fit$misc$km
   
@@ -119,7 +124,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
       y = lapply(survs, function(x) qnorm(1 - x)))
   }
   
-  if (dist == distn_names[["gompertz"]]) {
+  if (dist %in% distn_names[["gompertz"]]) {
     warning("Gompertz models are not yet implemented in test.linear.assumptions()")
     
     params <- list(
@@ -149,17 +154,37 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE, ...) {
   setup_pars <- modifyList(
     default_pars, dots[names(default_pars)])
   
-  # empty plot
-  do.call(plot, setup_pars)
+  if (graph == "base") {
+    
+    # empty plot
+    do.call(plot, setup_pars)
+    
+    axis(1); axis(2)
+    
+    # plot lines
+    do.call(mapply, modifyList(params, dots))
+    
+    if (isTRUE(label_plot)) {
+      legend("topright", names(survs), col = params$col,
+             lty = params$lty, bty = "n")
+    }
+  }
   
-  axis(1); axis(2)
-  
-  # plot lines
-  do.call(mapply, modifyList(params, dots))
-  
-  if (isTRUE(label_plot)) {
-    legend("topright", names(survs), col = params$col,
-           lty = params$lty, bty = "n")
+  if (graph == "ggplot2") {
+    
+    ggdata <- 
+      data.frame(time = unlist(params$x),
+                 y = unlist(params$y)) |>
+      tibble::rownames_to_column("Group") |> 
+      mutate(
+        # Group = gsub("group=", "", Group),
+          Group = gsub("\\d+", "", Group))
+    
+    p <- 
+      ggplot(ggdata, aes(x = time, y = y, group = Group, col = Group)) +
+      geom_line()
+    
+    print(p)
   }
   
   invisible(params)
