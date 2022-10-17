@@ -1,54 +1,87 @@
 
-#' Linearly transformed survival plots
+#' Plot to assess suitability of parametric model
 #' 
-#' Tests the linear assumptions for the parametric model
+#' Perform an exploratory investigation for linearity of
+#' transformed survival models.
 #' 
-#' @param fit an object of class survHE
-#' @param mod index or name of a model in fit. Defaults to 1.
-#' @param label_plot if \code{TRUE}, labels assumptions. Defaults to \code{FALSE}.
+#' For the Weibull, twice taking logs of the survivor function
+#' 
+#' \deqn{log(-log S(t)) = log \lambda + \gamma log t}
+#' 
+#' A plot of \eqn{log(-log S(t))} against \eqn{log(t)} would give an approximately
+#' straight line if the Weibull assumption is reasonable.
+#' The plot could also be used to give a rough estimate of the parameters.
+#' 
+#' Similarly, for the log-logistic distribution
+#' 
+#' \deqn{logS(t)/(1 - S(t)) = \theta - \kappa log t}
+#' 
+#' For the log-normal distribution
+#' 
+#' \deqn{\Phi^{-1} (1 - S(t)) = (log t - \mu) / \sigma}
+#' 
+#' We can also check the assumption made with using the Cox regression model
+#' of proportional hazards by inspecting the log-cumulative hazard plot.
+#' 
+#' \deqn{log H_i(t) = \beta x_i + log H_0(t)}
+#' 
+#' The transformed curves for different values of the explanatory variables
+#' will be parallel if PH holds.
+#' 
+#' @param fit An object of class survHE.
+#' @param mod Index or name of a model in fit. Defaults to 1.
+#' @param add_legend If \code{TRUE}, labels assumptions. Defaults to \code{FALSE}.
 #' @param graph Type of plot: base or ggplot2.
-#' @param \dots further arguments, passed on to plot.
+#' @param \dots Further arguments, passed on to plot.
 #' @return Diagnostic plot
 #' @author William Browne, Nathan Green
+#' @references Collett (2015) Modelling Survival Data in Medical Research, CRC Press
 #' @keywords survival hplot
 #' @export
 #' @examples 
 #' 
 #' data(bc)
+#' form <- formula("Surv(recyrs, censrec) ~ group")
 #' 
 #' # exponential distribution
-#' fit_exp <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#' fit_exp <- fit.models(form, data = bc,
 #'                   distr = "exp", method = "mle")
-#' test.linear.assumptions(fit_exp)
-#' test.linear.assumptions(fit_exp, graph = "ggplot2")
+#' plot_transformed_km(fit_exp)
+#' plot_transformed_km(fit_exp, graph = "ggplot2")
 #'                  
 #' # weibull distribution
-#' fit_wei <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#' fit_wei <- fit.models(form, data = bc,
 #'                   distr = "weibull", method = "mle")
-#' test.linear.assumptions(fit_wei)
-#' test.linear.assumptions(fit_wei, graph = "ggplot2")
+#' plot_transformed_km(fit_wei)
+#' plot_transformed_km(fit_wei, graph = "ggplot2")
 #'                  
 #' # loglogistic distribution
-#' fit_llog <- fit.models(formula = Surv(recyrs, censrec) ~ group, data = bc,
+#' fit_llog <- fit.models(form, data = bc,
 #'                   distr = "loglogistic", method = "mle")
-#' test.linear.assumptions(fit_llog)
-#' test.linear.assumptions(fit_llog, graph = "ggplot2")
+#' plot_transformed_km(fit_llog)
+#' plot_transformed_km(fit_llog, graph = "ggplot2")
 #'                  
-test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
-                                    graph = "base", ...) {
+#' # lognormal distribution
+#' fit_lnorm <- fit.models(form, data = bc,
+#'                   distr = "lognormal", method = "mle")
+#' plot_transformed_km(fit_lnorm)
+#' plot_transformed_km(fit_lnorm, graph = "ggplot2")
+#'                  
+plot_transformed_km <- function(fit, mod = 1, add_legend = FALSE,
+                                graph = "base", ...) {
   
   dots <- list(...)
   
   graph <- match.arg(graph, c("base", "ggplot2"))
   
   if (length(mod) != 1)
-    stop("")
+    stop("Please provide at most one model index.")
   
-  if (!is.numeric(mod) && mod <= length(fit$models))
-    stop("")
+  if (is.numeric(mod) && !mod <= length(fit$models))
+    stop("More model names provided than available in list of model fits provided.")
   
-  if (!is.character(mod) && mod %in% names(fit$models))
-    stop("")
+  if (is.character(mod) && !mod %in% names(fit$models))
+    stop("Model name not available in list of model fits provided.")
   
   dist <- get_distribution(fit, mod)
   
@@ -91,7 +124,7 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
     params <- list(
       FUN = "lines",
       xlab = "log(time)",
-      ylab = "log(-log(S(t))) = log cumulative hazard",
+      ylab = "log(-log(S(t))) i.e. log cumulative hazard",
       main = "Weibull distributional assumption",
       x = lapply(times, log),
       y = lapply(survs, function(x) log(-log(x))),
@@ -116,10 +149,10 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
   if (dist %in% distn_names[["lognormal"]]) {
     params <- list(
       FUN = "lines",
-      xlab = "time",
+      xlab = "log(time)",
       ylab = expression(Phi^-1 ~ (1 - S(t))),
-      main = "lognormal distributional assumption",
-      x = times,
+      main = "Log-normal distributional assumption",
+      x = lapply(times, log),
       y = lapply(survs, function(x) qnorm(1 - x)),
       lty = 1:n_strata,
       col = 1:n_strata,
@@ -127,17 +160,23 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
   }
   
   if (dist %in% distn_names[["gompertz"]]) {
-    params <- list(
-      x = 0,
-      y = 0,
-      # estimate.h <- function(s, t) {
-      #   denom <- t - c(t[-1], max(t) + 1)
-      #   numerator <- log(s) - log(c(s[-1], 0))
-      #   return(-numerator/denom)
-      # }
-      xlab = "log(time)",
-      ylab = "h(t)",
-      main = "Gompertz distributional assumption")
+    stop("Gompertz not yet implemented.")
+         
+    #   estimate.h <- function(s, t) {
+    #     denom <- t - c(t[-1], max(t) + 1)
+    #     numerator <- log(s) - log(c(s[-1], 0))
+    #     -numerator/denom
+    #     }
+    
+    # params <- list(
+    #   x = lapply(times, log),
+    #   y = estimate.h(survs, times),
+    #   xlab = "log(time)",
+    #   ylab = "h(t)",
+    #   main = "Gompertz distributional assumption",
+    # lty = 1:n_strata,
+    # col = 1:n_strata,
+    # type = "l")
   }
   
   default_pars <- list(
@@ -163,13 +202,17 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
     # plot lines
     do.call(mapply, modifyList(params, dots))
     
-    if (isTRUE(label_plot)) {
+    if (isTRUE(add_legend)) {
       legend("topright", names(survs), col = params$col,
              lty = params$lty, bty = "n")
     }
   }
   
   if (graph == "ggplot2") {
+    
+    if (!add_legend) {
+      pos.legend <- "none"
+    }
     
     ggdata <- 
       data.frame(time = unlist(params$x),
@@ -178,8 +221,15 @@ test.linear.assumptions <- function(fit, mod = 1, label_plot = FALSE,
       mutate(Group = gsub("\\d+", "", Group))
     
     p <- 
-      ggplot(ggdata, aes(x = time, y = y, group = Group, col = Group)) +
-      geom_line()
+      ggplot(ggdata, aes(x = .data$time, y = .data$y,
+                         group = .data$Group, col = .data$Group)) +
+      geom_line() +
+      do.call(labs,
+              list(title = setup_pars$main,
+                   x = setup_pars$xlab,
+                   y = setup_pars$ylab)) +
+      theme_bw() +
+      theme(legend.position = pos.legend)
     
     print(p)
   }
