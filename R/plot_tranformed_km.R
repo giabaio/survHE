@@ -66,7 +66,15 @@
 #'                   distr = "lognormal", method = "mle")
 #' plot_transformed_km(fit_lnorm)
 #' plot_transformed_km(fit_lnorm, graph = "ggplot2")
-#'                  
+#' 
+#' ## for only one group
+#' form <- formula("Surv(recyrs, censrec) ~ 1")
+#' 
+#' fit_exp <- fit.models(form, data = bc,
+#'                   distr = "exp", method = "mle")
+#' plot_transformed_km(fit_exp)
+#' plot_transformed_km(fit_exp, graph = "ggplot2")
+#' 
 plot_transformed_km <- function(fit, mod = 1, add_legend = FALSE,
                                 graph = "base", ...) {
   
@@ -99,6 +107,10 @@ plot_transformed_km <- function(fit, mod = 1, add_legend = FALSE,
   
   n_strata <- length(fit_km$strata)
   
+  if (n_strata == 0 || n_strata == 1) {
+    fit_km$strata <- c("group" = length(fit_km$time))
+  }
+  
   model_strata <- rep(x = names(fit_km$strata),
                       times = fit_km$strata)
   
@@ -111,10 +123,10 @@ plot_transformed_km <- function(fit, mod = 1, add_legend = FALSE,
     params <- list(
       FUN = "lines",
       xlab = "time",
-      ylab = "log(S(t))",
+      ylab = "-log(S(t))",
       main = "Exponential distributional assumption",
       x = times,
-      y = lapply(survs, log),
+      y = lapply(survs, function(x) -log(x)),
       lty = 1:n_strata,
       col = 1:n_strata,
       type = "l")
@@ -212,7 +224,8 @@ plot_transformed_km <- function(fit, mod = 1, add_legend = FALSE,
     
     if (!add_legend) {
       pos.legend <- "none"
-    }
+    } else {
+      pos.legend <- "right"}
     
     ggdata <- 
       data.frame(time = unlist(params$x),
