@@ -2,7 +2,7 @@
 % Please edit documentation in R/make.transition.probs.R
 \name{markov_trace}
 \alias{markov_trace}
-\title{markov_trace}
+\title{Markov trace}
 \usage{
 markov_trace(mm, interventions = NULL, ...)
 }
@@ -14,7 +14,7 @@ markov_trace(mm, interventions = NULL, ...)
 \item{...}{additional arguments.}
 }
 \value{
-
+Plot
 }
 \description{
 Plots the Markov Trace from an object generated using \code{three_state_mm}

@@ -7,10 +7,14 @@
 #' of the results. 
 #' 
 #' @param psa the result of the call to the function \code{make.surv}
-#' @param ...  Optional graphical parameters, such as: \code{xlab} = label for
-#' the x-axis \code{ylab} = label for the y-axis \code{col} = (vector) of
-#' colors for the lines to be plotted \code{alpha} = the level of transparency
-#' for the curves (default = 0.2)
+#' @param ...  Optional graphical parameters, such as:
+#' \itemize{
+#'   \item \code{xlab} = label for the x-axis
+#'   \item \code{ylab} = label for the y-axis
+#'   \item \code{col} = (vector) of colours for the lines to be plotted
+#'   \item \code{alpha} = the level of transparency for the curves (default = 0.2)
+#' }
+#' 
 #' @author Gianluca Baio
 #' @template refs
 #' @seealso \code{\link{make.surv}}, \code{\link{write.surv}}
@@ -61,7 +65,7 @@ psa.plot <- function(psa,...) {
   if(exists("alpha",where=exArgs)){alpha=exArgs$alpha} else {alpha=0.2}
   if(exists("name_labs",where=exArgs)){name_labs=exArgs$name_labs} else {name_labs="Profile"}
   
-  psa.plot <- ggplot(data=toplot,aes(x=time, y=S, colour=strata))+
+  psa.plot <- ggplot(data=toplot,aes(x=time, y=S, colour=strata)) +
     geom_line(size=.9) +
     theme_bw() + 
     theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),

@@ -105,12 +105,11 @@ plot_ggplot_survHE <- function(exArgs) {
   obj <- mod <- NULL
   
   all_models <- tibble(
-    obj=unlist(
-      lapply(1:length(survHE_objs),function(x) {
-        rep(names(survHE_objs)[x],length(survHE_objs[[x]]$models))
-      })
-    ),
-    mod=unlist(lapply(survHE_objs,function(x) 1:length(x$models)))
+    obj = unlist(
+      lapply(1:length(survHE_objs), function(x) {
+        rep(names(survHE_objs)[x], length(survHE_objs[[x]]$models))
+      })),
+    mod = unlist(lapply(survHE_objs, function(x) 1:length(x$models)))
   ) %>%
     slice(mods) %>%
     arrange(obj)
@@ -119,14 +118,14 @@ plot_ggplot_survHE <- function(exArgs) {
   sel_mods <- unique(match(all_models$obj,names(survHE_objs)))
   
   # Makes the dataset to plot, including *only* the objects and models selected
-  toplot <- lapply(sel_mods,function(i){
+  toplot <- lapply(sel_mods, function(i) {
     make_data_surv(survHE_objs[[i]],
                    mods=all_models %>% filter(obj==names(survHE_objs)[i]) %>% pull(mod), 
                    nsim=nsim,
                    t=t,
                    newdata=newdata,
-                   add.km=add.km 
-    )[[1]] |> mutate(object_name=as.factor(names(survHE_objs)[i]))
+                   add.km=add.km )[[1]] |>
+      mutate(object_name=as.factor(names(survHE_objs)[i]))
   }) |> 
     bind_rows() |> 
     group_by(object_name,model_name) |> 
@@ -136,15 +135,15 @@ plot_ggplot_survHE <- function(exArgs) {
   ##############################################################################################
   
   # If so, then builds the relevant data
-  if(add.km==TRUE) {
-    datakm = lapply(1:length(survHE_objs), function(i) {
+  if (add.km==TRUE) {
+    datakm <- lapply(1:length(survHE_objs), function(i) {
       make_data_surv(survHE_objs[[i]],
                      mods=1, #1:length(survHE_objs[[i]]$models), 
                      nsim=1,
                      t=t,
                      newdata=newdata,
-                     add.km=add.km
-      )[[2]] |> mutate(object_name=as.factor(names(survHE_objs)[i]))
+                     add.km=add.km)[[2]] |>
+        mutate(object_name=as.factor(names(survHE_objs)[i]))
     }) |> 
       bind_rows() |> 
       group_by(object_name,model_name) |> 
@@ -159,38 +158,43 @@ plot_ggplot_survHE <- function(exArgs) {
   
   # Optional arguments
   if(exists("lab.profile",exArgs)){
-    surv.curv=surv.curv+
+    surv.curv <- surv.curv+
       scale_linetype_manual(labels=exArgs$lab.profile,values=1:length(exArgs$lab.profile))
   }
   # if both colours & labels are specified for the models chosen
   if(exists("colour",exArgs) & exists("lab.model",exArgs)) {
-    surv.curv=surv.curv+scale_color_manual(labels=exArgs$lab.model,values=exArgs$colour)
+    surv.curv <- surv.curv+scale_color_manual(labels=exArgs$lab.model,values=exArgs$colour)
   }
   # if only the colours
   if(exists("colour",exArgs) & !exists("lab.model",exArgs)) {
-    surv.curv=surv.curv+scale_color_manual(values=exArgs$colour)
+    surv.curv <- surv.curv+scale_color_manual(values=exArgs$colour)
   }
   # if only the labels
   if(exists("lab.model",exArgs) & !exists("colour",exArgs)) {
-    surv.curv=surv.curv+scale_color_manual(values=1:length(exArgs$lab.model),labels=exArgs$lab.model)
+    surv.curv <- surv.curv +
+      scale_color_manual(values=1:length(exArgs$lab.model),labels=exArgs$lab.model)
   }
   if(exists("xlab",where=exArgs)){
-    surv.curv=surv.curv+labs(x=exArgs$xlab)
+    surv.curv <- surv.curv+labs(x=exArgs$xlab)
   }
   if(exists("ylab",where=exArgs)){
-    surv.curv=surv.curv+labs(y=exArgs$ylab)
+    surv.curv <- surv.curv+labs(y=exArgs$ylab)
   }
   if(exists("main",where=exArgs)) {
-    surv.curv=surv.curv+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
+    surv.curv <- surv.curv+labs(title=exArgs$main) +
+      theme(plot.title=element_text(size=18,face="bold"))
   }
   ymax <- 1
   
   if(annotate==TRUE){
-    cutoff=max(survHE_objs[[1]]$misc$km$time)
-    surv.curv=surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
+    cutoff <- max(survHE_objs[[1]]$misc$km$time)
+    
+    surv.curv <- surv.curv + #geom_vline(xintercept=cutoff,linetype="dashed",size=1.5) +
       geom_segment(aes(x=cutoff,y=-Inf,xend=cutoff,yend=-.01),size=0.9) + 
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
-      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*.85,yend=-.01),
+                   arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
+      geom_segment(aes(x=cutoff,y=-.01,xend=cutoff*1.15,yend=-.01),
+                   arrow=arrow(length=unit(.25,"cm"),type="closed"),size=1.1)+
       annotate(geom="text",x=cutoff,y=-Inf,hjust=1.1,vjust=-1,label="Observed data",size=5) +
       annotate(geom="text",x=cutoff,y=-Inf,hjust=-0.1,vjust=-1,label="Extrapolation",size=5) 
     # Constrains the y-axis to [0-1] only if the required plot is the survival curve
@@ -238,59 +242,78 @@ plot_ggplot_survHE <- function(exArgs) {
 #' @param nsim The number of simulations to generate
 #' @param t The vector of times
 #' @param newdata The list of "new" covariares proffiles
-#' @param add.km Should the KM estimate be plotted too?
+#' @param add.km Should the KM estimate be plotted too? Logical
 #' @return \item{surv.curv}{The \code{ggplot2} object with the graph}
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @keywords Parametric survival models
 #' @noRd 
-make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,add.km=FALSE) {
-  if(is.null(t)) {
+make_data_surv <- function(x, mods=1:length(x$models), nsim=1,
+                           t=NULL, newdata=NULL, add.km=FALSE) {
+  if (is.null(t)) {
     t <- sort(unique(x$misc$km$time))
   }
   #s=lapply(1:length(x$models),function(i) {
-  s=lapply(mods,function(i) {
+  s <- lapply(mods,function(i) {
     make.surv(x,mod=i,t=t,nsim=nsim,newdata=newdata)
   })
-  strata=lapply(1:length(s),function(i) {
-    lapply(1:nrow(s[[i]]$des.mat),function(x){
-      s[[i]]$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
-        round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
-    }) %>% bind_rows(.) %>% select(strata)
+  
+  strata <- lapply(1:length(s), function(i) {
+    lapply(1:nrow(s[[i]]$des.mat), function(x) {
+      s[[i]]$des.mat %>%
+        as_tibble() %>%
+        select(-matches("(Intercept)",everything())) %>%
+        slice(x) %>% 
+        round(digits=2) %>%
+        mutate(strata=paste0(names(.),"=",.,collapse=","))
+    }) %>% bind_rows(.) %>%
+      select(strata)
   })
   
   # toplot=lapply(1:length(mods),function(i) {
   #   lapply(1:length(s[[mods[i]]]$S),function(j) {
-  #     s[[mods[i]]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[mods[i]]][j,]),model_name=as.factor(names(x$models)[mods[i]]))
+  #     s[[mods[i]]]$S[[j]] %>% bind_cols(strata=as.factor(strata[[mods[i]]][j,]),
+  #      model_name=as.factor(names(x$models)[mods[i]]))
   #   })
   # }) %>% bind_rows(.)
   # out=list(toplot)
-  toplot=lapply(1:length(mods),function(i) {
-    lapply(1:length(s[[i]]$S),function(j) {
-      s[[i]]$S[[j]] %>% bind_cols(strata=as.factor(as.character(strata[[i]][j,])),model_name=as.factor(names(x$models)[mods[i]]))
+  toplot <- lapply(1:length(mods), function(i) {
+    lapply(1:length(s[[i]]$S), function(j) {
+      s[[i]]$S[[j]] %>%
+        bind_cols(strata = as.factor(as.character(strata[[i]][j,])),
+                  model_name = as.factor(names(x$models)[mods[i]]))
     })
   }) %>% bind_rows(.)
-  out=list(toplot)
+  
+  out <- list(toplot)
   
   # Add the data for the KM curve?
-  if(add.km==TRUE) {
+  if (add.km==TRUE) {
     # If the number of strata in the KM computed in 'fit.models' is not the same as the 
     # number of rows in the design matrix from 'make.surv', then re-do a KM with no covariates
     if(length(x$misc$km$strata)!=nrow(s[[1]]$des.mat)){
-      x$misc$km=rms::npsurv(update(x$misc$formula,~1),data=x$misc$data)
-      x$misc$km$call$formula=as.formula(deparse(update(x$misc$formula,~1)))
+      
+      x$misc$km <- rms::npsurv(update(x$misc$formula,~1), data=x$misc$data)
+      
+      x$misc$km$call$formula <- as.formula(deparse(update(x$misc$formula,~1)))
     }
     # Now uses info in the KM table in the survHE object to create a dataset to plot
-    datakm=bind_cols(t=x$misc$km$time,n.risk=x$misc$km$n.risk,n.event=x$misc$km$n.event,
-                     n.censor=x$misc$km$n.censor,S=x$misc$km$surv,lower=x$misc$km$lower,
-                     upper=x$misc$km$upper) %>% mutate(model_name="Kaplan Meier")
+    datakm <- bind_cols(time = x$misc$km$time,
+                        n.risk = x$misc$km$n.risk,
+                        n.event = x$misc$km$n.event,
+                        n.censor = x$misc$km$n.censor,
+                        S = x$misc$km$surv,
+                        lower = x$misc$km$lower,
+                        upper = x$misc$km$upper) %>%
+      mutate(model_name = "Kaplan Meier")
+    
     # If 'strata' is not in the KM object (will happen if there's only 1)
-    if(is.null(x$misc$km$strata)) {
+    if (is.null(x$misc$km$strata)) {
       datakm$strata=as.factor("all")
     } else {
-      datakm$strata=as.factor(rep(1:length(x$misc$km$strata),x$misc$km$strata))
+      datakm$strata <- as.factor(rep(1:length(x$misc$km$strata), x$misc$km$strata))
     }
-    out$datakm=datakm
+    out$datakm <- datakm
   }
   # Returns the output as a list with the dataset(s) to plot
   return(out)
@@ -303,50 +326,74 @@ make_data_surv <- function(x,mods=1:length(x$models),nsim=1,t=NULL,newdata=NULL,
 #' @param dataKM The dataset with the (optional) data for the KM estimate
 #' @param mods The models to be plotted (a vector of numbers)
 #' @return \item{out}{A list with the dataset to be plotted including the survival curves}
-#' @note Something will go here
 #' @author Gianluca Baio
 #' @keywords Parametric survival models
 #' @noRd 
-make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
+make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
   # Does the model have covariates?
   if (all(toplot$strata=="=")) {
     # In this case not (intercept only), so remove the linetype as not needed
-    linetype=NULL
+    linetype <- NULL
   } else {
     # If it does have covariates then use 'strata' to plot a curve per profile
-    linetype=toplot$strata
+    linetype <- toplot$strata
   }
   
-  ylab="Survival"
-  # Change the scale from the survival to the (approximated) hazard function (computed as the numerical derivative of the cumulative hazard)
-  if(what=="hazard") {
-    toplot=toplot %>% group_by(model_name,strata) %>% mutate(S = (-log(S)-lag(-log(S))) / (t-lag(t)) ) %>% ungroup()
-    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower and upper end to plot the ribbon
-    if("low" %in% names(toplot)) {
-      toplot=toplot %>% group_by(model_name,strata) %>% mutate(low=lag(-log(low))/lag(t), upp=lag(-log(upp))/lag(t)) %>% ungroup()
+  ylab <- "Survival"
+  
+  # Change the scale from the survival to the (approximated) hazard function
+  # (computed as the numerical derivative of the cumulative hazard)
+  if (what=="hazard") {
+    toplot <- toplot %>%
+      group_by(model_name,strata) %>%
+      mutate(S = (-log(S)-lag(-log(S))) / (t-lag(t)) ) %>%
+      ungroup()
+    
+    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower
+    # and upper end to plot the ribbon
+    if ("low" %in% names(toplot)) {
+      toplot <- toplot %>%
+        group_by(model_name,strata) %>%
+        mutate(low = lag(-log(low))/lag(t),
+               upp = lag(-log(upp))/lag(t)) %>%
+        ungroup()
     }
-    ylab="Hazard"
+    ylab <- "Hazard"
   }
   # Change the scale from the survival to the cumulative hazard
-  if(what=="cumhazard") {
-    toplot=toplot %>% group_by(model_name,strata) %>% mutate(S=-log(S)) %>% ungroup()
-    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower and upper end to plot the ribbon
-    if("low" %in% names(toplot)) {
-      toplot=toplot %>% group_by(model_name,strata) %>% mutate(low=-log(low), upp=-log(upp)) %>% ungroup()
+  if (what=="cumhazard") {
+    toplot <- toplot %>%
+      group_by(model_name,strata) %>%
+      mutate(S = -log(S)) %>%
+      ungroup()
+    
+    # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower
+    # and upper end to plot the ribbon
+    if ("low" %in% names(toplot)) {
+      toplot <- toplot %>%
+        group_by(model_name,strata) %>%
+        mutate(low = -log(low),
+               upp = -log(upp)) %>%
+        ungroup()
     }
-    ylab="Cumulative hazard"
+    ylab <- "Cumulative hazard"
   }
   
   surv.curv <- ggplot() 
   # Am I plotting a single 'survHE' object?
-  if(length(levels(toplot$object_name))==1) {
+  if (length(levels(toplot$object_name))==1) {
     surv.curv <- surv.curv+
-      geom_line(data=toplot,aes(x=time, y=S, group=model_name:strata,col=model_name,linetype=linetype),size=.9) 
+      geom_line(data = toplot,
+                aes(x=time, y=S, group=model_name:strata,col=model_name, linetype=linetype),
+                size = 0.9) 
   } else {
-    surv.curv=surv.curv+
-      geom_line(data=toplot,aes(x=time, y=S, group=model_name:strata:object_name,col=object_name:model_name,linetype=linetype),size=.9)   
+    surv.curv <- surv.curv +
+      geom_line(data = toplot,
+                aes(x = time, y=S, group=model_name:strata:object_name,
+                    col=object_name:model_name, linetype=linetype),
+                size = 0.9)   
   }
-  surv.curv=surv.curv +
+  surv.curv <- surv.curv +
     theme_bw() + 
     theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
           axis.text.y = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
@@ -372,13 +419,20 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
            linetype=guide_legend(order=2))
   # If uses more than 1 simulation from distribution of survival curves, then add ribbon
   if(any(grepl("low",names(toplot)))) {
-    surv.curv=surv.curv+geom_ribbon(data=toplot,aes(x=time, y=S, ymin=low,ymax=upp,group=model_name:strata),alpha=.2)
+    surv.curv <- surv.curv +
+      geom_ribbon(data = toplot,
+                  aes(x=time, y=S, ymin=low, ymax=upp, group=model_name:strata),
+                  alpha = 0.2)
   }
   
   # Add KM plot? 
   if(!is.null(datakm)) {
-    surv.curv=surv.curv+geom_step(data=datakm, aes(x = t, y = S, group=as.factor(strata)),color="darkgrey") + 
-      geom_ribbon(data=datakm,aes(x=t, y=S, ymin=lower,ymax=upper,group=as.factor(strata)),alpha=.2) 
+    surv.curv <- surv.curv +
+      geom_step(data = datakm, aes(x = time, y = S, group=as.factor(strata)),
+                color="darkgrey") + 
+      geom_ribbon(data = datakm,
+                  aes(x = time, y = S, ymin=lower, ymax=upper, group=as.factor(strata)),
+                  alpha = 0.2) 
   }
   surv.curv
 }
@@ -459,7 +513,7 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
 #'     distr="exp",method="mle")
 #' plot(mle)
 #' @noRd 
-plot_base_survHE <- function(x,exArgs) {
+plot_base_survHE <- function(x, exArgs) {
   ## Plots the KM + the results of the model fitted by fit.models()
   ## Uses different commands, depending on which method has been used to fit the models
   #
@@ -511,7 +565,7 @@ plot_base_survHE <- function(x,exArgs) {
     } 
   }
   if (length(w)>1) {
-    mods <- unlist(lapply(w,function(i) exArgs[[i]]$models),recursive = F)
+    mods <- unlist(lapply(w,function(i) exArgs[[i]]$models),recursive = FALSE)
     totmodels <- unlist(lapply(w,function(i) length(exArgs[[i]]$models)))
     method <- unlist(lapply(w,function(i) rep(exArgs[[i]]$method,totmodels[i])))
     aic <- unlist(lapply(w,function(i) exArgs[[i]]$model.fitting$aic))
@@ -604,7 +658,7 @@ plot_base_survHE <- function(x,exArgs) {
   } else {
     labs <- labs[-1]
     if(class(colors)!="character") {colors <- colors-1}
-    plot(0,0,col="white",xlab=xl,ylab=yl,axes=F,xlim=xlm,ylim=c(0,1),main=main)
+    plot(0,0,col="white",xlab=xl,ylab=yl,axes=FALSE,xlim=xlm,ylim=c(0,1),main=main)
     if(axes==TRUE) {
       axis(1)
       axis(2)}
