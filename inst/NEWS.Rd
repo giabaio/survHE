@@ -1,5 +1,12 @@
 \name{survHE NEWS}
 \title{News for package survHE}
+\section{Changes in version 2.0.1 (2022-11-10)}{
+  \itemize{
+  \item Some refactoring (mainly thanks to @n8thangreen) with tidying up of the 
+  underlying code. One major change is that now 'make.surv' outputs an object
+  named 'time' instead of 't', which was ambigious
+  }
+}
 \section{Changes in version 2.0 (2022-04-25)}{
   \itemize{ 
     \item @Philip-Cooney found a little mistake in how the print method works
