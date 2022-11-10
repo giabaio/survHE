@@ -377,8 +377,8 @@ make_surv_curve_plot <- function(toplot,datakm=NULL,mods,what="survival") {
   
   # Add KM plot? 
   if(!is.null(datakm)) {
-    surv.curv=surv.curv+geom_step(data=datakm, aes(x = time, y = S, group=as.factor(strata)),color="darkgrey") + 
-      geom_ribbon(data=datakm,aes(x=time, y=S, ymin=lower,ymax=upper,group=as.factor(strata)),alpha=.2) 
+    surv.curv=surv.curv+geom_step(data=datakm, aes(x = t, y = S, group=as.factor(strata)),color="darkgrey") + 
+      geom_ribbon(data=datakm,aes(x=t, y=S, ymin=lower,ymax=upper,group=as.factor(strata)),alpha=.2) 
   }
   surv.curv
 }
