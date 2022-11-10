@@ -2,7 +2,7 @@ Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
 Version: 2.0
 Date: 2022-04-25
-Authors@R:c(
+Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
@@ -36,3 +36,6 @@ Imports:
     tibble
 SystemRequirements: GNU make
 NeedsCompilation: yes
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

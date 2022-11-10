@@ -148,7 +148,7 @@ make_sim_inla <- function(m,t,X,nsim,newdata,dist,time_max,...) {
 #' @keywords HMC
 #' @noRd 
 make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
-
+  
   # Extracts the model object from the survHE output
   iter_stan <- m@stan_args[[1]]$iter
   
@@ -172,7 +172,7 @@ make_sim_hmc <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
     do.call(paste0("rescale_hmc_",dist),
             args=list(m,X,linpred[,x]))
   })
-
+  
   if(nsim>iter_stan) {
     stop("Please select a value for 'nsim' that is less than or equal to the value set in the call to 'fit.models'")
   }
@@ -482,13 +482,13 @@ rescale.inla <- function(linpred,alpha,distr) {
 #' Helper function to make the compute the survival curves
 #' 
 #' @param sim A list containing the simulations for the relevant parameters
-#' @param exArgs A list of extra arguments, as specified in 'make.surv'
+#' @param exArgs A list of extra arguments, as specified in \code{make.surv}
 #' @param nsim The number of simulations included
 #' @param dist The abbreviated name of the underlying distribution
 #' @param t The vector of times to be used in the x-axis
 #' @return \item{mat}{A matrix of simulated values for the survival curves}
 #' @author Gianluca Baio
-#' @seealso make.surv
+#' @seealso \code{\link{make.surv}}
 #' @references Baio (2020). survHE
 #' @keywords Survival curves
 #' @noRd 
@@ -497,15 +497,16 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
   args <- args_surv()
   distr <- manipulate_distributions(dist)$distr 
   
-  if(dist=="rps") {
+  if (dist=="rps") {
     # RPS-related options
-    if(exists("scale",where=exArgs)) {scale=exArgs$scale} else {scale="hazard"}
-    if(exists("timescale",where=exArgs)) {timescale=exArgs$timescale} else {timescale="log"}
-    if(exists("log",where=exArgs)) {log=exArgs$log} else {log=FALSE}
+    if (exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
+    if (exists("timescale",where=exArgs)) {timescale <- exArgs$timescale} else {timescale <- "log"}
+    if (exists("log",where=exArgs)) {log <- exArgs$log} else {log <- FALSE}
     
-    if(method=="hmc") {
+    if (method=="hmc") {
       knots <- exArgs$data.stan$knots
-      mat <- lapply(sim,function(x) {
+      mat <-
+        lapply(sim, function(x) {
         gamma=as_tibble(x) %>% select(contains("gamma"))
         offset=as_tibble(x) %>% select(offset)
         matrix(
@@ -527,21 +528,22 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
         )
       })
     } 
-    if(method=="mle") {
+    if (method=="mle") {
       # First needs to fiddle with the matrix of covariates profile
-      if("(Intercept)"%in%colnames(X)){
-        X=X %>% as_tibble() %>% select(-"(Intercept)")
+      if ("(Intercept)" %in% colnames(X)){
+        X <- X %>% as_tibble() %>% select(-"(Intercept)")
       } else {
-        X=X %>% as_tibble()
+        X <- X %>% as_tibble()
       }
-###      if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
-      mat=lapply(sim,function(x) {
-        gamma=as_tibble(x) %>% select(contains("gamma"))
+      ###      if(exists("offset",where=exArgs)) {offset=exArgs$offset} else {offset=0}
+      mat <- 
+        lapply(sim,function(x) {
+        gamma=as_tibble(x) |> select(contains("gamma"))
         matrix(unlist(
           lapply(1:nsim,function(i) {
             1-do.call(psurvspline,args=list(
               q=t,
-              gamma=as.numeric(gamma %>% slice(i)),
+              gamma=as.numeric(gamma |> slice(i)),
               beta=0,
               X=0,
               knots=exArgs$knots,
@@ -551,24 +553,27 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
               log=log
             ))
           })
-          ),nrow=length(t),ncol=nsim,byrow=FALSE
+        ),nrow=length(t),ncol=nsim,byrow=FALSE
         )
       })
     }
   } else {
-    mat <- lapply(sim,function(x) {
+    mat <- lapply(sim, function(x) {
       matrix(
         unlist(
-          lapply(1:nsim,function(i) {
-            1-do.call(paste0("p",distr),args=eval(parse(text=args[[distr]])))
+          lapply(1:nsim, function(i) {
+            1 - do.call(paste0("p",distr),args=eval(parse(text=args[[distr]])))
           })
         ),nrow=length(t),ncol=nsim,byrow=FALSE
       )
     })
   }
-  for (i in 1:length(mat)){colnames(mat[[i]])=paste0("S_",1:nsim)}
-  mat <- mat %>% lapply(function(x) bind_cols(tibble(t=t),as_tibble(x)))
-
+  for (i in seq_along(mat)) {
+    colnames(mat[[i]]) <- paste0("S_", 1:nsim)
+  }
+  mat <- lapply(mat, function(x) bind_cols(tibble(time = t),
+                                           as_tibble(x)))
+  
   return(mat)
 }
 
@@ -582,18 +587,18 @@ compute_surv_curve <- function(sim,exArgs,nsim,dist,t,method,X) {
 #' @keywords Survival curves
 #' @noRd 
 args_surv <- function() {
-    list(
-      exp='list(t,rate=x[,"rate"][i])',
-      weibull='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
-      weibullPH='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
-      gamma='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
-      gengamma='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i])',
-      gompertz='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
-      lnorm='list(t,meanlog=x[,"meanlog"][i],sdlog=x[,"sdlog"][i])',
-      llogis='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
-      genf='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i],P=x[,"P"][i])',
-      rps='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)',
-      survspline='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)'
+  list(
+    exp='list(t,rate=x[,"rate"][i])',
+    weibull='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
+    weibullPH='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
+    gamma='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
+    gengamma='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i])',
+    gompertz='list(t,shape=x[,"shape"][i],rate=x[,"rate"][i])',
+    lnorm='list(t,meanlog=x[,"meanlog"][i],sdlog=x[,"sdlog"][i])',
+    llogis='list(t,shape=x[,"shape"][i],scale=x[,"scale"][i])',
+    genf='list(t,mu=x[,"mu"][i],sigma=x[,"sigma"][i],Q=x[,"Q"][i],P=x[,"P"][i])',
+    rps='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)',
+    survspline='list(t,gamma=x[,"gamma"][i],knots=m$knots,scale=scale,timescale=timescale,offset=offset,log=log)'
   )
 }
 
@@ -802,6 +807,6 @@ make_surv_pw=function(fit,mod,t,newdata,nsim,exArgs) {
     X=matrix(0,nrow=length(mat),ncol=1);
     colnames(X)="Custom profile"
   }
-
+  
   list(sim=sim,mat=mat,X=X,t=t)
 }
