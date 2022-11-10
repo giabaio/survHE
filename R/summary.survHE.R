@@ -82,6 +82,7 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   }
   
   psa <- make.surv(object,mod=mod,t=t,nsim=nsim,newdata=newdata)
+  
   rlabs <- rownames(psa$des.mat)
   if (!is.null(rlabs)) {
     rlabs <- gsub("^1,","",rlabs)
@@ -95,10 +96,10 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
       lapply(1:psa$nsim,function(j) {
         xvar=i$t
         yvar=i[,(j+1)]
-        sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=T)/2
+        sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=TRUE)/2
       })
     })
-  ),nrow=psa$nsim,byrow=F)
+  ),nrow=psa$nsim,byrow=FALSE)
 
   if (ncol(mean.surv)==length(names(object$misc$km$strata))) {
     colnames(mean.surv) <- names(object$misc$km$strata)
@@ -119,7 +120,12 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
     }
     cat("\nEstimated average survival time distribution* \n")
     print(tab)
-    cat(paste0("\n*Computed over the range: [",paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim," simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
+    cat(paste0("\n*Computed over the range: [",
+               paste(format(range(t),digits=4,nsmall=3),collapse="-"),"] using ",psa$nsim,
+               " simulations.\nNB: Check that the survival curves tend to 0 over this range!\n"))
   }
-  return(invisible(list(mean.surv=mean.surv,tab=tab)))
+  
+  invisible(
+    list(mean.surv=mean.surv,
+         tab=tab))
 }

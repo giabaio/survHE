@@ -22,7 +22,7 @@
 #' all the times specified by the user
 #' @note Something will go here
 #' @author Gianluca Baio
-#' @seealso make.surv
+#' @seealso \code{\link{make.surv}}
 #' @references Something will go here
 #' @keywords Transition probabilities Markov models
 #' @examples
@@ -36,8 +36,8 @@ make.transition.probs <- function(fit,labs=NULL,...) {
   
   # Makes default for parameters to the call to 'make.surv' (which are overwritten if the user has specified them
   # separately)
-  if(exists("mod",exArgs)) {mod=exArgs$mod} else {mod=1}
-  if(exists("t",exArgs)) {t=exArgs$t} else {t=NULL}
+  if(exists("mod",exArgs)) {mod <- exArgs$mod} else {mod <- 1}
+  if(exists("t",exArgs)) {t <- exArgs$t} else {t <- NULL}
   if(is.null(t)) {
     t <- sort(unique(fit$misc$km$time))
     # Add an extra time=0 at the beginning. This ensures the computation can be done for all the actual times
@@ -46,21 +46,28 @@ make.transition.probs <- function(fit,labs=NULL,...) {
   }
   # Add an extra time=0 at the beginning. This ensures the computation can be done for all the actual times
   # specified by the user (because the first one has no lag and so the ratio gives NA...)
-  t=c(0,t)
-  if(exists("newdata",exArgs)) {newdata=exArgs$newdata} else {newdata=NULL}
-  if(exists("nsim",exArgs)) {nsim=exArgs$nsim} else {nsim=1}
+  t <- c(0,t)
+  if(exists("newdata",exArgs)) {newdata <- exArgs$newdata} else {newdata <- NULL}
+  if(exists("nsim",exArgs)) {nsim <- exArgs$nsim} else {nsim <- 1}
   # Now computes the simulations using 'make.surv'
-  s=make.surv(fit,mod=mod,t=t,newdata=newdata,nsim=nsim)
+  s <- make.surv(fit,mod=mod,t=t,newdata=newdata,nsim=nsim)
   
   # Get labels of the 'strata' 
-  strata=lapply(1:nrow(s$des.mat),function(x){
-    s$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
-      round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
-    }) %>% bind_rows(.) %>% select(strata) %>% pull(strata)
+  strata <- lapply(1:nrow(s$des.mat),function(x){
+    s$des.mat %>%
+      as_tibble() %>%
+      select(-matches("(Intercept)",everything())) %>%
+      slice(x) %>% 
+      round(digits=2) %>%
+      mutate(strata=paste0(names(.),"=",.,collapse=","))
+    }) %>%
+    bind_rows(.) %>%
+    select(strata) %>%
+    pull(strata)
   
   # Now retrieves the transition probabilities 'lambda' applying the formula
   # lambda(t)=1-S(t+k)/S(t) where k is the MM cycle length and t is a generic time
-  lambda=s$mat %>% 
+  lambda <- s$mat %>% 
     # First stacks together all the matrices with the simulation(s) for the survival curves
     bind_rows() %>% 
     # Then creates a treatment indicator (1,2,...) & place it as the first column
@@ -69,19 +76,20 @@ make.transition.probs <- function(fit,labs=NULL,...) {
     group_by(profile) %>% mutate(across(starts_with("S"),~-log(.))) %>% 
     # Then computes the probabilities using 1-exp(H(t-k)-H(t)), where k is the cycle length (or difference across times)
     ####mutate(across(starts_with("S"),~case_when(.==0~0,TRUE~1-exp(lag(.)-.)))) %>% 
-    mutate(across(starts_with("S"),~1-exp(lag(.)-.))) %>% 
+    mutate(across(starts_with("S"), ~ 1-exp(lag(.)-.))) %>% 
     # Then removes the first row (in each treatment) - that was just artificially added anyway...
     slice(-1) %>% ungroup() 
 
   # And now renames the columns from S(_1,S_2,...,S_nsim) to lambda(_1,lambda_2,...,lambda_nsim)
   if (nsim==1) {
-    lambda=lambda %>% rename_with(starts_with("S"),.fn=~"lambda")
+    lambda <- lambda %>%
+      rename_with(starts_with("S"), .fn=~"lambda")
   } else {
-    lambda=lambda %>% rename_with(starts_with("S"),.fn=~paste0("lambda_",1:nsim))
+    lambda <- lambda %>%
+      rename_with(starts_with("S"), .fn=~paste0("lambda_",1:nsim))
   }
 
-  # Returns the object containing the probabilities
-  return(lambda)
+  lambda
 }
 
 
@@ -413,7 +421,7 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
 }
 
 
-#' markov_trace
+#' Markov trace
 #' 
 #' Plots the Markov Trace from an object generated using \code{three_state_mm}
 #' 
@@ -421,7 +429,7 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
 #' @param mm  The output of a call to \code{three_state_mm}
 #' @param interventions A vector of labels for the interventions
 #' @param ...  additional arguments. 
-#' @return 
+#' @return Plot
 #' @note Something will go here
 #' @author Gianluca Baio
 #' @seealso make.surv, three_state_mm
@@ -433,7 +441,7 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
 #' }
 #' 
 #' @export markov_trace
-markov_trace=function(mm,interventions=NULL,...) {
+markov_trace <- function(mm,interventions=NULL,...) {
   # First reshape the data
   if(!is.null(interventions)) {
     # Figures out how many observations there are in each treatment & replaces the values passed 
@@ -441,10 +449,16 @@ markov_trace=function(mm,interventions=NULL,...) {
     mm$m=mm$m %>% mutate(profile=rep(interventions,each=mm$m %>% count(profile) %>% slice(1) %>% pull(n)))
   }
   
-  pl=mm$m %>% select(profile,t,`Pre-progressed`) %>% rename(npeople=`Pre-progressed`) %>% mutate(group="Pre-progressed") %>%
-    bind_rows(mm$m %>% select(profile,t,`Progressed`) %>% rename(npeople=Progressed) %>% mutate(group="Progressed")) %>%
-    bind_rows(mm$m %>% select(profile,t,Death) %>% rename(npeople=Death) %>% mutate(group="Death")) %>%
-    # Create a numeric/factor group label to help manage the apparance of the graph
+  pl <- mm$m %>% select(profile,t,`Pre-progressed`) %>%
+    rename(npeople=`Pre-progressed`) %>%
+    mutate(group="Pre-progressed") %>%
+    bind_rows(mm$m %>% select(profile,t,`Progressed`) %>%
+                rename(npeople=Progressed) %>%
+                mutate(group="Progressed")) %>%
+    bind_rows(mm$m %>% select(profile,t,Death) %>%
+                rename(npeople=Death) %>%
+                mutate(group="Death")) %>%
+    # Create a numeric/factor group label to help manage the appearance of the graph
     mutate(
       grp_lab=as.factor(case_when(
         group=="Pre-progressed"~3,
@@ -452,9 +466,11 @@ markov_trace=function(mm,interventions=NULL,...) {
         TRUE~1
       ))
     ) %>% 
-    ggplot(aes(x=t,y=npeople,fill=grp_lab))+geom_bar(position="stack",stat="identity") +
+    ggplot(aes(x=t,y=npeople,fill=grp_lab)) +
+    geom_bar(position="stack",stat="identity") +
     labs(x="Cycle",y="Number of people",title="Markov trace",fill="State") +
-    facet_wrap(~profile) + theme_bw() +
+    facet_wrap(~profile) +
+    theme_bw() +
     # Add control to the legend label
     scale_fill_discrete(breaks=c(3,2,1),labels=c("Pre-progressed","Progressed","Death"))
 

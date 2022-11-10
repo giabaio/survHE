@@ -6,7 +6,6 @@
 #' the \code{plot} method (with options), which allows a finer depiction
 #' of the results. 
 #' 
-#' 
 #' @param psa the result of the call to the function \code{make.surv}
 #' @param ...  Optional graphical parameters, such as: \code{xlab} = label for
 #' the x-axis \code{ylab} = label for the y-axis \code{col} = (vector) of
@@ -14,8 +13,9 @@
 #' for the curves (default = 0.2)
 #' @author Gianluca Baio
 #' @template refs
-#' @seealso \code{make.surv}, \code{write.surv}
+#' @seealso \code{\link{make.surv}}, \code{\link{write.surv}}
 #' @keywords Survival models Bootstrap Probabilistic sensitivity analysis
+#' 
 #' @examples
 #' \dontrun{ 
 #' data(bc)
@@ -41,21 +41,27 @@ psa.plot <- function(psa,...) {
   # name_labs = the non-standard title for the legend
   # xlim = a vector of limits for the times
   
-  exArgs=list(...)
-
+  exArgs <- list(...)
+  
   # Creates the dataset to plot with the survival curves for all profiles  
-  strata=lapply(1:nrow(psa$des.mat),function(x) {
-    psa$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
-      round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
-  }) %>% bind_rows(.) %>% select(strata)
-  toplot=lapply(1:length(psa$S),function(i) {
+  strata <- lapply(1:nrow(psa$des.mat), function(x) {
+    psa$des.mat %>%
+      as_tibble() %>%
+      select(-matches("(Intercept)",everything())) %>%
+      slice(x) %>% 
+      round(digits=2) %>%
+      mutate(strata=paste0(names(.),"=",.,collapse=","))}) %>%
+    bind_rows(.) %>%
+    select(strata)
+  
+  toplot <- lapply(1:length(psa$S),function(i) {
     psa$S[[i]] %>% bind_cols(strata=as.factor(as.character(strata[i,])))
   }) %>% bind_rows(.)
-
+  
   if(exists("alpha",where=exArgs)){alpha=exArgs$alpha} else {alpha=0.2}
   if(exists("name_labs",where=exArgs)){name_labs=exArgs$name_labs} else {name_labs="Profile"}
   
-  psa.plot=ggplot(data=toplot,aes(x=t,y=S,colour=strata))+
+  psa.plot <- ggplot(data=toplot,aes(x=time, y=S, colour=strata))+
     geom_line(size=.9) +
     theme_bw() + 
     theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
@@ -74,34 +80,37 @@ psa.plot <- function(psa,...) {
           #legend.title = element_blank(),
           legend.text = element_text(colour="black", size=14, face="plain"),
           legend.background=element_blank()) +
-    labs(y="Survival",x="Time",title=NULL,
-         color=name_labs) 
-
-    # If there are more than 1 simulation, then there also are the low and upp extremes and plots them too
+    labs(y="Survival",x="Time",title=NULL, color=name_labs) 
+  
+  # If there are more than 1 simulation, then there also are the low and upp extremes and plots them too
   if(any(grepl("low",names(toplot)))) {
-    psa.plot=psa.plot+geom_ribbon(data=toplot,aes(x=t,y=S,ymin=low,ymax=upp,fill=strata),alpha=alpha,show.legend=F)
+    psa.plot <- psa.plot +
+      geom_ribbon(data=toplot,
+                  aes(x=time, y=S, ymin=low,ymax=upp,fill=strata),
+                  alpha=alpha,show.legend=FALSE)
   }
   
   # Optional arguments
   if(exists("col",where=exArgs)) {
-    psa.plot=psa.plot+scale_color_manual(values=exArgs$col)+scale_fill_manual(values=exArgs$col)
+    psa.plot <- psa.plot + scale_color_manual(values=exArgs$col) +
+      scale_fill_manual(values=exArgs$col)
   }
   if(exists("xlab",where=exArgs)){
-    psa.plot=psa.plot+labs(x=exArgs$xlab)
+    psa.plot <- psa.plot + labs(x=exArgs$xlab)
   }
   if(exists("ylab",where=exArgs)){
-    psa.plot=psa.plot+labs(y=exArgs$ylab)
+    psa.plot <- psa.plot + labs(y=exArgs$ylab)
   }
   if(exists("main",where=exArgs)) {
-    psa.plot=psa.plot+labs(title=exArgs$main)+theme(plot.title=element_text(size=18,face="bold"))
+    psa.plot <- psa.plot + labs(title=exArgs$main) +
+      theme(plot.title = element_text(size=18,face="bold"))
   }
   if(exists("labs",where=exArgs)) {
-    psa.plot=psa.plot+scale_color_discrete(labels=exArgs$labs)
+    psa.plot <- psa.plot + scale_color_discrete(labels=exArgs$labs)
   }
   if(exists("xlim",where=exArgs)){
-    psa.plot=psa.plot+xlim(exArgs$xlim)
+    psa.plot <- psa.plot + xlim(exArgs$xlim)
   }
   
-  # Finally renders the plot
   psa.plot
 }
