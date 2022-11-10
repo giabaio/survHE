@@ -45,7 +45,7 @@ Something will go here
 Something will go here
 }
 \seealso{
-make.surv
+\code{\link{make.surv}}
 }
 \author{
 Gianluca Baio

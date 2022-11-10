@@ -11,12 +11,12 @@ make.surv(fit, mod = 1, t = NULL, newdata = NULL, nsim = 1, ...)
 containing the model fitting (and other relevant information)}
 
 \item{mod}{the index of the model. Default value is 1, but the user can
-choose which model fit to visualise, if the call to fit.models has a vector
-argument for distr (so many models are fitted & stored in the same object)}
+choose which model fit to visualise, if the call to \code{fit.models} has a vector
+argument for \code{distr} (so many models are fitted & stored in the same object)}
 
 \item{t}{the time vector to be used for the estimation of the survival curve}
 
-\item{newdata}{a list (of lists), specifiying the values of the covariates
+\item{newdata}{a list (of lists), specifying the values of the covariates
 at which the computation is performed. For example
 \code{list(list(arm=0),list(arm=1))} will create two survival curves, one
 obtained by setting the covariate \code{arm} to the value 0 and the other by
@@ -44,13 +44,14 @@ Creates the survival curves for the fitted model(s)
 data(bc)
 
 # Fits the same model using the 3 inference methods
-mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
-    distr="exp",method="mle")
-p.mle = make.surv(mle)
+mle <- fit.models(formula=Surv(recyrs,censrec) ~ group, data=bc,
+                  distr="exp", method="mle")
+p.mle <- make.surv(mle)
 psa.plot(p.mle)
+
 # Can also use the main 'plot' function to visualise the survival curves
 # and include uncertainty by using a number 'nsim' of simulations
-plot(mle,nsim=10)
+plot(mle, nsim=10)
 }
 
 }
@@ -60,7 +61,7 @@ and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95
 14, 1-47. \url{doi:10.18637/jss.v095.i14}
 }
 \seealso{
-\code{fit.models}, \code{psa.plot}, \code{write.surv}
+\code{\link{fit.models}}, \code{\link{psa.plot}}, \code{\link{write.surv}}
 }
 \author{
 Gianluca Baio

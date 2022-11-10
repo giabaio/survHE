@@ -441,15 +441,20 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
 #' }
 #' 
 #' @export markov_trace
-markov_trace <- function(mm,interventions=NULL,...) {
+markov_trace <- function(mm, interventions=NULL,...) {
   # First reshape the data
   if(!is.null(interventions)) {
     # Figures out how many observations there are in each treatment & replaces the values passed 
     # as arguments in 'interventions'
-    mm$m=mm$m %>% mutate(profile=rep(interventions,each=mm$m %>% count(profile) %>% slice(1) %>% pull(n)))
+    mm$m <- mm$m %>%
+      mutate(profile = rep(interventions,each=mm$m %>%
+                             count(profile) %>%
+                             slice(1) %>%
+                             pull(n)))
   }
   
-  pl <- mm$m %>% select(profile,t,`Pre-progressed`) %>%
+  pl <- mm$m %>%
+    select(profile,t,`Pre-progressed`) %>%
     rename(npeople=`Pre-progressed`) %>%
     mutate(group="Pre-progressed") %>%
     bind_rows(mm$m %>% select(profile,t,`Progressed`) %>%
@@ -466,7 +471,7 @@ markov_trace <- function(mm,interventions=NULL,...) {
         TRUE~1
       ))
     ) %>% 
-    ggplot(aes(x=t,y=npeople,fill=grp_lab)) +
+    ggplot(aes(x=t, y=npeople, fill=grp_lab)) +
     geom_bar(position="stack",stat="identity") +
     labs(x="Cycle",y="Number of people",title="Markov trace",fill="State") +
     facet_wrap(~profile) +
