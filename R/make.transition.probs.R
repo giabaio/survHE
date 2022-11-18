@@ -294,11 +294,11 @@ three_state_mm = function(m_12,m_13,m_23,nsim=1,start=c(1000,0,0),basecase=FALSE
   # NB: Without further checks, it is possible that (lambda_12+lambda_13)>1 and so lambda_11<0
   #     This should be carefully checked!
   lambda_11=(lambda_12 %>% select(starts_with("lambda")) + lambda_13 %>% select(starts_with("lambda"))) %>% 
-    as_tibble() %>% bind_cols(lambda_12 %>% select(profile,t)) %>% select(profile,t,everything()) %>% 
+    as_tibble() %>% bind_cols(lambda_12 %>% select(profile,time)) %>% select(profile,time,everything()) %>% 
     mutate(across(starts_with("lambda"),~1-.))
   # Derives lambda_22 by subtraction (as all transition probs out of state 2 must sum to 1)
   lambda_22=(1-lambda_23 %>% select(starts_with("lambda"))) %>% as_tibble() %>% 
-    bind_cols(lambda_23 %>% select(profile,t)) %>% select(profile,t,everything())
+    bind_cols(lambda_23 %>% select(profile,time)) %>% select(profile,time,everything())
 
   # Computes the state occupancy for all the simulations
   tic=Sys.time()
@@ -316,11 +316,11 @@ three_state_mm = function(m_12,m_13,m_23,nsim=1,start=c(1000,0,0),basecase=FALSE
     
     # Derives lambda_11 by subtraction (as all transition probs out of state 1 must sum to 1)
     lambda_11=(lambda_12 %>% select(starts_with("lambda"))+lambda_13 %>% select(starts_with("lambda"))) %>% 
-      as_tibble() %>% bind_cols(lambda_12 %>% select(profile,t)) %>% select(profile,t,everything()) %>% 
+      as_tibble() %>% bind_cols(lambda_12 %>% select(profile,time)) %>% select(profile,time,everything()) %>% 
       mutate(across(starts_with("lambda"),~1-.))
     # Derives lambda_22 by subtraction (as all transition probs out of state 2 must sum to 1)
     lambda_22=(1-lambda_23 %>% select(starts_with("lambda"))) %>% as_tibble() %>% 
-      bind_cols(lambda_23 %>% select(profile,t)) %>% select(profile,t,everything())
+      bind_cols(lambda_23 %>% select(profile,time)) %>% select(profile,time,everything())
     
     base_case=make_state_occupancy(nsim=1,lambda_11,lambda_12,lambda_13,lambda_22,lambda_23,start)
   }
@@ -368,13 +368,13 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
   # Initialises the lists
   m=lapply(1:nsim,function(i) {
     # Creates the tibbles (one per each of the nsim simulations)
-    m[[i]]=tibble(profile=lambda_11$profile,t=lambda_11$t,`Pre-progressed`=NA,Progressed=NA,Death=NA)
+    m[[i]]=tibble(profile=lambda_11$profile,time=lambda_11$time,`Pre-progressed`=NA,Progressed=NA,Death=NA)
     # Now adds in the relevant transition probabilities in the correct rows
-    m[[i]]=m[[i]] %>% left_join(lambda_11 %>% select(profile,t,starts_with("lambda")[[i]]) %>% rename("lambda_11"=starts_with("lambda")), by=c("profile","t")) %>% 
-      left_join(lambda_12 %>% select(profile,t,starts_with("lambda")[[i]]) %>% rename("lambda_12"=starts_with("lambda")), by=c("profile","t")) %>% 
-      left_join(lambda_13 %>% select(profile,t,starts_with("lambda")[[i]]) %>% rename("lambda_13"=starts_with("lambda")), by=c("profile","t")) %>% 
-      left_join(lambda_22 %>% select(profile,t,starts_with("lambda")[[i]]) %>% rename("lambda_22"=starts_with("lambda")), by=c("profile","t")) %>% 
-      left_join(lambda_23 %>% select(profile,t,starts_with("lambda")[[i]]) %>% rename("lambda_23"=starts_with("lambda")), by=c("profile","t"))
+    m[[i]]=m[[i]] %>% left_join(lambda_11 %>% select(profile,time,starts_with("lambda")[[i]]) %>% rename("lambda_11"=starts_with("lambda")), by=c("profile","time")) %>% 
+      left_join(lambda_12 %>% select(profile,time,starts_with("lambda")[[i]]) %>% rename("lambda_12"=starts_with("lambda")), by=c("profile","time")) %>% 
+      left_join(lambda_13 %>% select(profile,time,starts_with("lambda")[[i]]) %>% rename("lambda_13"=starts_with("lambda")), by=c("profile","time")) %>% 
+      left_join(lambda_22 %>% select(profile,time,starts_with("lambda")[[i]]) %>% rename("lambda_22"=starts_with("lambda")), by=c("profile","time")) %>% 
+      left_join(lambda_23 %>% select(profile,time,starts_with("lambda")[[i]]) %>% rename("lambda_23"=starts_with("lambda")), by=c("profile","time"))
     # Initialise the tibbles with the start values
     m[[i]]=m[[i]] %>% group_by(profile) %>% mutate(
       `Pre-progressed`=replace(`Pre-progressed`,row_number()==1,start[1]),
@@ -409,7 +409,7 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
       m$Death[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_13[j], m$Progressed[j-1]*m$lambda_23[j], m$Death[j-1]),na.rm=T)
     }
   }
-  m=m %>% select(profile,t,`Pre-progressed`,Progressed,Death,sim_idx,everything())
+  m=m %>% select(profile,time,`Pre-progressed`,Progressed,Death,sim_idx,everything())
   # Need to set to 0 all negative values!
   m=m %>% mutate(
     `Pre-progressed`=if_else(`Pre-progressed`<0,0,`Pre-progressed`),
@@ -454,13 +454,13 @@ markov_trace <- function(mm, interventions=NULL,...) {
   }
   
   pl <- mm$m %>%
-    select(profile,t,`Pre-progressed`) %>%
+    select(profile,time,`Pre-progressed`) %>%
     rename(npeople=`Pre-progressed`) %>%
     mutate(group="Pre-progressed") %>%
-    bind_rows(mm$m %>% select(profile,t,`Progressed`) %>%
+    bind_rows(mm$m %>% select(profile,time,`Progressed`) %>%
                 rename(npeople=Progressed) %>%
                 mutate(group="Progressed")) %>%
-    bind_rows(mm$m %>% select(profile,t,Death) %>%
+    bind_rows(mm$m %>% select(profile,time,Death) %>%
                 rename(npeople=Death) %>%
                 mutate(group="Death")) %>%
     # Create a numeric/factor group label to help manage the appearance of the graph
@@ -471,7 +471,7 @@ markov_trace <- function(mm, interventions=NULL,...) {
         TRUE~1
       ))
     ) %>% 
-    ggplot(aes(x=t, y=npeople, fill=grp_lab)) +
+    ggplot(aes(x=time, y=npeople, fill=grp_lab)) +
     geom_bar(position="stack",stat="identity") +
     labs(x="Cycle",y="Number of people",title="Markov trace",fill="State") +
     facet_wrap(~profile) +
@@ -486,8 +486,8 @@ markov_trace <- function(mm, interventions=NULL,...) {
 ### TO DO --- THIS NICELY COMPUTES THE MEAN SURVIVAL TIME OVER THE MM SIMULATIONS BUT CURRENTLY ONLY
 ###           DOES IT FOR WHEN nsim=1!!!
 compute_mean_time=function(x,disc.rate=0) {
-  mean_time=x %>% mutate(Alive=(1000-Death)/1000,disc=1/(1+disc.rate)^t) %>% group_by(profile) %>% 
-    mutate(dt=t-lag(t)) %>%  summarise(mean_survival_time=sum(Alive*dt*disc,na.rm=T)) %>% ungroup()
+  mean_time=x %>% mutate(Alive=(1000-Death)/1000,disc=1/(1+disc.rate)^time) %>% group_by(profile) %>% 
+    mutate(dt=time-lag(time)) %>%  summarise(mean_survival_time=sum(Alive*dt*disc,na.rm=T)) %>% ungroup()
   
   return(mean_time)
 }
