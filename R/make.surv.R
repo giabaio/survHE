@@ -130,7 +130,7 @@ make.surv <- function(fit, mod=1, t=NULL, newdata=NULL, nsim=1,...) {
     # If nsim=1 then only save the point estimates of the survival curve
     S <- lapply(mat, function(x) {
       rowwise(x, time) |>
-        summarise(S = mean(c_across(contains("S"))))
+        summarise(S = mean(c_across(contains("S")))) |> ungroup()
     })
   } else {
     # If nsim>1 then also give the lower and upper quartile of the underlying distribution
@@ -140,7 +140,7 @@ make.surv <- function(fit, mod=1, t=NULL, newdata=NULL, nsim=1,...) {
       rowwise(x, time) |>
         summarise(S = mean(c_across(contains("S"))),
                   low = quantile(c_across(contains("S")), 0.025),
-                  upp = quantile(c_across(contains("S")), 0.975))
+                  upp = quantile(c_across(contains("S")), 0.975)) |> ungroup()
     })
   }
   
