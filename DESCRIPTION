@@ -1,12 +1,12 @@
 Package: survHEhmc
 Title: Survival Analysis in Health Economic Evaluation using HMC/stan
 Version: 0.0.1
-Date: 2022-01-15
-Authors@R:c(
+Date: 2023-03-10
+Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"))
-URL: https://github.com/giabaio/survHE, https://gianluca.statistica.it/
+URL: https://github.com/giabaio/survHE/tree/hmc, https://gianluca.statistica.it/software/survhe/hw
 BugReports: https://github.com/giabaio/survHE/issues
 Description: A module to complement the backbone structure of the package survHE and
     expand its functionality to run survival models under a Bayesian approach (based
@@ -22,9 +22,10 @@ Depends:
     dplyr
 Imports:
     Rcpp (>= 0.12.0),
-    RcppParallel (>= 5.0.2),
     rstan (>= 2.18.1),
-    rstantools (>= 2.1.1)
+    flexsurv,
+    tibble,
+    methods
 LinkingTo:
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),

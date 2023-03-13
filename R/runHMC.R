@@ -14,6 +14,9 @@ runHMC <- function(x,exArgs) {
   if (!isTRUE(requireNamespace("rstan", quietly = TRUE))) {
     stop("You need to install the R package 'rstan'. Please run in your R terminal:\n install.packages('rstan')")
   }
+
+  # Avoids issues with visible binding
+  utils::globalVariables(c("event","."))
   
   # Loads the model formula & data
   formula <- exArgs$formula
@@ -114,6 +117,11 @@ runHMC <- function(x,exArgs) {
 #' Monte Carlo 
 #' @noRd 
 make_data_stan=function(formula,data,distr3,exArgs) {
+
+  # Avoids issues with visible binding
+  utils::globalVariables(c("event","."))
+  event = . = NULL
+  
   # Loads in the available models in each method
   availables <- survHE:::load_availables()
   method <- "hmc"
