@@ -6,7 +6,7 @@ Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"))
-URL: https://github.com/giabaio/survHE/tree/hmc, https://gianluca.statistica.it/software/survhe/hw
+URL: https://github.com/giabaio/survHE/tree/hmc, https://gianluca.statistica.it/software/survhe/
 BugReports: https://github.com/giabaio/survHE/issues
 Description: A module to complement the backbone structure of the package survHE and
     expand its functionality to run survival models under a Bayesian approach (based
@@ -14,7 +14,7 @@ Description: A module to complement the backbone structure of the package survHE
 License: GPL (>=3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.3
 Biarch: true
 Depends:
     survHE,
