@@ -4,13 +4,14 @@
 #' aiding in health economic modelling (extrapolation, model checking and PSA)
 #' 
 #' \tabular{ll}{ Package: \tab survHE\cr Type: \tab Package\cr Version: \tab
-#' 2.0.1cr Date: \tab 2022-11-10\cr License: \tab GPL2 \cr LazyLoad: \tab
+#' 2.0.1\cr Date: \tab 2023-03-10\cr License: \tab GPL2 \cr LazyLoad: \tab
 #' yes\cr } Contains a suite of functions to perform survival analysis with the
 #' aim of aiding in health economic modelling (extrapolation, model checking
 #' and PSA)
 #' 
 #' @name survHE-package
-#' @aliases survHE-package survHE
+#' @aliases survHE-package 
+#' @aliases survHE
 #' @docType package
 #' @author Gianluca Baio
 #' 

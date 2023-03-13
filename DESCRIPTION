@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
 Version: 2.0.1
-Date: 2022-11-10
+Date: 2023-03-10
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
@@ -22,7 +22,7 @@ License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Biarch: true
 Depends: 
     methods,
@@ -35,8 +35,15 @@ Imports:
     xlsx,
     tools,
     tibble
-SystemRequirements: GNU make
-NeedsCompilation: yes
-Suggests: 
+Suggests:
+    survHEinla,
+    survHEhmc,
+    INLA,
+    rstan,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+SystemRequirements: GNU make
+NeedsCompilation: yes
+Additional_repositories: 
+    https://github.com/giabaio/survHE/tree/inla,
+    https://github.com/giabaio/survHE/tree/hmc

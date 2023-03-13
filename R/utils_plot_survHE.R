@@ -630,7 +630,7 @@ plot_base_survHE <- function(x, exArgs) {
   if(is.null(exArgs$axes)){axes <- TRUE} else {axes <- exArgs$axes}
   if (is.null(exArgs$labs)) {
     labs <- unlist(lapply(1:length(x$models),function(i) {
-      if(class(x$models[[i]])=="stanfit") {tolower(x$models[[i]]@model_name)} else {x$models[[i]]$dlist$name}
+      if(inherits(x$models[[i]],"stanfit")) {tolower(x$models[[i]]@model_name)} else {x$models[[i]]$dlist$name}
     }))
     labs[labs %in% c("weibull.quiet","weibull","weibullaf","weibullph")] <- "Weibull"
     labs[labs %in% c("exp","exponential")] <- "Exponential"
@@ -657,7 +657,7 @@ plot_base_survHE <- function(x, exArgs) {
     title(main)
   } else {
     labs <- labs[-1]
-    if(class(colors)!="character") {colors <- colors-1}
+    if(!inherits(colors,"character")) {colors <- colors-1}
     plot(0,0,col="white",xlab=xl,ylab=yl,axes=FALSE,xlim=xlm,ylim=c(0,1),main=main)
     if(axes==TRUE) {
       axis(1)

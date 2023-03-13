@@ -151,7 +151,7 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
       if (!is.element("survHEinla", (.packages()))) {
         attachNamespace("survHEinla")
       }
-      res <- format_output_fit.models(lapply(distr,function(x) runINLA(x,exArgs)),method,distr,formula,data)
+      res <- format_output_fit.models(lapply(distr,function(x) survHEinla::runINLA(x,exArgs)),method,distr,formula,data)
     }
   }
   
@@ -165,7 +165,7 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
       if (!is.element("survHEhmc", (.packages()))) {
         attachNamespace("survHEhmc")
       }
-      res <- format_output_fit.models(lapply(distr,function(x) runHMC(x,exArgs)),method,distr,formula,data)
+      res <- format_output_fit.models(lapply(distr,function(x) survHEhmc::runHMC(x,exArgs)),method,distr,formula,data)
     }
   }
 
