@@ -1,5 +1,5 @@
 Package: survHEhmc
-Title: Survival Analysis in Health Economic Evaluation using HMC/stan
+Title: Survival Analysis in Health Economic Evaluation using Hamiltonian Monte Carlo
 Version: 0.0.1
 Date: 2023-03-10
 Authors@R: c(
@@ -8,7 +8,7 @@ Authors@R: c(
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"))
 URL: https://github.com/giabaio/survHE/tree/hmc, https://gianluca.statistica.it/software/survhe/
 BugReports: https://github.com/giabaio/survHE/issues
-Description: A module to complement the backbone structure of the package survHE and
+Description: A module to complement the backbone structure of the package 'survHE' and
     expand its functionality to run survival models under a Bayesian approach (based
     on Hamiltonian Monte Carlo). <doi:10.18637/jss.v095.i14>.
 License: GPL (>=3)
