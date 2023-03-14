@@ -44,6 +44,7 @@ Suggests:
 Config/testthat/edition: 3
 Additional_repositories: 
     https://github.com/giabaio/survHE/tree/hmc,
-    https://github.com/giabaio/survHE/tree/inla
+    https://github.com/giabaio/survHE/tree/inla,
+    https://inla.r-inla-download.org/R/stable/
 SystemRequirements: GNU make
 NeedsCompilation: yes
