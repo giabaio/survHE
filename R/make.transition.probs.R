@@ -261,7 +261,7 @@ make_data_multi_state=function(data,id="id",prog="prog",death="death",prog_t="pr
 #' @author Gianluca Baio
 #' @seealso make.transition.probs make_data_multi_state
 #' @references Something will go here
-#' @keywords Transition probabilities, Markov models, Three-state cancer model
+#' @keywords Transition probabilities Markov models Three-state cancer model
 #' @examples
 #' \dontrun{
 #' # Something will go here

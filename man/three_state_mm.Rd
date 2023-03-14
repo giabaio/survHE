@@ -92,5 +92,5 @@ Gianluca Baio
 \keyword{Transition}
 \keyword{cancer}
 \keyword{model}
-\keyword{models,}
-\keyword{probabilities,}
+\keyword{models}
+\keyword{probabilities}

@@ -42,8 +42,8 @@ Suggests:
     rstan,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Additional_repositories: 
+    https://github.com/giabaio/survHE/tree/hmc,
+    https://github.com/giabaio/survHE/tree/inla
 SystemRequirements: GNU make
 NeedsCompilation: yes
-Remotes: 
-    url::https://github.com/giabaio/survHE/archive/refs/heads/hmc.zip,
-    url::https://github.com/giabaio/survHE/archive/refs/heads/inla.zip
