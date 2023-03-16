@@ -1,32 +1,29 @@
 Package: survHEhmc
 Title: Survival Analysis in Health Economic Evaluation using Hamiltonian Monte Carlo
 Version: 0.0.1
-Date: 2023-03-10
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"))
-URL: https://github.com/giabaio/survHE/tree/hmc, https://gianluca.statistica.it/software/survhe/
-BugReports: https://github.com/giabaio/survHE/issues
 Description: A module to complement the backbone structure of the package 'survHE' and
     expand its functionality to run survival models under a Bayesian approach (based
     on Hamiltonian Monte Carlo). <doi:10.18637/jss.v095.i14>.
-License: GPL (>=3)
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Biarch: true
-Depends:
+Depends: 
+    R (>= 3.4.0),
     survHE,
-    R (>= 3.6.0),
     dplyr
-Imports:
+Imports: 
+    methods,
     Rcpp (>= 0.12.0),
     rstan (>= 2.18.1),
     flexsurv,
-    tibble,
-    methods
-LinkingTo:
+    tibble
+LinkingTo: 
     BH (>= 1.66.0),
     Rcpp (>= 0.12.0),
     RcppEigen (>= 0.3.3.3.0),
@@ -34,4 +31,3 @@ LinkingTo:
     rstan (>= 2.18.1),
     StanHeaders (>= 2.18.0)
 SystemRequirements: GNU make
-NeedsCompilation: yes

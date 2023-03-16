@@ -11,13 +11,13 @@ aiding in health economic modelling (extrapolation, model checking and PSA)
 }
 \details{
 \tabular{ll}{ Package: \tab survHEhmc\cr Type: \tab Package\cr Version: \tab
-0.0.1\cr Date: \tab 2023-03-10\cr License: \tab GPL2 \cr LazyLoad: \tab
+0.0.1\cr Date: \tab 2022-03-10\cr License: \tab GPL2 \cr LazyLoad: \tab
 yes\cr } Contains a suite of functions to perform survival analysis with the
 aim of aiding in health economic modelling (extrapolation, model checking
 and PSA)
 }
 \examples{
-\dontrun{ 
+\dontrun{
 # Loads some survival data
 data(bc)
 # Fits a parametric model

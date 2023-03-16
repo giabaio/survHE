@@ -1,10 +1,10 @@
 
 
 #' Internal objects used by stan
-#' 
+#'
 #' Objects, C++ and S4 classes used by stan to fit parametric survival models.
-#' 
-#' 
+#'
+#'
 #' @name internal_stan
 #' @aliases internal_stan stanmodels stan_files model_Exponential model_Gamma
 #' model_GenF model_GenGamma model_Gompertz model_logLogistic model_logNormal
@@ -23,26 +23,26 @@ NULL
 
 
 #' Survival Analysis in Health Economic Evaluation using HMC
-#' 
+#'
 #' Contains a suite of functions to perform survival analysis with the aim of
 #' aiding in health economic modelling (extrapolation, model checking and PSA)
-#' 
+#'
 #' \tabular{ll}{ Package: \tab survHEhmc\cr Type: \tab Package\cr Version: \tab
-#' 0.0.1\cr Date: \tab 2022-01-15\cr License: \tab GPL2 \cr LazyLoad: \tab
+#' 0.0.1\cr Date: \tab 2022-03-10\cr License: \tab GPL2 \cr LazyLoad: \tab
 #' yes\cr } Contains a suite of functions to perform survival analysis with the
 #' aim of aiding in health economic modelling (extrapolation, model checking
 #' and PSA)
-#' 
+#'
 #' @name survHEhmc-package
 #' @aliases survHEhmc-package survHEhmc
 #' @docType package
 #' @author Gianluca Baio
-#' 
+#'
 #' Maintainer: Gianluca Baio
 #' @template refs
 #' @keywords Survival Modelling Health Economic Evaluation
 #' @examples
-#' \dontrun{ 
+#' \dontrun{
 #' # Loads some survival data
 #' data(bc)
 #' # Fits a parametric model

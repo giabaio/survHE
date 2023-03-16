@@ -1,7 +1,6 @@
 export(poly.weibull)
 export(runHMC)
 export(stanmodels)
-export(.onLoad)
 import(Rcpp)
 import(dplyr)
 import(survHE)
@@ -15,4 +14,3 @@ importFrom("flexsurv", "hexp","dgenf","pgenf","dgengamma","pgengamma",
            "hweibullPH","pweibullPH")
 importFrom("tibble", "rownames_to_column")
 useDynLib(survHEhmc, .registration = TRUE)
- 
