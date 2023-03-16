@@ -16,7 +16,7 @@ Description: Contains a suite of functions for survival analysis in health econo
     Monte Carlo). To run the Bayesian models, the user needs to install additional modules 
     (packages), i.e. 'survHEinla' and 'survHEhmc'. These can be installed using 
     'remotes::install_github' from their GitHub repositories: 
-    (https://github.com/giabaio/survHE/tree/hmc and https://github.com/giabaio/survHE/tree/inla 
+    (<https://github.com/giabaio/survHE/tree/hmc> and <https://github.com/giabaio/survHE/tree/inla> 
     respectively). 'survHEinla' is based on the package INLA, which is available for download at
     https://inla.r-inla-download.org/R/stable/. The user can specify a set of parametric models 
     using a common notation and select the preferred mode of inference. The results can also be 
@@ -48,8 +48,6 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Additional_repositories: 
-    https://github.com/giabaio/survHE/tree/hmc,
-    https://github.com/giabaio/survHE/tree/inla,
     https://inla.r-inla-download.org/R/stable/
 SystemRequirements: GNU make
 NeedsCompilation: yes
