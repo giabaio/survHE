@@ -18,7 +18,7 @@ Description: Contains a suite of functions for survival analysis in health econo
     'remotes::install_github' from their GitHub repositories: 
     (<https://github.com/giabaio/survHE/tree/hmc> and <https://github.com/giabaio/survHE/tree/inla> 
     respectively). 'survHEinla' is based on the package INLA, which is available for download at
-    https://inla.r-inla-download.org/R/stable/. The user can specify a set of parametric models 
+    <https://inla.r-inla-download.org/R/stable/>. The user can specify a set of parametric models 
     using a common notation and select the preferred mode of inference. The results can also be 
     post-processed to produce probabilistic sensitivity analysis and can be used to export the 
     output to an Excel file (e.g. for a Markov model, as often done by modellers and 
