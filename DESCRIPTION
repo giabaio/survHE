@@ -8,7 +8,7 @@ Authors@R: c(
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"),
     person("Nathan","Green",role="ctb",email="n.green@ucl.ac.uk"))
-URL: https://github.com/giabaio/survHE, https://gianluca.statistica.it/
+URL: https://github.com/giabaio/survHE, https://gianluca.statistica.it/software/survhe/
 BugReports: https://github.com/giabaio/survHE/issues
 Description: Contains a suite of functions for survival analysis in health economics.
     These can be used to run survival models under a frequentist (based on maximum likelihood)
@@ -16,7 +16,7 @@ Description: Contains a suite of functions for survival analysis in health econo
     Monte Carlo). To run the Bayesian models, the user needs to install additional modules 
     (packages), i.e. 'survHEinla' and 'survHEhmc'. These can be installed using 
     'remotes::install_github' from their GitHub repositories: 
-    (<https://github.com/giabaio/survHE/tree/hmc> and <https://github.com/giabaio/survHE/tree/inla> 
+    (<https://github.com/giabaio/survHEhmc> and <https://github.com/giabaio/survHEinla/> 
     respectively). 'survHEinla' is based on the package INLA, which is available for download at
     <https://inla.r-inla-download.org/R/stable/>. The user can specify a set of parametric models 
     using a common notation and select the preferred mode of inference. The results can also be 
