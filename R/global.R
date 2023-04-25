@@ -48,4 +48,4 @@ utils::globalVariables(c(
   "npeople",
   "grp_lab",
   "Group"
-),add="FALSE")
+))
