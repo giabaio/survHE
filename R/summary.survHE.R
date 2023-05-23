@@ -94,7 +94,7 @@ summary.survHE <- function(object,mod=1,t=NULL,nsim=1000,...) {
   mean.surv=matrix(unlist(
     lapply(psa$mat,function(i) {
       lapply(1:psa$nsim,function(j) {
-        xvar=i$t
+        xvar=i$time
         yvar=i[,(j+1)]
         sum(diff(xvar) * (head(yvar,-1)+tail(yvar,-1)), na.rm=TRUE)/2
       })
