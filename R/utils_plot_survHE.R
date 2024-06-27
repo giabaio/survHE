@@ -346,7 +346,7 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
   if (what=="hazard") {
     toplot <- toplot %>%
       group_by(model_name,strata) %>%
-      mutate(S = (-log(S)-lag(-log(S))) / (t-lag(t)) ) %>%
+      mutate(S = (-log(S)-lag(-log(S))) / (time-lag(time)) ) %>%
       ungroup()
     
     # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower
@@ -354,8 +354,8 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
     if ("low" %in% names(toplot)) {
       toplot <- toplot %>%
         group_by(model_name,strata) %>%
-        mutate(low = lag(-log(low))/lag(t),
-               upp = lag(-log(upp))/lag(t)) %>%
+        mutate(low = lag(-log(low))/lag(time),
+               upp = lag(-log(upp))/lag(time)) %>%
         ungroup()
     }
     ylab <- "Hazard"
