@@ -656,7 +656,7 @@ make_profile_surv <- function(formula,data,newdata) {
   # If formula is in 'inla' terms now change it back to 'flexsurv' terms
   formula_temp <- as.formula(gsub("inla.surv","Surv",deparse(formula)))
   # Computes the "average" profile of the covariates
-  X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(mean) 
+  X <- data %>% model.matrix(formula_temp,.) %>% as_tibble(.) %>% summarise_all(.funs="mean") 
   # If there's at least one factor with more than 2 levels, then do *not* rename the columns to the simpler version
   # which only has the name of the variable (rather than the combination, eg 'groupMedium' that R produces)
   if(all(unlist(lapply(fac.levels,length))<=2)) {colnames(X)=colnames(covs)}
@@ -683,20 +683,21 @@ make_profile_surv <- function(formula,data,newdata) {
     } else {
       # Turns the list 'newdata' into a data.frame & ensures the factors are indeed factors
       nd=do.call(rbind.data.frame,newdata) %>% as_tibble() %>% 
-        mutate(across(names(is.fac),factor))
+        mutate(across(names(is.fac),~factor(.)))
       # Augments the original data with the values supplied in 'newdata'. To make things work, 
       # needs to change the type of variables that are 'factors' in the analysis as well as remove
       # the NAs and replace with 0s
-      aug_data=data %>% mutate(across(names(is.fac),factor)) %>% add_row(nd) %>% replace(is.na(.),0)
+      aug_data=data %>% mutate(across(names(is.fac),~factor(.))) %>% add_row(nd) 
       # Creates a model frame with IDs
-      mf=model.frame(formula,aug_data) %>% as_tibble() %>% select(-1) %>% 
+      mf=model.frame(formula,aug_data,na.action="na.pass") %>% as_tibble() %>% select(-1) %>% 
         mutate(id=row_number()) %>% rename_if(is.factor,.funs=~gsub("as.factor[( )]","",.x)) %>% 
         rename_if(is.factor,.funs=~gsub("[( )]","",.x))
-      # Now creates the 'model matrix' with the combination of all the factors
-      mm=model.matrix(formula,aug_data) %>% as_tibble() %>% mutate(id=row_number())
+      # Now creates the 'model matrix' with the combination of all the factors. NB Needs to use model.matrix.lm
+      # which accepts na.action="na.pass" as an option!
+      mm=model.matrix.lm(formula,aug_data,na.action="na.pass") %>% as_tibble() %>% mutate(id=row_number())
       mf=suppressMessages(mf %>% right_join(nd))
       # And selects only the rows that match with the profile selected in 'newdata'
-      X=as.matrix(mm %>% filter(id %in% mf$id) %>% select(-id) %>% unique,drop=FALSE)
+      X=as.matrix(mm %>% dplyr::filter(id %in% mf$id) %>% select(-id) %>% unique,drop=FALSE)
     }
   }
   
