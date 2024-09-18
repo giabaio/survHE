@@ -147,8 +147,8 @@ plot_ggplot_survHE <- function(exArgs) {
     }) |> 
       bind_rows() |> 
       group_by(object_name,model_name) |> 
-      mutate(mods_id=cur_group_id()) |> 
-      ungroup()
+      mutate(mods_id=cur_group_id()) |>
+      ungroup() 
   } else {
     datakm <- NULL
   }
@@ -428,10 +428,10 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
   # Add KM plot? 
   if(!is.null(datakm)) {
     surv.curv <- surv.curv +
-      geom_step(data = datakm, aes(x = time, y = S, group=as.factor(strata)),
+      geom_step(data = datakm, aes(x = time, y = S, group=as.factor(strata:object_name)),
                 color="darkgrey") + 
       geom_ribbon(data = datakm,
-                  aes(x = time, y = S, ymin=lower, ymax=upper, group=as.factor(strata)),
+                  aes(x = time, y = S, ymin=lower, ymax=upper, group=as.factor(strata:object_name)),
                   alpha = 0.2) 
   }
   surv.curv
