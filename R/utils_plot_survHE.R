@@ -120,7 +120,7 @@ plot_ggplot_survHE <- function(exArgs) {
   # Makes the dataset to plot, including *only* the objects and models selected
   toplot <- lapply(sel_mods, function(i) {
     make_data_surv(survHE_objs[[i]],
-                   mods=all_models %>% filter(obj==names(survHE_objs)[i]) %>% pull(mod), 
+                   mods=all_models %>% dplyr::filter(obj==names(survHE_objs)[i]) %>% pull(mod), 
                    nsim=nsim,
                    t=t,
                    newdata=newdata,
@@ -346,7 +346,7 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
   if (what=="hazard") {
     toplot <- toplot %>%
       group_by(model_name,strata) %>%
-      mutate(S = (-log(S)-lag(-log(S))) / (time-lag(time)) ) %>%
+      mutate(S = (-log(S)-dplyr::lag(-log(S))) / (time-dplyr::lag(time)) ) %>%
       ungroup()
     
     # If 'low' is a column of 'toplot' (=nsim>1) then also rescale the lower
@@ -354,8 +354,8 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
     if ("low" %in% names(toplot)) {
       toplot <- toplot %>%
         group_by(model_name,strata) %>%
-        mutate(low = lag(-log(low))/lag(time),
-               upp = lag(-log(upp))/lag(time)) %>%
+        mutate(low = dplyr::lag(-log(low))/dplyr::lag(time),
+               upp = dplyr::lag(-log(upp))/dplyr::lag(time)) %>%
         ungroup()
     }
     ylab <- "Hazard"
