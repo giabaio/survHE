@@ -49,6 +49,7 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Additional_repositories: 
-    https://inla.r-inla-download.org/R/stable/
+    https://inla.r-inla-download.org/R/stable/,
+    https://giabaio.github.io/drat/
 SystemRequirements: GNU make
 NeedsCompilation: yes
