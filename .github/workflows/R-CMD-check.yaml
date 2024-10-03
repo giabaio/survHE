@@ -2,9 +2,9 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 name: R-CMD-check.yaml
 
@@ -40,6 +40,7 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+          extra-repositories: 'https://inla.r-inla-download.org/R/testing'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -50,3 +51,17 @@ jobs:
         with:
           upload-snapshots: true
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
+          
+      - name: Add inla repo
+        run: |
+          cat('options(repos = c(INLA = "https://inla.r-inla-download.org/R/testing/", getOption("repos")))', file = "~/.Rprofile", append = TRUE)
+        # cat("\noptions(tinytex.verbose = TRUE)\n", file = "~/.Rprofile", append = TRUE)
+        shell: Rscript {0}
+        
+      - name: Install survHEhmc from Github
+        run: |
+          Rscript -e "remotes::install_github('giabaio/survHEhmc')"
+        
+      - name: Install survHEinla from Github
+        run: |
+          Rscript -e "remotes::install_github('giabaio/survHEinla')"
