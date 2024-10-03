@@ -2,45 +2,31 @@
 % Please edit documentation in R/survHE-package.R
 \docType{package}
 \name{survHE-package}
-\alias{survHE-package}
 \alias{survHE}
-\title{Survival Analysis in Health Economic Evaluation}
+\alias{survHE-package}
+\title{survHE: Survival Analysis in Health Economic Evaluation}
 \description{
-Contains a suite of functions to perform survival analysis with the aim of
-aiding in health economic modelling (extrapolation, model checking and PSA)
+Contains a suite of functions for survival analysis in health economics. These can be used to run survival models under a frequentist (based on maximum likelihood) or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian Monte Carlo). To run the Bayesian models, the user needs to install additional modules (packages), i.e. 'survHEinla' and 'survHEhmc'. These can be installed using 'remotes::install_github' from their GitHub repositories: (\url{https://github.com/giabaio/survHEhmc} and \url{https://github.com/giabaio/survHEinla/} respectively). 'survHEinla' is based on the package INLA, which is available for download at \url{https://inla.r-inla-download.org/R/stable/}. The user can specify a set of parametric models using a common notation and select the preferred mode of inference. The results can also be post-processed to produce probabilistic sensitivity analysis and can be used to export the output to an Excel file (e.g. for a Markov model, as often done by modellers and practitioners). \doi{10.18637/jss.v095.i14}.
 }
-\details{
-\tabular{ll}{ Package: \tab survHE\cr Type: \tab Package\cr Version: \tab
-2.0.1\cr Date: \tab 2023-03-10\cr License: \tab GPL2 \cr LazyLoad: \tab
-yes\cr } Contains a suite of functions to perform survival analysis with the
-aim of aiding in health economic modelling (extrapolation, model checking
-and PSA)
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/giabaio/survHE}
+  \item \url{https://gianluca.statistica.it/software/survhe/}
+  \item Report bugs at \url{https://github.com/giabaio/survHE/issues}
 }
-\examples{
-\dontrun{ 
-# Loads some survival data
-data(bc)
-# Fits a parametric model
-m <- fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
-    distr="exp",method="mle")
-# Print output in tabular format
-print(m)
-# Visualise output in terms of survival curves
-plot(m)
-}
-}
-\references{
-G Baio (2019). survHE: Survival analysis for health economic evaluation
-and cost-effectiveness modelling. Journal of Statistical Software (2020). vol 95,
-14, 1-47. \url{doi:10.18637/jss.v095.i14}
+
 }
 \author{
-Gianluca Baio
+\strong{Maintainer}: Gianluca Baio \email{g.baio@ucl.ac.uk}
 
-Maintainer: Gianluca Baio
+Other contributors:
+\itemize{
+  \item Andrea Berardi \email{and.be.like@gmail.com} [contributor]
+  \item Philip Cooney \email{philip.cooney@hotmail.com} [contributor]
+  \item Andrew Jones \email{andrew.r.johnson@postgrad.curtin.edu.au} [contributor]
+  \item Nathan Green \email{n.green@ucl.ac.uk} [contributor]
 }
-\keyword{Economic}
-\keyword{Evaluation}
-\keyword{Health}
-\keyword{Modelling}
-\keyword{Survival}
+
+}
+\keyword{internal}

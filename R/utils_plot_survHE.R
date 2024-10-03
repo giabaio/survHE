@@ -234,6 +234,74 @@ plot_ggplot_survHE <- function(exArgs) {
   surv.curv
 }
 
+#' Creates a 'newdata' list to modify the plots for specific individual
+#' profiles (with respect to the covariates)
+#' 
+#' @param data The original dataset that has been used as input to the call
+#' to 'fit.models'
+#' @param vars A vector of strings, including the names of the variables that
+#' are to be used to construct specific profiles of individual covariates
+#' @param conts A subset of 'vars', which include the named covariates that
+#' are continuous. These will be averaged over, while for the remaining 
+#' covariates (assumed to be factors), the specific profiles will be listed. 
+#' Defaults to NULL
+#' @return \item{newdata}{The list 'newdata' to be passed as optional argument
+#' to a call to the 'plot' method}
+#' @return \item{labs}{A vector of labels (say to use in the plot, for each 
+#' profile)}
+#' @note Something will go here
+#' @author Gianluca Baio
+#' @keywords Parametric survival models
+#' @examples
+#' \dontrun{
+#' data(bc)
+#' 
+#' # Fits a model using the 'bc' data
+#' mle = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr="exp",method="mle")
+#' # Now makes the default plot
+#' plot(mle)
+#' # Now creates a 'newdata' list to modify the plot for selected profiles
+#' newdata=make_newdata(data=bc,vars="group")
+#' # And can plot, say, only two of the three treatment arms
+#' plot(mle,newdata=newdata$newdata[c(1,3)],lab.profile=newdata$labs[c(1,3)])
+#' }
+#' 
+#' @export make_newdata
+
+make_newdata=function(data,vars,conts=NULL) {
+  df= 
+    # Takes the original data
+    data |> 
+    # Selects the relevant variables to construct the profiles
+    select(all_of(vars)) |> 
+    # Takes the mean for the continuous variables
+    mutate(across(all_of(conts),~mean(.x))) |> 
+    # Takes only the unique combinations
+    unique() 
+  
+  # Creates a vector of labels (say to use in the plot, for each profile)
+  labs=df |> 
+    # Don't need to keep the continuous variables as they've been averaged over
+    select(-conts) |> 
+    # Uses 'unite' to turn into vectors
+    tidyr::unite(labs,sep=", ") |> 
+    # NB: needs to remove names in the vector or else won't work in the plot(...)
+    unlist(use.names=F)
+  
+  # Creates the list 'newdata' to pass to the plot function
+  newdata = df |> 
+    # And then transforms into a list of values
+    (function(.) split(.,f=seq(nrow(.))))() 
+  
+  # Returns the output
+  list(
+    newdata=newdata,
+    labs=labs
+  )
+}
+
+
 
 #' Make the dataset to be used by \code{ggplot2} to plot the survival curves
 #' 

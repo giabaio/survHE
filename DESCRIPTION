@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 2.0.1
-Date: 2023-05-23
+Version: 2.0.2
+Date: 2024-10-03
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
@@ -27,7 +27,7 @@ License: GPL (>=3)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Biarch: true
 Depends: 
     methods,
@@ -39,7 +39,8 @@ Imports:
     rms,
     xlsx,
     tools,
-    tibble
+    tibble,
+    tidyr
 Suggests:
     survHEinla,
     survHEhmc,

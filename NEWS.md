@@ -23,3 +23,5 @@ geom_step(data = datakm, aes(x = time, y = S, group=as.factor(strata:object_name
                   alpha = 0.2) 
 ```
 This means that when plotting two or more `survHE` objects, the KM is added and displayed correctly
+
+* Adds a utility function `make_newdata` that can be used to generate profiles of covariates, to then plot specific groups of individuals' survival or hazard curves.

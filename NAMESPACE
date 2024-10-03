@@ -27,8 +27,9 @@ importFrom("utils", "read.table","write.table","head","tail","modifyList")
 importFrom("stats", "terms","as.formula","model.frame","model.matrix","dexp",
            "pexp","dweibull","pweibull","dgamma","pgamma","median","var","time",
            "update","dt","profile","dlnorm","plnorm","dlogis","plogis","sd",
-           "quantile","qnorm")
+           "quantile","qnorm","model.matrix.lm")
 importFrom("grDevices", "colors","adjustcolor","colorRampPalette")
 importFrom("tools", "file_ext")
 importFrom("rms", "npsurv","survplot")
 importFrom("tibble", "rownames_to_column")
+importFrom("tidyr", "unite")
