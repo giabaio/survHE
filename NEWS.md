@@ -1,4 +1,4 @@
-# survHE 1.1.3
+# survHE 2.0.2
 
 * Added a `NEWS.md` file to track changes to the package.
 
