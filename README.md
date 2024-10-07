@@ -21,8 +21,12 @@ To run the Bayesian versions of the models, you also need to install the ancilla
 ```R
 # Bayesian models using HMC/Stan
 remotes::install_github("giabaio/survHEhmc")
+# or alternatively
+install.packages("survHEhmc",repos=c("https://giabaio.github.io/drat/","https://www.stats.bris.ac.uk/R/"),type="source")
 
 # Bayesian models using INLA
 remotes::install_github("giabaio/survHEinla")
+# or alternatively
+install.packages("survHEinla",repos=c("https://giabaio.github.io/drat/","https://www.stats.bris.ac.uk/R/"),type="source")
 ```
 (these two are optional, in some sense, so you don't *have* to, unless you want to do the right thing and be Bayesian about it... :wink:)
