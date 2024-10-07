@@ -1,8 +1,8 @@
-# survHE 2.0.2
+# 2.0.2
 
-* Added a `NEWS.md` file to track changes to the package.
+* Added a `NEWS.md` file to track changes to the package (to replace the old `.Rd` version).
 
-_September 2024_
+_October 2024_
 
 Patch code in support of plotting (`R/utils_fit_models.R`)
 
@@ -25,6 +25,8 @@ geom_step(data = datakm, aes(x = time, y = S, group=as.factor(strata:object_name
 This means that when plotting two or more `survHE` objects, the KM is added and displayed correctly
 
 * Adds a utility function `make_newdata` that can be used to generate profiles of covariates, to then plot specific groups of individuals' survival or hazard curves.
+
+_September 2024_
 
 # 2.0.1
 
