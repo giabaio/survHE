@@ -56,7 +56,7 @@ make.transition.probs <- function(fit,labs=NULL,...) {
   strata <- lapply(1:nrow(s$des.mat),function(x){
     s$des.mat %>%
       as_tibble() %>%
-      select(-matches("(Intercept)",everything())) %>%
+      select(!contains("(Intercept)")) %>%
       slice(x) %>% 
       round(digits=2) %>%
       mutate(strata=paste0(names(.),"=",.,collapse=","))

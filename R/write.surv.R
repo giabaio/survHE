@@ -61,7 +61,7 @@ write.surv <- function(object,file,sheet=NULL,what="surv") {
     }
     nobjs <- length(export)
     profile.lab=lapply(1:nrow(object$des.mat),function(x){
-      object$des.mat %>% as_tibble() %>% select(-matches("(Intercept)",everything())) %>% slice(x) %>% 
+      object$des.mat %>% as_tibble() %>% select(!contains("(Intercept)")) %>% slice(x) %>% 
         round(digits=2) %>% mutate(strata=paste0(names(.),"=",.,collapse=","))
     }) %>% bind_rows(.) %>% pull(strata)
     dims <- dim(export[[1]])

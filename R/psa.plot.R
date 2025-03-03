@@ -51,7 +51,7 @@ psa.plot <- function(psa,...) {
   strata <- lapply(1:nrow(psa$des.mat), function(x) {
     psa$des.mat %>%
       as_tibble() %>%
-      select(-matches("(Intercept)",everything())) %>%
+      select(!contains("(Intercept)")) %>%
       slice(x) %>% 
       round(digits=2) %>%
       mutate(strata=paste0(names(.),"=",.,collapse=","))}) %>%

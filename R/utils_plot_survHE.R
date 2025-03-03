@@ -330,7 +330,7 @@ make_data_surv <- function(x, mods=1:length(x$models), nsim=1,
     lapply(1:nrow(s[[i]]$des.mat), function(x) {
       s[[i]]$des.mat %>%
         as_tibble() %>%
-        select(-matches("(Intercept)",everything())) %>%
+        select(!contains("(Intercept)")) %>%
         slice(x) %>% 
         round(digits=2) %>%
         mutate(strata=paste0(names(.),"=",.,collapse=","))
