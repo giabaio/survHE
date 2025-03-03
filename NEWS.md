@@ -1,7 +1,7 @@
 # 2.0.3
 
 * Fixes dependency to R >= 4.1.0 because of the use of natural pipes
-* Fixes tests
+* Fixes tests --- needs to use `select(!contains("(Intercept)"))` instead of `select(-matches("Intercept"),everything())` in several parts of the code. This was previously used to determine the names of the strata, used to plot the survival curves
 
 # 2.0.2
 
