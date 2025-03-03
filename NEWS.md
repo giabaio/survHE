@@ -1,3 +1,8 @@
+# 2.0.3
+
+* Fixes dependency to R >= 4.1.0 because of the use of natural pipes
+* Fixes tests
+
 # 2.0.2
 
 * Added a `NEWS.md` file to track changes to the package (to replace the old `.Rd` version).

@@ -453,7 +453,7 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
     surv.curv <- surv.curv+
       geom_line(data = toplot,
                 aes(x=time, y=S, group=model_name:strata,col=model_name, linetype=linetype),
-                size = 0.9) 
+                linewidth = 0.9) 
   } else {
     surv.curv <- surv.curv +
       geom_line(data = toplot,
@@ -474,7 +474,7 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
           panel.background = element_blank(),
           panel.border = element_blank(),
           plot.title = element_text(size=18, face="bold")) +
-    theme(legend.position=c(.75,.78),
+    theme(legend.position="inside", legend.position.inside=c(.75,.78),
           legend.title=element_text(size=15,face="bold"),
           #legend.title = element_blank(),
           legend.text = element_text(colour="black", size=14, face="plain"),

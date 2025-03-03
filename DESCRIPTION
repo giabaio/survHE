@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 2.0.2
-Date: 2024-10-03
+Version: 2.0.3
+Date: 2025-03-05
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
@@ -31,7 +31,7 @@ RoxygenNote: 7.3.2
 Biarch: true
 Depends: 
     methods,
-    R (>= 3.6.0),
+    R (>= 4.1.0),
     flexsurv,
     dplyr,
     ggplot2
@@ -50,6 +50,6 @@ Suggests:
 Config/testthat/edition: 3
 Additional_repositories: 
     https://inla.r-inla-download.org/R/stable/,
-    https://giabaio.github.io/drat/
+    https://giabaio.r-universe.dev/
 SystemRequirements: GNU make
 NeedsCompilation: yes

@@ -66,7 +66,7 @@ psa.plot <- function(psa,...) {
   if(exists("name_labs",where=exArgs)){name_labs=exArgs$name_labs} else {name_labs="Profile"}
   
   psa.plot <- ggplot(data=toplot,aes(x=time, y=S, colour=strata)) +
-    geom_line(size=.9) +
+    geom_line(linewidth=.9) +
     theme_bw() + 
     theme(axis.text.x = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
           axis.text.y = element_text(color="black",size=12,angle=0,hjust=.5,vjust=.5),
@@ -79,7 +79,7 @@ psa.plot <- function(psa,...) {
           panel.background = element_blank(),
           panel.border = element_blank(),
           plot.title = element_text(size=18, face="bold")) +
-    theme(legend.position=c(.75,.9),
+    theme(legend.position="inside", legend.position.inside=c(.75,.9),
           legend.title=element_text(size=15,face="bold"),
           #legend.title = element_blank(),
           legend.text = element_text(colour="black", size=14, face="plain"),
