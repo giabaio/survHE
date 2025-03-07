@@ -235,7 +235,7 @@ rescale_stats_hmc_llo <- function(table,x) {
 #' @keywords HMC GenF
 #' @noRd 
 rescale_stats_hmc_gef <- function(table,x) {
-  mu <- matrix(table[grep("beta",rownames(table)),],ncol=4,nrow=1)
+  mu <- matrix(table[grep("beta",rownames(table)),,drop=FALSE][1,],ncol=4,nrow=1)
   rownames(mu) <- "mu"
   sigma <- matrix(table[grep("sigma",rownames(table)),],ncol=4)
   rownames(sigma) <- "sigma"

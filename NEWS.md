@@ -1,3 +1,7 @@
+# 2.0.4
+
+* Fixes a slight mistake in the table for the Gen F. Now works properly on the beta coefficients
+
 # 2.0.3
 
 * Fixes dependency to R >= 4.1.0 because of the use of natural pipes
