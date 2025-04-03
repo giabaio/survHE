@@ -453,14 +453,20 @@ markov_trace <- function(mm, interventions=NULL,...) {
                              pull(n)))
   }
   
-  pl <- mm$m %>%
+  pl=mm$m |> group_by(profile,time) |> 
+    summarise(
+      `Pre-progressed`=mean(`Pre-progressed`),Progressed=mean(Progressed),
+      Death=mean(Death)
+    ) |> 
+    ungroup()
+  pl <- pl |>
     select(profile,time,`Pre-progressed`) %>%
     rename(npeople=`Pre-progressed`) %>%
     mutate(group="Pre-progressed") %>%
-    bind_rows(mm$m %>% select(profile,time,`Progressed`) %>%
+    bind_rows(pl %>% select(profile,time,`Progressed`) %>%
                 rename(npeople=Progressed) %>%
                 mutate(group="Progressed")) %>%
-    bind_rows(mm$m %>% select(profile,time,Death) %>%
+    bind_rows(pl %>% select(profile,time,Death) %>%
                 rename(npeople=Death) %>%
                 mutate(group="Death")) %>%
     # Create a numeric/factor group label to help manage the appearance of the graph
