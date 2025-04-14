@@ -13,20 +13,29 @@ Contains a suite of functions to systematise the workflow involving survival ana
 ## Installation
 The most updated version can be installed using the following code.
 ```R
-install.packages("remotes")
-remotes::install_github("giabaio/survHE")
-```
+install.packages(
+   "survHE", 
+   repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org")
+)
 
 To run the Bayesian versions of the models, you also need to install the ancillary packages
 ```R
 # Bayesian models using HMC/Stan
-remotes::install_github("giabaio/survHEhmc")
-# or alternatively
-install.packages("survHEhmc",repos=c("https://giabaio.github.io/drat/","https://www.stats.bris.ac.uk/R/"),type="source")
+install.packages(
+   "survHEhmc", 
+   repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org"),
+   dependencies=TRUE
+)
 
 # Bayesian models using INLA
-remotes::install_github("giabaio/survHEinla")
-# or alternatively
-install.packages("survHEinla",repos=c("https://giabaio.github.io/drat/","https://www.stats.bris.ac.uk/R/"),type="source")
+install.packages(
+   "survHEinla", 
+   repos = c(
+      "https://giabaio.r-universe.dev", 
+      "https://cloud.r-project.org",
+      "https://inla.r-inla-download.org/R/stable"
+   ),
+   dependencies=TRUE
+)
 ```
 (these two are optional, in some sense, so you don't *have* to, unless you want to do the right thing and be Bayesian about it... :wink:)
