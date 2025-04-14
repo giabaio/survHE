@@ -17,6 +17,7 @@ install.packages(
    "survHE", 
    repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org")
 )
+```
 
 To run the Bayesian versions of the models, you also need to install the ancillary packages
 ```R
