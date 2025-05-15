@@ -1,3 +1,7 @@
+# 2.0.5
+
+* Adds a `ggplot` theme `theme_survHE` to be used with combined plots (eg for a `survextrap` element)
+
 # 2.0.4
 
 * Fixes a slight mistake in the table for the Gen F. Now works properly on the beta coefficients

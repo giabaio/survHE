@@ -302,6 +302,42 @@ make_newdata=function(data,vars,conts=NULL) {
 }
 
 
+#' A Custom ggplot2 Theme for Survival Plots
+#'
+#' This theme is designed for use with survival analysis plots, particularly
+#' those created using the `survHE` package. It builds on `theme_bw()` and
+#' customizes axis text, titles, plot background, and legend styling.
+#'
+#' Note: To position the legend inside the plot, use an additional call to
+#' `theme(legend.position = c(x, y), legend.justification = c("left", "top"))`.
+#'
+#' @return A ggplot2 theme object that can be added to a ggplot.
+#' @examples
+#' library(ggplot2)
+#' library(survHE)
+#' ggplot(mtcars, aes(wt, mpg)) +
+#'  geom_point() +
+#'  theme_survHE() +
+#'  theme(legend.position = c(0.6, 0.8), legend.justification = c("left", "top"))
+#' @export
+theme_survHE <- function() {
+  theme_bw() +
+    theme(
+      axis.text.x = element_text(color = "black", size = 12),
+      axis.text.y = element_text(color = "black", size = 12),
+      axis.title.x = element_text(color = "black", size = 14),
+      axis.title.y = element_text(color = "black", size = 14),
+      axis.line = element_line(colour = "black"),
+      panel.background = element_blank(),
+      panel.border = element_blank(),
+      plot.title = element_text(size = 18, face = "bold"),
+      legend.position = "none",  # Default to off; override as needed
+      legend.background = element_blank(),
+      legend.title = element_text(size = 15, face = "bold"),
+      legend.text = element_text(colour = "black", size = 14, face = "plain")
+    )
+}
+
 
 #' Make the dataset to be used by \code{ggplot2} to plot the survival curves
 #' 
