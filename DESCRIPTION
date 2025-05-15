@@ -1,7 +1,7 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
 Version: 2.0.4
-Date: 2025-03-07
+Date: 2025-05-15
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
@@ -14,10 +14,12 @@ Description: Contains a suite of functions for survival analysis in health econo
     These can be used to run survival models under a frequentist (based on maximum likelihood)
     or a Bayesian approach (both based on Integrated Nested Laplace Approximation or Hamiltonian
     Monte Carlo). To run the Bayesian models, the user needs to install additional modules 
-    (packages), i.e. 'survHEinla' and 'survHEhmc'. These can be installed using 
-    'remotes::install_github' from their GitHub repositories: 
-    (<https://github.com/giabaio/survHEhmc> and <https://github.com/giabaio/survHEinla/> 
-    respectively). 'survHEinla' is based on the package INLA, which is available for download at
+    (packages), i.e. 'survHEinla' and 'survHEhmc'. These can be installed from 
+    <https://giabaio.r-universe.dev/> using 
+    'install.packages("survHEhmc", repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org"))'
+    and 
+    'install.packages("survHEinla", repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org"))'
+    respectively. 'survHEinla' is based on the package INLA, which is available for download at
     <https://inla.r-inla-download.org/R/stable/>. The user can specify a set of parametric models 
     using a common notation and select the preferred mode of inference. The results can also be 
     post-processed to produce probabilistic sensitivity analysis and can be used to export the 
@@ -52,4 +54,3 @@ Additional_repositories:
     https://inla.r-inla-download.org/R/stable/,
     https://giabaio.r-universe.dev/
 SystemRequirements: GNU make
-NeedsCompilation: yes

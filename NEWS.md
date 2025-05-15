@@ -1,6 +1,7 @@
 # 2.0.4
 
 * Fixes a slight mistake in the table for the Gen F. Now works properly on the beta coefficients
+* Updates DESCRIPTION with details of installatin for the add-ons `survHEinla` and `survHEhmc`
 
 # 2.0.3
 
