@@ -10,15 +10,17 @@ test_that("output plots don't throw an error and return ggplot2 list", {
   p.mle2 <- make.surv(mle, nsim = 2)
   p.mle3 <- make.surv(mle, nsim = 2, mod = 2)
   
-  expect_type(plot(mle, nsim=10), "list")
+  ## Need to change the test here from using expect_type(...,"list"), which 
+  ## now breaks given the move to s7 for the newer version of 'ggplot2'
+  expect_true(is_ggplot(plot(mle, nsim=10)))
   
-  expect_type(psa.plot(p.mle), "list")
-  expect_type(psa.plot(p.mle), "list")
+  expect_true(is_ggplot(psa.plot(p.mle)))
+  expect_true(is_ggplot(psa.plot(p.mle)))
   
-  expect_type(psa.plot(p.mle2), "list")
+  expect_true(is_ggplot(psa.plot(p.mle2)))
   
-  expect_type(psa.plot(p.mle3), "list")
+  expect_true(is_ggplot(psa.plot(p.mle3)))
   
-  expect_type(plot(mle, add.km=TRUE), "list")
-  expect_type(plot(mle, add.km=TRUE, sim = 10), "list")
+  expect_true(is_ggplot(plot(mle, add.km=TRUE)))
+  expect_true(is_ggplot(plot(mle, add.km=TRUE, sim = 10)))
 })

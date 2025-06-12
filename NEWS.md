@@ -1,18 +1,19 @@
-# 2.0.5
+# 2.0.5 (June 2025)
 
 * Adds a `ggplot` theme `theme_survHE` to be used with combined plots (eg for a `survextrap` element)
+* Fix the tests, due to changes in the upcoming new release of `ggplot2`, which is now transitioning to S7 class (see [here](https://github.com/tidyverse/ggplot2/issues/6498))
 
-# 2.0.4
+# 2.0.4 (May 2025)
 
 * Fixes a slight mistake in the table for the Gen F. Now works properly on the beta coefficients
-* Updates DESCRIPTION with details of installatin for the add-ons `survHEinla` and `survHEhmc`
+* Updates DESCRIPTION with details of installation for the add-ons `survHEinla` and `survHEhmc`
 
-# 2.0.3
+# 2.0.3 (March 2025)
 
 * Fixes dependency to R >= 4.1.0 because of the use of natural pipes
 * Fixes tests --- needs to use `select(!contains("(Intercept)"))` instead of `select(-matches("Intercept"),everything())` in several parts of the code. This was previously used to determine the names of the strata, used to plot the survival curves
 
-# 2.0.2
+# 2.0.2 (October 2024)
 
 * Added a `NEWS.md` file to track changes to the package (to replace the old `.Rd` version).
 
