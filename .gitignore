@@ -37,4 +37,6 @@ src/*.so
 src/*.o
 ## src/stan_files/*.hpp
 ## src/stan_files/*.o
+# Renv stuff
 renv/
+renv.lock
