@@ -34,22 +34,35 @@ jobs:
 
       - uses: r-lib/actions/setup-r@v2
         with:
+          extra-repositories: 'https://inla.r-inla-download.org/R/testing'
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-pandoc@v2
+      
+      - name: Add inla repo
+        run: |
+          cat('options(repos = c(INLA = "https://inla.r-inla-download.org/R/testing/", getOption("repos")))', file = "~/.Rprofile", append = TRUE)
+        # cat("\noptions(tinytex.verbose = TRUE)\n", file = "~/.Rprofile", append = TRUE)
+        shell: Rscript {0}
 
       - name: Double check repos
         run: |
           print(getOption("repos"))
         shell: Rscript {0}
 
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"all"'
           extra-packages: |
-             rcmdcheck
+            rcmdcheck
+            rstan
+            StanHeaders
+            Rcpp
+            RcppParallel
+            inline
           
       - uses: r-lib/actions/check-r-package@v2
         with:
