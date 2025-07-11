@@ -15,9 +15,11 @@ choose which model fit to visualise, if the call to fit.models has a vector
 argument for distr (so many models are fitted & stored in the same object)}
 
 \item{\dots}{additional options, including: \code{digits} = number of
-significant digits to be shown in the summary table (default = 6)
+significant digits to be shown in the summary table (default = 6);
 \code{original} = a flag to say whether the \emph{original} table
-from either \code{flexsurv} or \code{INLA} or \code{rstan} should be printed}
+from either \code{flexsurv} or \code{INLA} or \code{rstan} should be printed;
+\code{print_priors} = a flag to sy whether the Stan table should also
+include a summary of the prior used in the HMC model}
 }
 \description{
 Prints the summary table for the model(s) fitted, with the estimate of the
