@@ -797,7 +797,7 @@ extract_model_block <- function(x, mod = 1) {
           }
         })
         prefix <- if (!is.null(beta_names) && length(beta_names) >= i) {
-          paste0(beta_names[i], "_")
+          paste0(beta_names[i], ": ")
         } else {
           ""
         }
