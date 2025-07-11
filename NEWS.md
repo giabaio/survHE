@@ -1,4 +1,9 @@
-# 2.0.5 (June 2025)
+# 2.0.51 (development version)
+## July 2025
+
+* Slightly modifies the `print` method, so that the `original=TRUE` option can also be compounded with an additional option `print_priors=TRUE`. For HMC models, this also adds to the table of results a summary of the prior modelling assumptions.
+
+# 2.0.5 (June 2025) - submitted to CRAN
 
 * Adds a `ggplot` theme `theme_survHE` to be used with combined plots (eg for a `survextrap` element)
 * Fix the tests, due to changes in the upcoming new release of `ggplot2`, which is now transitioning to S7 class (see [here](https://github.com/tidyverse/ggplot2/issues/6498))

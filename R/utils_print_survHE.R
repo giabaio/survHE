@@ -616,7 +616,7 @@ add_effects_hmc <- function(table,x) {
 #' @references Baio (2020). survHE
 #' @keywords MLE
 #' @noRd 
-original_table_mle <- function(x,mod,digits) {
+original_table_mle <- function(x,mod,digits,...) {
   print(x$models[[mod]],digits=digits)
 }
 
@@ -630,7 +630,7 @@ original_table_mle <- function(x,mod,digits) {
 #' @references Baio (2020). survHE
 #' @keywords INLA
 #' @noRd 
-original_table_inla <- function(x,mod,digits) {
+original_table_inla <- function(x,mod,digits,...) {
   print(summary(x$models[[mod]]),digits=digits)
   cat("\n")
   cat("NB: notice that INLA models are fitted to data rescaled in [0-1] for computational stability.")
@@ -648,8 +648,14 @@ original_table_inla <- function(x,mod,digits) {
 #' @references Baio (2020). survHE
 #' @keywords HMC
 #' @noRd 
-original_table_hmc <- function(x,mod,digits) {
+original_table_hmc <- function(x,mod,digits,...) {
+  exArgs=list(...)
+  if(!exists("print_priors",where=exArgs)){print_priors=FALSE} else {print_priors=exArgs$print_priors}
   print(x$models[[mod]],digits=digits)
+  if (print_priors==TRUE) {
+    cat("\nPrior modelling assumptions")
+    extract_model_block(x,mod) |> cat()
+  }
 }
 
 
@@ -701,4 +707,113 @@ format_table <- function(x,mod,res,digits){
     cat(paste0("Deviance Information Criterion (DIC)..: ",format(x$model.fitting$dic[[mod]],digits=6,nsmall=3)))
   }
   cat("\n\n")
+}
+
+#' Helper function to extract the prior modelling assumptions from a Stan model
+#' 
+#' @param x The 'survHE' model
+#' @param mod Which of the models to be used
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords Stan model prior assumptions
+#' @noRd 
+extract_model_block <- function(x, mod = 1) {
+  if (!"models" %in% names(x)) stop("x does not have a 'models' element.")
+  if (mod < 1 || mod > length(x$models)) stop("Invalid model index.")
+  
+  data_list <- x$misc$data.stan[[mod]]
+  if (is.null(data_list)) stop(sprintf("No data found in x$misc$data.stan[[%d]]", mod))
+  
+  stan_code <- x$models[[mod]]@stanmodel@model_code
+  pattern <- "model\\s*\\{"
+  start <- regexpr(pattern, stan_code, perl = TRUE)
+  if (start == -1) {
+    warning(sprintf("No 'model' block found in model %d", mod))
+    return(NULL)
+  }
+  
+  open_pos <- start + attr(start, "match.length") - 1
+  chars <- strsplit(stan_code, "")[[1]]
+  brace_count <- 1
+  pos <- open_pos + 1
+  block_content <- c()
+  while (brace_count > 0 && pos <= length(chars)) {
+    if (chars[pos] == "{") brace_count <- brace_count + 1
+    if (chars[pos] == "}") brace_count <- brace_count - 1
+    if (brace_count > 0) block_content <- c(block_content, chars[pos])
+    pos <- pos + 1
+  }
+  
+  block_string <- paste(block_content, collapse = "")
+  lines <- strsplit(block_string, "\n")[[1]]
+  trimmed_lines <- sub("^\\s+", "", lines)
+  
+  # Get beta variable names from colnames of X matrix
+  beta_names <- NULL
+  if (!is.null(data_list$X) && !is.null(colnames(data_list$X))) {
+    beta_names <- colnames(data_list$X)
+  }
+  
+  output_lines <- c()
+  for (line in trimmed_lines) {
+    if (grepl("^t\\s*~", line)) {
+      new_line <- sub(";$", "", line)  # remove trailing ;
+      output_lines <- c(output_lines, new_line)
+      next
+    }
+    
+    if (grepl("^alpha\\s*~", line)) {
+      params_str <- sub(".*\\((.*)\\).*", "\\1", line)
+      params <- strsplit(params_str, ",")[[1]]
+      params <- trimws(params)
+      params <- sapply(params, function(p) {
+        if (p %in% names(data_list)) as.character(data_list[[p]]) else p
+      })
+      new_line <- paste0("alpha ~ ", sub(".*~\\s*(\\w+).*", "\\1", line),
+                         "(", paste(params, collapse = ", "), ")")
+      output_lines <- c(output_lines, new_line)
+      next
+    }
+    
+    if (grepl("^beta\\s*~", line)) {
+      if (!is.null(data_list$mu_beta)) {
+        K <- length(data_list$mu_beta)
+      } else if (!is.null(data_list$sigma_beta)) {
+        K <- length(data_list$sigma_beta)
+      } else {
+        stop("Cannot find mu_beta or sigma_beta in data to determine length of beta.")
+      }
+      
+      params_str <- sub(".*\\((.*)\\).*", "\\1", line)
+      params <- strsplit(params_str, ",")[[1]]
+      params <- trimws(params)
+      
+      for (i in seq_len(K)) {
+        params_i <- sapply(params, function(p) {
+          if (p %in% names(data_list)) {
+            val <- data_list[[p]]
+            if (length(val) > 1) val[i] else val
+          } else {
+            p
+          }
+        })
+        prefix <- if (!is.null(beta_names) && length(beta_names) >= i) {
+          paste0(beta_names[i], "_")
+        } else {
+          ""
+        }
+        new_line <- paste0(prefix, "beta[", i, "] ~ ",
+                           sub(".*~\\s*(\\w+).*", "\\1", line),
+                           "(", paste(params_i, collapse = ", "), ")")
+        output_lines <- c(output_lines, new_line)
+      }
+      next
+    }
+    
+    new_line <- sub(";$", "", line)  # remove trailing ;
+    output_lines <- c(output_lines, new_line)
+  }
+  
+  paste(output_lines, collapse = "\n")
 }

@@ -51,7 +51,7 @@ print.survHE <- function(x,mod=1,...) {
   if(original==TRUE) {
     do.call(
       paste0("original_table_",x$method),
-      args=list(x,mod,digits)
+      args=list(x,mod,digits,...)
     )
   } # If not, go with the default formatting using the standardised 'survHE' output
   else {
