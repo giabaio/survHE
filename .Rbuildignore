@@ -23,3 +23,7 @@
 ^CRAN-SUBMISSION$
 ^CITATION.cff
 ^\.github$
+^README\.Rmd$
+^_README_cache$
+^README_files$
+^README\.md$
