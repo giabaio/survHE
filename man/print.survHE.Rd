@@ -18,8 +18,8 @@ argument for distr (so many models are fitted & stored in the same object)}
 significant digits to be shown in the summary table (default = 6);
 \code{original} = a flag to say whether the \emph{original} table
 from either \code{flexsurv} or \code{INLA} or \code{rstan} should be printed;
-\code{print_priors} = a flag to sy whether the Stan table should also
-include a summary of the prior used in the HMC model}
+\code{print_priors} = a flag to say whether the distributional assumptions
+for the HMC model (only)}
 }
 \description{
 Prints the summary table for the model(s) fitted, with the estimate of the

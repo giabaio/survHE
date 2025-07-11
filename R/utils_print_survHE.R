@@ -616,7 +616,7 @@ add_effects_hmc <- function(table,x) {
 #' @references Baio (2020). survHE
 #' @keywords MLE
 #' @noRd 
-original_table_mle <- function(x,mod,digits,...) {
+original_table_mle <- function(x,mod,digits,print_priors) {
   print(x$models[[mod]],digits=digits)
 }
 
@@ -630,7 +630,7 @@ original_table_mle <- function(x,mod,digits,...) {
 #' @references Baio (2020). survHE
 #' @keywords INLA
 #' @noRd 
-original_table_inla <- function(x,mod,digits,...) {
+original_table_inla <- function(x,mod,digits,print_priors) {
   print(summary(x$models[[mod]]),digits=digits)
   cat("\n")
   cat("NB: notice that INLA models are fitted to data rescaled in [0-1] for computational stability.")
@@ -648,9 +648,7 @@ original_table_inla <- function(x,mod,digits,...) {
 #' @references Baio (2020). survHE
 #' @keywords HMC
 #' @noRd 
-original_table_hmc <- function(x,mod,digits,...) {
-  exArgs=list(...)
-  if(!exists("print_priors",where=exArgs)){print_priors=FALSE} else {print_priors=exArgs$print_priors}
+original_table_hmc <- function(x,mod,digits,print_priors) {
   print(x$models[[mod]],digits=digits)
   if (print_priors==TRUE) {
     cat("\nPrior modelling assumptions")
