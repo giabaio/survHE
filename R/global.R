@@ -47,5 +47,6 @@ utils::globalVariables(c(
   "sim_idx",
   "npeople",
   "grp_lab",
-  "Group"
+  "Group",
+  "id"
 ))
