@@ -1,4 +1,8 @@
 # 2.0.51 (development version)
+## January 2026
+
+* Aligns with changes in `dplyr` and adds `id` to the global functions.
+
 ## July 2025
 
 * Slightly modifies the `print` method, so that the `original=TRUE` option can also be compounded with an additional option `print_priors=TRUE`. For HMC models, this also adds to the table of results a summary of the prior modelling assumptions.
