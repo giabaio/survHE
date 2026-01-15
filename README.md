@@ -7,6 +7,11 @@ survHE
 
 ## Survival analysis in health economic evaluation
 
+:rocket: This is the **development version** of the `R` package `survHE`
+(currently at version 2.0.52). A “stable” version (as of 15 January
+2026: 2.0.51) is packaged and available from
+[CRAN](https://cran.r-project.org/web/packages/survHE/index.html).
+
 Contains a suite of functions to systematise the workflow involving
 survival analysis in health economic evaluation. survHE can fit a large
 range of survival models using both a frequentist approach (by calling

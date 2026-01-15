@@ -4,5 +4,5 @@
 #' @return NULL
 #' @noRd
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("The survHE version loaded is: ", utils::packageVersion("survHE"), " (stable version)")
+  packageStartupMessage("The survHE version loaded is: ", utils::packageVersion("survHE"), " (development version)")
 }

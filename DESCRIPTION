@@ -1,6 +1,6 @@
 Package: survHE
 Title: Survival Analysis in Health Economic Evaluation
-Version: 2.0.51
+Version: 2.0.52
 Authors@R: c(
     person(given = "Gianluca",family = "Baio",role = c("aut", "cre"),email = "g.baio@ucl.ac.uk"),
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),

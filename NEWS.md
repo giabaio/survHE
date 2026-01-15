@@ -1,4 +1,6 @@
-# 2.0.51 (development version)
+# 2.0.52 (development version)
+
+# 2.0.51 
 ## January 2026
 
 * Aligns with changes in `dplyr` and adds `id` to the global functions.
