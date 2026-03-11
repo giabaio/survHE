@@ -1,5 +1,8 @@
 # 2.0.52 (development version)
 
+## March 2026
+* Fixes a small typo in the utility function `survHE:::make_surv_curve_plot` -- replaces `size` with `linewidth` in a call to `geom_line`. This avoids a warning.
+
 # 2.0.51 
 ## January 2026
 

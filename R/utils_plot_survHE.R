@@ -495,7 +495,7 @@ make_surv_curve_plot <- function(toplot, datakm=NULL, mods, what="survival") {
       geom_line(data = toplot,
                 aes(x = time, y=S, group=model_name:strata:object_name,
                     col=object_name:model_name, linetype=linetype),
-                size = 0.9)   
+                linewidth = 0.9)   
   }
   surv.curv <- surv.curv +
     theme_bw() + 
