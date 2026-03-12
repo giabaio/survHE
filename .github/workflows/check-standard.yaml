@@ -1,20 +1,15 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/master/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-
 on:
   push:
     branches: [dev, main, master]
   pull_request:
     branches: [dev, main, master]
-
 name: R-CMD-check
-
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
-
     strategy:
       fail-fast: false
       matrix:
@@ -24,11 +19,9 @@ jobs:
           - {os: ubuntu-latest,  r: 'devel'}
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel-1'}
-
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-
     steps:
       - uses: actions/checkout@v2
 
@@ -42,10 +35,19 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
+      - name: Add INLA repo to Rprofile
+        run: |
+          cat('options(repos = c(INLA = "https://inla.r-inla-download.org/R/testing/", getOption("repos")))', file = "~/.Rprofile", append = TRUE)
+        shell: Rscript {0}
+
       - name: Check configured repositories
         run: |
           print(getOption("repos"))
         shell: Rscript {0}
+
+      - name: Install spatial system libraries (macOS)
+        if: runner.os == 'macOS'
+        run: brew install gdal proj geos
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -61,4 +63,3 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-
