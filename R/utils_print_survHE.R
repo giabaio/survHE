@@ -552,6 +552,51 @@ rescale_stats_inla_gom <- function(x,mod,nsim=1000) {
   return(res)
 }
 
+#' Helper function to rescale the stats for the Gamma model (INLA)
+#' 
+#' @param table The table with the relevant values for the model 
+#' parameters
+#' @return \item{res}{The resulting stats}
+#' @author Gianluca Baio
+#' @seealso print.survHE
+#' @references Baio (2020). survHE
+#' @keywords INLA Gamma
+#' @noRd 
+rescale_stats_inla_gam <- function(x,mod,nsim=1000) {
+  # Hyperparameter [[1]] for gamma.surv is the shape phi (= precision parameter).
+  # It is already on the natural scale in $marginals.hyperpar.
+  phi_sim <- INLA::inla.rmarginal(nsim, x$models[[mod]]$marginals.hyperpar[[1]])
+  fixeff_sim <- lapply(1:nrow(x$models[[mod]]$summary.fixed), function(i) {
+    INLA::inla.rmarginal(nsim, x$models[[mod]]$marginals.fixed[[i]])
+  })
+  # Back-transform intercept: INLA fitted on t/time_max so
+  # eta_inla = log(E[t/time_max]) => mean_true = exp(intercept_inla + log(time_max))
+  # Same +log(time_max) correction as lno (both use log link on mean).
+  if (attributes(terms(x$misc$formula))$intercept == 1) {
+    mean_sim <- exp(fixeff_sim[[1]] + log(max(x$misc$km$time)))
+    # Rate: b = phi / mean  (from E[t] = shape/rate = phi/b)
+    rate_sim  <- phi_sim / mean_sim
+  }
+  shape <- phi_sim  %>% make_stats %>% matrix(., ncol = 4)
+  rate  <- rate_sim %>% make_stats %>% matrix(., ncol = 4)
+  rownames(shape) <- "shape"
+  rownames(rate)  <- "rate"
+  res <- rbind(shape, rate)
+  # Covariate effects: no sign flip (same convention as lno, exp, gom).
+  # The beta_k are log-time-ratios (AFT parameterisation via the log link).
+  if (length(fixeff_sim) > 1) {
+    effects <- lapply(2:nrow(x$models[[mod]]$summary.fixed), function(i) {
+      fixeff_sim[[i]]
+    })
+    effects <- matrix(unlist(lapply(effects, function(i) i %>% make_stats)),
+                      nrow = length(fixeff_sim) - 1, ncol = 4, byrow = TRUE)
+    rownames(effects) <- x$models[[mod]]$names.fixed[-1]
+    res <- rbind(res, effects)
+  }
+  colnames(res) <- c("mean", "se", "L95%", "U95%")
+  return(res)
+}
+
 #' Helper function to create summary stats
 #' 
 #' @param x A vector of simulations

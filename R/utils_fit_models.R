@@ -225,8 +225,9 @@ load_availables <- function() {
            "weibullPH" = "wph",
            "lognormal" = "lno",
            "loglogistic" = "llo",
-           "rps" = "rps",
-           "gompertz" = "gom"      # added Mar 19, 2021
+#           "rps" = "rps",          # INLA can't actually do RPS as a built-in model!
+           "gompertz" = "gom",      # added Mar 19, 2021
+           "gamma" = "gam"          # added Mar 16, 2026
     ),
     hmc=c("Exponential" = "exp",
           "Gamma" = "gam",
