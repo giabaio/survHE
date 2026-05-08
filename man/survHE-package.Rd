@@ -20,6 +20,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Gianluca Baio \email{g.baio@ucl.ac.uk}
 
+Authors:
+\itemize{
+  \item Gianluca Baio \email{g.baio@ucl.ac.uk}
+}
+
 Other contributors:
 \itemize{
   \item Andrea Berardi \email{and.be.like@gmail.com} [contributor]

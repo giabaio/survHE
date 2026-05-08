@@ -71,8 +71,7 @@
 #' @author Gianluca Baio
 #' @seealso \code{make.surv}
 #' @template refs
-#' @keywords Parametric survival models Bayesian inference via Hamiltonian
-#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 #' @examples
 #' \dontrun{
 #' # Loads an example dataset from 'flexsurv'
