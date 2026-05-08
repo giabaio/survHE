@@ -141,8 +141,7 @@ make_KM <- function(formula,data) {
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
-#' @keywords Parametric survival models Bayesian inference via Hamiltonian
-#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 #' @noRd 
 format_output_fit.models <- function(output,method,distr,formula,data) {
   
@@ -199,8 +198,7 @@ format_output_fit.models <- function(output,method,distr,formula,data) {
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
-#' @keywords Parametric survival models Bayesian inference via Hamiltonian
-#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 #' @noRd 
 load_availables <- function() {
   # INLA can only do a limited set of models (for now) so if user has selected
@@ -225,8 +223,9 @@ load_availables <- function() {
            "weibullPH" = "wph",
            "lognormal" = "lno",
            "loglogistic" = "llo",
-           "rps" = "rps",
-           "gompertz" = "gom"      # added Mar 19, 2021
+#           "rps" = "rps",          # INLA can't actually do RPS as a built-in model!
+           "gompertz" = "gom",      # added Mar 19, 2021
+           "gamma" = "gam"          # added Mar 16, 2026
     ),
     hmc=c("Exponential" = "exp",
           "Gamma" = "gam",
@@ -258,8 +257,7 @@ load_availables <- function() {
 #' @author Gianluca Baio
 #' @seealso fit.models
 #' @references Baio (2020). survHE
-#' @keywords Parametric survival models Bayesian inference via Hamiltonian
-#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 #' @noRd 
 manipulate_distributions <- function(x){
   # selected model checks -----

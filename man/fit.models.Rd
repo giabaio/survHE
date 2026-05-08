@@ -21,9 +21,9 @@ to be fitted.  Available options are:
 \code{flexsurv}:
 "exponential","gamma","genf","gengamma","gompertz","weibull",
 "weibullPH","loglogistic","lognormal" \code{INLA}:
-"exponential","weibull","lognormal","loglogistic" \code{hmc}:
-"exponential","gamma","genf","gengamma","gompertz","weibull","weibullPH",
-"loglogistic","lognormal"}
+"exponential","weibull","lognormal","loglogistic","gompertz","gamma"
+\code{hmc}: "exponential","gamma","genf","gengamma","gompertz","weibull",
+"weibullPH","loglogistic","lognormal"}
 
 \item{method}{A string specifying the inferential method (\code{'mle'},
 \code{'inla'} or \code{'hmc'}). If \code{method} is set to \code{'hmc'},

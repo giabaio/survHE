@@ -1,7 +1,14 @@
 # 2.0.52 (development version)
 
+## April 2026
+* Adds support for the handling and plotting of Gamma models fitted in INLA (which will soon be available in `survHEinla` too).
+Specifically, adds the `gam` support in the hidden function `load_availables()`. It also adds the function `rescale_stats_inla_gam()`,
+which takes care of the rescaling for the `print` method.
+
 ## March 2026
 * Fixes a small typo in the utility function `survHE:::make_surv_curve_plot` -- replaces `size` with `linewidth` in a call to `geom_line`. This avoids a warning.
+* Adds facility to implement the newly available Gamma survival model from INLA.
+* Fix slight imprecision -- INLA can't do RPS as a built-in model, so `survHE:::load_availables()` has been modified accordingly.
 
 # 2.0.51 
 ## January 2026

@@ -19,9 +19,9 @@
 #' \code{flexsurv}:
 #' "exponential","gamma","genf","gengamma","gompertz","weibull",
 #' "weibullPH","loglogistic","lognormal" \code{INLA}:
-#' "exponential","weibull","lognormal","loglogistic" \code{hmc}:
-#' "exponential","gamma","genf","gengamma","gompertz","weibull","weibullPH",
-#' "loglogistic","lognormal"
+#' "exponential","weibull","lognormal","loglogistic","gompertz","gamma" 
+#' \code{hmc}: "exponential","gamma","genf","gengamma","gompertz","weibull",
+#' "weibullPH","loglogistic","lognormal"
 #' @param method A string specifying the inferential method (\code{'mle'},
 #' \code{'inla'} or \code{'hmc'}). If \code{method} is set to \code{'hmc'},
 #' then \code{survHE} will write suitable model code in the Stan language
@@ -71,8 +71,7 @@
 #' @author Gianluca Baio
 #' @seealso \code{make.surv}
 #' @template refs
-#' @keywords Parametric survival models Bayesian inference via Hamiltonian
-#' Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
+#' @keywords Parametric survival models Bayesian inference via Hamiltonian Monte Carlo Bayesian inference via Integrated Nested Laplace Approximation
 #' @examples
 #' \dontrun{
 #' # Loads an example dataset from 'flexsurv'
