@@ -37,20 +37,22 @@ runMLE <- function(x,exArgs) {
     if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
     if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
     if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
-    model <- do.call(
-      flexsurv::flexsurvspline,
-      args=list(
-        formula=formula,
-        data=quote(data),
-        k=k,
-        knots=knots,
-        bknots=bknots,
-        scale=scale,
-        timescale=timescale,
-        weights=weights,
-        subset=subset
-      )
+    
+    args <- list(
+      formula=formula,
+      data=quote(data),
+      dist=x,
+      weights=weights,
+      subset=subset
     )
+    
+    # checks whether the user supplied initial values and pass user-specified initial values to flexsurvreg
+    if (!is.null(exArgs$inits)) {
+      args$inits <- exArgs$inits
+    }
+    
+    model <- do.call("flexsurvreg", args=args)
+  
     ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
     ###                                  timescale=timescale)
     if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
