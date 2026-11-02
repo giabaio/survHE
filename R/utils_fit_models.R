@@ -61,7 +61,7 @@ runMLE <- function(x,exArgs) {
     if(!is.null(subset)) {model$call$subset=exArgs$call$subset} else {model$call$subset=NULL}
   } else {
     # If it's one of the other available models under MLE, then simply runs flexsurv::flexsurvreg
-    # But allows to use weight and subset
+    ## But allows to use weight and subset
     if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights=NULL}
     if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
 
