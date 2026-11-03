@@ -37,38 +37,51 @@ runMLE <- function(x,exArgs) {
     if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
     if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
     if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
-    model <- do.call(
-      flexsurv::flexsurvspline,
-      args=list(
-        formula=formula,
-        data=quote(data),
-        k=k,
-        knots=knots,
-        bknots=bknots,
-        scale=scale,
-        timescale=timescale,
-        weights=weights,
-        subset=subset
-      )
+    
+    
+  model <- do.call(
+    flexsurv::flexsurvspline,
+    args = list(
+      formula = formula,
+      data = quote(data),
+      k = k,
+      knots = knots,
+      bknots = bknots,
+      scale = scale,
+      timescale = timescale,
+      weights = weights,
+      subset = subset
     )
+  )
+
+  
     ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
     ###                                  timescale=timescale)
     if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
     if(!is.null(subset)) {model$call$subset=exArgs$call$subset} else {model$call$subset=NULL}
   } else {
     # If it's one of the other available models under MLE, then simply runs flexsurv::flexsurvreg
-    # But allows to use weight and subset
+    ## But allows to use weight and subset
     if(exists("weights",where=exArgs)) {weights <- exArgs$weights} else {weights=NULL}
     if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
 
     ###model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=x,weights=weights)
-    model <- do.call("flexsurvreg",args=list(
-      formula=formula,
-      data=quote(data),
-      dist=x,
-      weights=weights,
-      subset=subset
-    ))
+    
+    args <- list(
+      formula = formula,
+      data = quote(data),
+      dist = x,
+      weights = weights,
+      subset = subset
+    )
+
+   # Forward user-specified initial values when provided
+   if (!is.null(exArgs$inits)) {
+     args$inits <- exArgs$inits
+   }
+    
+    model <- do.call("flexsurvreg", args = args)
+
     # Fix the 'call' by using parts of the original call to fit.models
     if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
     if(!is.null(subset)) {model$call$subset=exArgs$call$subset} else {model$call$subset=NULL}
