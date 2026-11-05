@@ -27,7 +27,22 @@
 #' then \code{survHE} will write suitable model code in the Stan language
 #' (according to the specified distribution), prepare data and initial values
 #' and then run the model.
-#' @param \dots Additional options (for INLA or HMC).
+#' @param \dots Additional options passed to the fitting method.
+#'
+#' **MLE** specific options:
+#' \code{inits} specifies user-defined initial parameter values
+#' for \code{flexsurv::flexsurvreg()}.
+#' When fitting a single distribution, \code{inits} can be a
+#' numeric vector or a list containing one numeric vector.
+#' When fitting multiple distributions, \code{inits} must be
+#' a list with one element per distribution, in the same
+#' order as \code{distr}.
+#' Each element must be a numeric vector of initial values
+#' for the corresponding model, or \code{NULL} to use the
+#' default initial values.
+#' If \code{inits} is not specified, default initial values
+#' are used for all distributions.
+#'
 #' 
 #' **INLA** specific options \code{dz} = defines the step length for the grid
 #' search over the hyperparameters space (default = 0.1) \code{diff.logdens} =
@@ -132,12 +147,56 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
   # (and if not, falls back to 'mle')
   method=check_distributions(method,distr)
 
+  
+ 
   # MLE -----
-  # If method = MLE, then fits the model(s) using flexsurvreg
-  if (method=="mle") {
-    # Runs the models using the helper 'runMLE' and use the helper 'format_output_fit.models 
-    res <- format_output_fit.models(lapply(distr,function(x) runMLE(x,exArgs)),method,distr,formula,data)
+  if (method == "mle") {
+  
+    # Retrieve user-specified initial values
+    inits <- exArgs$inits
+  
+    if (!is.null(inits)) {
+  
+      # Allow a numeric vector for a single distribution
+      if (is.numeric(inits) && length(distr) == 1L) {
+        inits <- list(inits)
+      }
+  
+      # Require one list element per distribution
+      if (!is.list(inits) || length(inits) != length(distr)) {
+        stop(
+          "'inits' must be a list with one element per ",
+          "distribution, or a numeric vector for a single distribution."
+        )
+      }
+  
+      # Validate individual initial-value vectors
+      if (!all(vapply(
+        inits,
+        function(x) is.null(x) || is.numeric(x),
+        logical(1)
+      ))) {
+        stop("Each element of 'inits' must be numeric or NULL.")
+      }
+    }
+  
+    # Fit each distribution with its own initial values
+    output <- lapply(seq_along(distr), function(i) {
+  
+      modelArgs <- exArgs
+  
+      if (!is.null(inits)) {
+        modelArgs$inits <- inits[[i]]
+      }
+  
+      runMLE(distr[[i]], modelArgs)
+    })
+  
+    res <- format_output_fit.models(
+      output, method, distr, formula, data
+    )
   }
+
   
   # INLA -----
   # If method = INLA, then fits model(s) using inla

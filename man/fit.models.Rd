@@ -31,7 +31,21 @@ then \code{survHE} will write suitable model code in the Stan language
 (according to the specified distribution), prepare data and initial values
 and then run the model.}
 
-\item{\dots}{Additional options (for INLA or HMC).
+\item{\dots}{Additional options passed to the fitting method.
+
+\strong{MLE} specific options:
+\code{inits} specifies user-defined initial parameter values
+for \code{flexsurv::flexsurvreg()}.
+When fitting a single distribution, \code{inits} can be a
+numeric vector or a list containing one numeric vector.
+When fitting multiple distributions, \code{inits} must be
+a list with one element per distribution, in the same
+order as \code{distr}.
+Each element must be a numeric vector of initial values
+for the corresponding model, or \code{NULL} to use the
+default initial values.
+If \code{inits} is not specified, default initial values
+are used for all distributions.
 
 \strong{INLA} specific options \code{dz} = defines the step length for the grid
 search over the hyperparameters space (default = 0.1) \code{diff.logdens} =
