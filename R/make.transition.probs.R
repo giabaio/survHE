@@ -408,8 +408,8 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
   
   # Loops over times to compute the state occupancy
   for (j in 2:nrow(m)) {
-    # This is a simple trick to restart the computation when the treatment indicator changes
-    if (m$profile[j]==m$profile[j-1]) {
+    # Restart the computation for each profile and simulation.
+    if (m$profile[j]==m$profile[j-1] && m$sim_idx[j]==m$sim_idx[j-1]) {
       m$`Pre-progressed`[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_11[j]),na.rm=T)
       m$Progressed[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_12[j], m$Progressed[j-1]*m$lambda_22[j]),na.rm=T)
       m$Death[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_13[j], m$Progressed[j-1]*m$lambda_23[j], m$Death[j-1]),na.rm=T)
