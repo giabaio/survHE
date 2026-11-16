@@ -30,11 +30,12 @@ the dataset}
 has died and 0 otherwise. Defaults to the column named 'death' in
 the dataset}
 
-\item{prog_t}{The progression time. Defaults to the column named
-'prog_t' in the dataset}
+\item{prog_t}{The progression time, or the time at which the individual
+has been censored or has died without progression. Defaults to the column
+named 'prog_t' in the dataset}
 
-\item{death_t}{The death time. Defaults to the column named
-'death_t' in the dataset}
+\item{death_t}{The death time, or the time at which the individual has
+been censored. Defaults to the column named 'death_t' in the dataset}
 
 \item{keep}{A vector of strings with the names of the additional
 variables from the original dataset to keep into the multistate

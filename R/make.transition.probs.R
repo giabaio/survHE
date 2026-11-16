@@ -113,10 +113,11 @@ make.transition.probs <- function(fit,labs=NULL,...) {
 #' @param death The death indicator: takes value 1 if the individual
 #' has died and 0 otherwise. Defaults to the column named 'death' in
 #' the dataset
-#' @param prog_t The progression time. Defaults to the column named 
-#' 'prog_t' in the dataset
-#' @param death_t The death time. Defaults to the column named 
-#' 'death_t' in the dataset
+#' @param prog_t The progression time, or the time at which the individual
+#' has been censored or has died without progression. Defaults to the column
+#' named 'prog_t' in the dataset
+#' @param death_t The death time, or the time at which the individual has
+#' been censored. Defaults to the column named 'death_t' in the dataset
 #' @param keep A vector of strings with the names of the additional 
 #' variables from the original dataset to keep into the multistate
 #' dataset. If 'NULL' (default), then keeps all
@@ -185,9 +186,8 @@ make_data_multi_state=function(data,id="id",prog="prog",death="death",prog_t="pr
         ),
         time=Tstop-Tstart,                    # time-to-event = Tstop-Tstart
         status=case_when(                     # censoring indicator:
-                                              #  1 if died at progression; 0 otherwise
-#          (!!sym(death)==1 & !!sym(prog_t)==!!sym(death_t))~1,
-          (!!sym(death)==1 & !!sym(prog_t)==0)~1,          
+                                              #  1 if died without progression; 0 otherwise
+          (!!sym(death)==1 & !!sym(prog)==0)~1,
           TRUE~0
         )
       )  %>% select(id,from,to,trans,Tstart,Tstop,time,status,treat,everything()) 
@@ -198,7 +198,7 @@ make_data_multi_state=function(data,id="id",prog="prog",death="death",prog_t="pr
         id=!!sym(id),                         # patient ID
         from=2,                               # starting state
         to=3,                                 # arriving state 
-        trans=3,                              # transition code (2 = Pre -> Death)  
+        trans=3,                              # transition code (3 = Progression -> Death)  
         Tstart=!!sym(prog_t),                 # entry time
         Tstop=!!sym(death_t),                 # exit time
         time=Tstop-Tstart,                    # time-to-event = Tstop-Tstart
@@ -353,6 +353,9 @@ three_state_mm = function(m_12,m_13,m_23,nsim=1,start=c(1000,0,0),basecase=FALSE
 #' the transition "Progression -> Progression" 
 #' @param lambda_23 the tibble containing the transition probabilities for
 #' the transition "Progression -> Death" 
+#' @param start A vector with the initial occupancy of the three states 
+#' (Pre-progressed, Progressed, Death). The computation restarts from these
+#' values for each profile and each simulation
 #' @return A list including the state occupancy simulations in an object 'm'.
 #' This is a tibble with the number of individuals in each of the 3 states 
 #' at each of the times specified by the user. If \code{nsim}>1, then the tibble
@@ -408,8 +411,8 @@ make_state_occupancy=function(nsim,lambda_11,lambda_12,lambda_13,lambda_22,lambd
   
   # Loops over times to compute the state occupancy
   for (j in 2:nrow(m)) {
-    # This is a simple trick to restart the computation when the treatment indicator changes
-    if (m$profile[j]==m$profile[j-1]) {
+    # Restart the computation for each profile and simulation.
+    if (m$profile[j]==m$profile[j-1] && m$sim_idx[j]==m$sim_idx[j-1]) {
       m$`Pre-progressed`[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_11[j]),na.rm=T)
       m$Progressed[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_12[j], m$Progressed[j-1]*m$lambda_22[j]),na.rm=T)
       m$Death[j]=sum(c(m$`Pre-progressed`[j-1]*m$lambda_13[j], m$Progressed[j-1]*m$lambda_23[j], m$Death[j-1]),na.rm=T)

@@ -10,7 +10,12 @@
 #' covariates in correspondence of which to compute the survival curves.
 #' @param dist The string identifying the abbreviated name for the 
 #' underlying model used 
-#' @return \item{sim}{A list containing the generated simulations.}
+#' @param summary_stat The function used to summarise the simulations when
+#' \code{nsim}=1
+#' @return \item{sim}{A list containing the generated simulations, one
+#' element per covariate profile. All profiles use the same draws of the model
+#' parameters, so that the simulations are paired across profiles (as needed
+#' for PSA).}
 #' @author Gianluca Baio
 #' @seealso make.surv
 #' @references Baio (2020). survHE
