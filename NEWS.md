@@ -1,4 +1,4 @@
-# 2.0.52 (development version)
+# 2.0.52
 
 ## November 2026
 * `fit.models()` (MLE): user-defined initial values can now be passed to `flexsurv` through the option `inits` (PRs #65 and #66). For a single distribution, `inits` can be a numeric vector or a list with one numeric vector. For several distributions, it must be a list with one element per distribution (in the same order as `distr`); each element is a numeric vector or `NULL` (to use the `flexsurv` default for that model). Initial values are on the natural scale of the parameters, in the order used by `flexsurv`; covariate effects that are not given are initialised at 0 (thanks to @yansi5 for this).
