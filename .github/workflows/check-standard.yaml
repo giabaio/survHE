@@ -23,21 +23,21 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r@v4
         with:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
           extra-repositories: |
             https://giabaio.r-universe.dev
-            https://inla.r-inla-download.org/R/testing
+            https://inla.r-inla-download.org/R/stable
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-pandoc@v4
 
       - name: Add INLA repo to Rprofile
         run: |
-          cat('options(repos = c(INLA = "https://inla.r-inla-download.org/R/testing/", getOption("repos")))', file = "~/.Rprofile", append = TRUE)
+          cat('options(repos = c(INLA = "https://inla.r-inla-download.org/R/stable/", getOption("repos")))', file = "~/.Rprofile", append = TRUE)
         shell: Rscript {0}
 
       - name: Check configured repositories
@@ -49,7 +49,7 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gdal proj geos
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - uses: r-lib/actions/setup-r-dependencies@v4
         with:
           dependencies: '"all"'
           extra-packages: |
@@ -60,6 +60,6 @@ jobs:
             RcppParallel
             inline
 
-      - uses: r-lib/actions/check-r-package@v2
+      - uses: r-lib/actions/check-r-package@v4
         with:
           upload-snapshots: true
