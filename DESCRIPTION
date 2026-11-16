@@ -6,7 +6,9 @@ Authors@R: c(
     person("Andrea","Berardi",role="ctb",email="and.be.like@gmail.com"),
     person("Philip","Cooney",role="ctb",email="philip.cooney@hotmail.com"),
     person("Andrew","Jones",role="ctb",email="andrew.r.johnson@postgrad.curtin.edu.au"),
-    person("Nathan","Green",role="ctb",email="n.green@ucl.ac.uk"))
+    person("Nathan","Green",role="ctb",email="n.green@ucl.ac.uk"),
+    person("Paul","Schneider",role="ctb"),
+    person("Yansi","Wu",role="ctb",email="yansi.s.wu@gmail.com"))
 URL: https://github.com/giabaio/survHE, https://gianluca.statistica.it/software/survhe/
 BugReports: https://github.com/giabaio/survHE/issues
 Description: Contains a suite of functions for survival analysis in health economics.

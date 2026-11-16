@@ -31,6 +31,8 @@ Other contributors:
   \item Philip Cooney \email{philip.cooney@hotmail.com} [contributor]
   \item Andrew Jones \email{andrew.r.johnson@postgrad.curtin.edu.au} [contributor]
   \item Nathan Green \email{n.green@ucl.ac.uk} [contributor]
+  \item Paul Schneider [contributor]
+  \item Yansi Wu \email{yansi.s.wu@gmail.com} [contributor]
 }
 
 }
