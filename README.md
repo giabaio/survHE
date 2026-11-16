@@ -40,7 +40,7 @@ The most updated version can be installed using the following code.
 
 ``` r
 install.packages(
-   "survHE", 
+   "survHE",
    repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org")
 )
 ```
@@ -51,16 +51,16 @@ ancillary packages
 ``` r
 # Bayesian models using HMC/Stan
 install.packages(
-   "survHEhmc", 
+   "survHEhmc",
    repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org"),
    dependencies=TRUE
 )
 
 # Bayesian models using INLA
 install.packages(
-   "survHEinla", 
+   "survHEinla",
    repos = c(
-      "https://giabaio.r-universe.dev", 
+      "https://giabaio.r-universe.dev",
       "https://cloud.r-project.org",
       "https://inla.r-inla-download.org/R/stable"
    ),

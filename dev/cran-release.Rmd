@@ -110,7 +110,7 @@ Run it from the `cran` branch, where `CRAN-SUBMISSION` lives, otherwise `git` ma
 
 - [ ] Check that the release and tag are on GitHub
 
-Manual alternative, if you prefer not to use usethis:
+Manual alternative, if you prefer not to use `usethis`:
 
 ```{r}
 #| echo: false

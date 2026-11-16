@@ -117,7 +117,7 @@ use the manual alternative below.
 
 - [ ] Check that the release and tag are on GitHub
 
-Manual alternative, if you prefer not to use usethis:
+Manual alternative, if you prefer not to use `usethis`:
 
 ``` bash
 git tag -a v2.0.52 <SHA> -m "survHE 2.0.52 (CRAN)"
