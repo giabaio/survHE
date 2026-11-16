@@ -10,7 +10,12 @@
 #' covariates in correspondence of which to compute the survival curves.
 #' @param dist The string identifying the abbreviated name for the 
 #' underlying model used 
-#' @return \item{sim}{A list containing the generated simulations.}
+#' @param summary_stat The function used to summarise the simulations when
+#' \code{nsim}=1
+#' @return \item{sim}{A list containing the generated simulations, one
+#' element per covariate profile. All profiles use the same draws of the model
+#' parameters, so that the simulations are paired across profiles (as needed
+#' for PSA).}
 #' @author Gianluca Baio
 #' @seealso make.surv
 #' @references Baio (2020). survHE
@@ -35,8 +40,10 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
       sim=flexsurv::normboot.flexsurvreg(m,B=B,X=as.matrix(X))
     }
   } else {
-    # If there are newdata, then create the list of sims using it
-    sim <- lapply(1:nrow(X),function(i) flexsurv::normboot.flexsurvreg(m,B=B,newdata=newdata[[i]]))
+    # Generate the existing selected profiles from shared coefficient draws.
+    nd <- do.call(rbind.data.frame,newdata[seq_len(nrow(X))])
+    sim <- flexsurv::normboot.flexsurvreg(m,B=B,newdata=nd)
+    if (!is.list(sim)) sim <- list(sim)
   }
   # Then if 'nsim'=1, then take the average over the bootstrap samples. 
   if(nsim==1) {
@@ -44,8 +51,8 @@ make_sim_mle <- function(m,t,X,nsim,newdata,dist,summary_stat,...) {
   } 
   # If nsim<=5000 (number of bootstrap samples), then samples only 'nsim' of them
   if(nsim>1 & nsim<nboot) {
-    sim=lapply(sim,function(x) x %>% as_tibble %>% sample_n(ifelse(nsim<nboot,nsim,B),replace=FALSE) %>% 
-                 as.matrix(.,nrow=nsim,ncol=ncol(X)))
+    keep <- sample.int(B,nsim,replace=FALSE)
+    sim <- lapply(sim,function(x) x[keep,,drop=FALSE])
   }
   return(sim)
 }
