@@ -2,7 +2,7 @@
 #' 
 #' @param x a string containing the name of the model
 #' to be fitted
-#' #' @param exArgs a list of extra arguments passed from the main 'fit.models' 
+#' @param exArgs a list of extra arguments passed from the main 'fit.models' 
 #' function
 #' @note Something will go here
 #' @author Gianluca Baio
@@ -36,25 +36,21 @@ runMLE <- function(x,exArgs) {
     if(exists("k",where=exArgs)) {k <- exArgs$k} else {k <- 0}
     if(exists("bknots",where=exArgs)) {bknots <- exArgs$bknots} else {bknots <- NULL}
     if(exists("scale",where=exArgs)) {scale <- exArgs$scale} else {scale <- "hazard"}
-    if(exists("timescale",where=exArgs)) {timescale <- exArgs$scale} else {timescale <- "log"}
-    
-    
-  model <- do.call(
-    flexsurv::flexsurvspline,
-    args = list(
-      formula = formula,
-      data = quote(data),
-      k = k,
-      knots = knots,
-      bknots = bknots,
-      scale = scale,
-      timescale = timescale,
-      weights = weights,
-      subset = subset
+    if(exists("timescale",where=exArgs)) {timescale <- exArgs$timescale} else {timescale <- "log"}
+    args <- list(
+      formula=formula,
+      data=quote(data),
+      k=k,
+      knots=knots,
+      bknots=bknots,
+      scale=scale,
+      timescale=timescale,
+      weights=weights,
+      subset=subset
     )
-  )
-
-  
+    # Forwards user-specified initial values when provided (passed by flexsurvspline to flexsurvreg)
+    if(!is.null(exArgs$inits)) {args$inits <- exArgs$inits}
+    model <- do.call(flexsurv::flexsurvspline,args=args)
     ###model <- flexsurv::flexsurvspline(formula=formula,data=data,k=k,knots=knots,bknots=bknots,scale=scale,
     ###                                  timescale=timescale)
     if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}
@@ -66,21 +62,16 @@ runMLE <- function(x,exArgs) {
     if(exists("subset",where=exArgs)) {subset <- exArgs$subset} else {subset <- NULL}
 
     ###model <- flexsurv::flexsurvreg(formula=formula,data=data,dist=x,weights=weights)
-    
     args <- list(
-      formula = formula,
-      data = quote(data),
-      dist = x,
-      weights = weights,
-      subset = subset
+      formula=formula,
+      data=quote(data),
+      dist=x,
+      weights=weights,
+      subset=subset
     )
-
-   # Forward user-specified initial values when provided
-   if (!is.null(exArgs$inits)) {
-     args$inits <- exArgs$inits
-   }
-    
-    model <- do.call("flexsurvreg", args = args)
+    # Forwards user-specified initial values when provided
+    if(!is.null(exArgs$inits)) {args$inits <- exArgs$inits}
+    model <- do.call("flexsurvreg",args=args)
 
     # Fix the 'call' by using parts of the original call to fit.models
     if(!is.null(weights)) {model$call$weights=exArgs$call$weights} else {model$call$weights=NULL}

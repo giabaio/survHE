@@ -5,7 +5,8 @@
 #' Runs the survival analysis with several useful options, using either MLE
 #' (via flexsurv) or a Bayesian approach (via R-INLA or rstan)
 #' 
-#' On object in the class \code{survHE} containing the following elements
+#' Returns an object in the class \code{survHE}, containing the elements
+#' described in the Value section below.
 #' 
 #' @param formula a formula specifying the model to be used, in the form
 #' \code{Surv(time,event)~treatment[+covariates]} for flexsurv, or
@@ -16,12 +17,15 @@
 #' @param distr a (vector of) string(s) containing the name(s) of the model(s)
 #' to be fitted.  Available options are:
 #' 
-#' \code{flexsurv}:
+#' \code{mle} (via \code{flexsurv}):
 #' "exponential","gamma","genf","gengamma","gompertz","weibull",
-#' "weibullPH","loglogistic","lognormal" \code{INLA}:
-#' "exponential","weibull","lognormal","loglogistic","gompertz","gamma" 
+#' "weibullPH","loglogistic","lognormal","rps" (Royston-Parmar splines).
+#' \code{inla}: "exponential","gamma","gompertz","weibull","weibullPH",
+#' "loglogistic","lognormal".
 #' \code{hmc}: "exponential","gamma","genf","gengamma","gompertz","weibull",
-#' "weibullPH","loglogistic","lognormal"
+#' "weibullPH","loglogistic","lognormal","rps","polyweibull".
+#' If a distribution is not available for the selected \code{method}, then
+#' \code{survHE} falls back to \code{method='mle'}.
 #' @param method A string specifying the inferential method (\code{'mle'},
 #' \code{'inla'} or \code{'hmc'}). If \code{method} is set to \code{'hmc'},
 #' then \code{survHE} will write suitable model code in the Stan language
@@ -29,20 +33,27 @@
 #' and then run the model.
 #' @param \dots Additional options passed to the fitting method.
 #'
-#' **MLE** specific options:
-#' \code{inits} specifies user-defined initial parameter values
-#' for \code{flexsurv::flexsurvreg()}.
-#' When fitting a single distribution, \code{inits} can be a
-#' numeric vector or a list containing one numeric vector.
-#' When fitting multiple distributions, \code{inits} must be
-#' a list with one element per distribution, in the same
-#' order as \code{distr}.
-#' Each element must be a numeric vector of initial values
-#' for the corresponding model, or \code{NULL} to use the
-#' default initial values.
-#' If \code{inits} is not specified, default initial values
-#' are used for all distributions.
-#'
+#' **MLE** specific options: \code{inits} = user-defined initial values for
+#' the optimisation in \code{flexsurv::flexsurvreg} (or
+#' \code{flexsurv::flexsurvspline} for \code{distr="rps"}). When fitting a
+#' single distribution, \code{inits} can be a numeric vector or a list
+#' containing one numeric vector. When fitting several distributions,
+#' \code{inits} must be a list with one element per distribution, in the same
+#' order as \code{distr}; each element is either a numeric vector or
+#' \code{NULL} (to use the \code{flexsurv} default for that model). Initial
+#' values are given on the natural scale of the parameters, in the order used
+#' by \code{flexsurv}: the baseline parameters (e.g. \code{shape} before
+#' \code{scale} for the Weibull; \code{gamma0},...,\code{gamma(k+1)} for the
+#' Royston-Parmar model) followed by the covariate effects. If only the baseline
+#' parameters are given, the covariate effects are initialised at 0. If
+#' \code{inits} is not specified, the \code{flexsurv} defaults are used for
+#' all distributions. \code{weights} and \code{subset} are passed to
+#' \code{flexsurv} for all distributions. For \code{distr="rps"},
+#' \code{k} = number of internal knots (default = 0), \code{knots} = locations
+#' of the internal knots, \code{bknots} = locations of the boundary knots,
+#' \code{scale} = \code{"hazard"} (default), \code{"odds"} or \code{"normal"}
+#' and \code{timescale} = \code{"log"} (default) or \code{"identity"}; see
+#' \code{flexsurv::flexsurvspline} for details.
 #' 
 #' **INLA** specific options \code{dz} = defines the step length for the grid
 #' search over the hyperparameters space (default = 0.1) \code{diff.logdens} =
@@ -100,6 +111,10 @@
 #' hmc = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
 #'     distr="exp",method="hmc")
 #'     
+#' # Uses user-defined initial values for the MLE (one set per distribution)
+#' mle2 = fit.models(formula=Surv(recyrs,censrec)~group,data=bc,
+#'     distr=c("exp","weibull"),method="mle",inits=list(0.05,c(1.5,10)))
+#' 
 #' # Prints the results in comparable fashion using the survHE method
 #' print(mle)
 #' print(inla)
@@ -147,56 +162,32 @@ fit.models <- function(formula = NULL, data , distr = NULL, method = "mle", ...)
   # (and if not, falls back to 'mle')
   method=check_distributions(method,distr)
 
-  
- 
   # MLE -----
-  if (method == "mle") {
-  
-    # Retrieve user-specified initial values
+  # If method = MLE, then fits the model(s) using flexsurvreg (or flexsurvspline for the RPS)
+  if(method=="mle") {
+    # Retrieves (and checks) the user-specified initial values, if any
     inits <- exArgs$inits
-  
-    if (!is.null(inits)) {
-  
-      # Allow a numeric vector for a single distribution
-      if (is.numeric(inits) && length(distr) == 1L) {
-        inits <- list(inits)
+    if(!is.null(inits)) {
+      # Allows a numeric vector when fitting a single distribution
+      if(is.numeric(inits) && length(distr)==1) {inits <- list(inits)}
+      # Requires one list element per distribution
+      if(!is.list(inits) || length(inits)!=length(distr)) {
+        stop("'inits' must be a list with one element per distribution, or a numeric vector for a single distribution")
       }
-  
-      # Require one list element per distribution
-      if (!is.list(inits) || length(inits) != length(distr)) {
-        stop(
-          "'inits' must be a list with one element per ",
-          "distribution, or a numeric vector for a single distribution."
-        )
-      }
-  
-      # Validate individual initial-value vectors
-      if (!all(vapply(
-        inits,
-        function(x) is.null(x) || is.numeric(x),
-        logical(1)
-      ))) {
-        stop("Each element of 'inits' must be numeric or NULL.")
+      # Each element must be a numeric vector or NULL
+      if(!all(vapply(inits,function(x) is.null(x) || is.numeric(x),logical(1)))) {
+        stop("Each element of 'inits' must be numeric or NULL")
       }
     }
-  
-    # Fit each distribution with its own initial values
-    output <- lapply(seq_along(distr), function(i) {
-  
+    # Runs the models using the helper 'runMLE' (each with its own initial values) and 
+    # then uses the helper 'format_output_fit.models'
+    output <- lapply(seq_along(distr),function(i) {
       modelArgs <- exArgs
-  
-      if (!is.null(inits)) {
-        modelArgs$inits <- inits[[i]]
-      }
-  
-      runMLE(distr[[i]], modelArgs)
+      if(!is.null(inits)) {modelArgs$inits <- inits[[i]]}
+      runMLE(distr[[i]],modelArgs)
     })
-  
-    res <- format_output_fit.models(
-      output, method, distr, formula, data
-    )
+    res <- format_output_fit.models(output,method,distr,formula,data)
   }
-
   
   # INLA -----
   # If method = INLA, then fits model(s) using inla

@@ -53,4 +53,4 @@ Additional_repositories:
     https://inla.r-inla-download.org/R/stable/,
     https://giabaio.r-universe.dev/
 SystemRequirements: GNU make
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.1
