@@ -8,7 +8,7 @@ survHE
 ## Survival analysis in health economic evaluation
 
 :rocket: This is the **development version** of the `R` package `survHE`
-(currently at version 2.0.52). A “stable” version (as of 15 January
+(currently at version 2.0.52). A “stable” version (as of 16 November
 2026: 2.0.51) is packaged and available from
 [CRAN](https://cran.r-project.org/web/packages/survHE/index.html).
 
@@ -45,7 +45,7 @@ The most updated version can be installed using the following code.
 
 ``` r
 install.packages(
-   "survHE", 
+   "survHE",
    repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org")
 )
 ```
@@ -56,16 +56,16 @@ ancillary packages
 ``` r
 # Bayesian models using HMC/Stan
 install.packages(
-   "survHEhmc", 
+   "survHEhmc",
    repos = c("https://giabaio.r-universe.dev", "https://cloud.r-project.org"),
    dependencies=TRUE
 )
 
 # Bayesian models using INLA
 install.packages(
-   "survHEinla", 
+   "survHEinla",
    repos = c(
-      "https://giabaio.r-universe.dev", 
+      "https://giabaio.r-universe.dev",
       "https://cloud.r-project.org",
       "https://inla.r-inla-download.org/R/stable"
    ),
