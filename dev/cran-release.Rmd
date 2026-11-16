@@ -1,3 +1,10 @@
+---
+title: "survHE: CRAN release checklist"
+output:
+  github_document:
+    html_preview: false
+---
+
 ```{r}
 #| echo: false
 # Determines the current **development** version (assuming to be the one installed on the machine)
