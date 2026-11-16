@@ -8,13 +8,13 @@ r-universe builds `main`, so `main` stays untouched (and keeps the
 “development version” markers) until CRAN accepts. The code on `cran` is
 identical to `main`; only the release markers differ.
 
-The submitted commit is kept by a tag (in the current case, v2.0.52) and
+The submitted commit is kept by a tag (in the current case, v2.0.53) and
 a GitHub release. Tags belong to the repository, not to a branch; thus,
 the tag and release stay visible from `main` (branch/tag menu, Releases
 page) after `cran` is deleted. The tag also keeps the commit itself in
 the repository.
 
-- Check that `DESCRIPTION` says Version: 2.0.52 (i.e. the current
+- Check that `DESCRIPTION` says Version: 2.0.53 (i.e. the current
   development version to move to CRAN) and that this is higher than the
   version on CRAN.
 - If CRAN asks for code changes, make them on `main` first, then merge
@@ -33,8 +33,8 @@ git checkout -b cran
   Change this on `cran` only, so nothing is pushed to `main`.
 - [ ] `R/zzz.R`: remove the “development version” tag from the startup
   message
-- [ ] `NEWS.md`: change the header \# 2.0.52 (development version) to \#
-  2.0.52
+- [ ] `NEWS.md`: change the header \# 2.0.53 (development version) to \#
+  2.0.53
 - [ ] `README.Rmd`: update and re-knit `README.md` (both are in
   `.Rbuildignore`; thus, this does not affect CRAN)
 - [ ] `cran-comments.md`: update the test environments and the expected
@@ -108,7 +108,7 @@ usethis::use_github_release()
 ```
 
 This reads the SHA from `CRAN-SUBMISSION` and tags exactly that commit
-as v2.0.52. It then creates a GitHub release with the current section of
+as v2.0.53. It then creates a GitHub release with the current section of
 `NEWS.md` as its notes and deletes `CRAN-SUBMISSION`.
 
 Run it from the `cran` branch, where `CRAN-SUBMISSION` lives, otherwise
@@ -117,11 +117,11 @@ use the manual alternative below.
 
 - [ ] Check that the release and tag are on GitHub
 
-Manual alternative, if you prefer not to use usethis:
+Manual alternative, if you prefer not to use `usethis`:
 
 ``` bash
-git tag -a v2.0.52 <SHA> -m "survHE 2.0.52 (CRAN)"
-git push origin v2.0.52
+git tag -a v2.0.53 <SHA> -m "survHE 2.0.53 (CRAN)"
+git push origin v2.0.53
 ```
 
 Here `<SHA>` is the commit recorded in `CRAN-SUBMISSION`. Then create
@@ -141,16 +141,22 @@ git push origin --delete cran
 
 `main` never received the release edits, so `README.Rmd` and `R/zzz.R`
 need nothing. Only the version moves on. This push to `main` is also
-what updates r-universe to increase the version (e.g. 2.0.53).
+what updates r-universe to increase the version (e.g. 2.0.54).
 
-- [ ] `DESCRIPTION`: Version: 2.0.53
-- [ ] `NEWS.md`: change \# 2.0.52 (development version) to \# 2.0.53
+- [ ] `DESCRIPTION`: Version: 2.0.54
+- [ ] `NEWS.md`: change \# 2.0.53 (development version) to \# 2.0.54
   (development version)
 - [ ] Copy any edits to `cran-comments.md` from `cran` to `main`, if
-  they are to be kept: git checkout v2.0.53 – cran-comments.md
+  they are to be kept: git checkout v2.0.54 – cran-comments.md
+- [ ] Run `devtools::document()` locally and install locally the new
+  `main` version (which will have increased the version number)
+- [ ] Re-compile the `README.Rmd` file to update it. It may still pick
+  up the earlier version from CRAN, so perhaps either wait until v2.0.53
+  has officially been published, or manually change the `README.md` file
+  to use the correct value.
 
 ``` bash
-git commit -am "Start 2.0.53 development"
+git commit -am "Start 2.0.54 development"
 git push
 ```
 

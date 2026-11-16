@@ -110,7 +110,7 @@ Run it from the `cran` branch, where `CRAN-SUBMISSION` lives, otherwise `git` ma
 
 - [ ] Check that the release and tag are on GitHub
 
-Manual alternative, if you prefer not to use usethis:
+Manual alternative, if you prefer not to use `usethis`:
 
 ```{r}
 #| echo: false
@@ -133,17 +133,18 @@ git push origin --delete cran
 
 ## 5. Back to development (increase the version)
 
-`main` never received the release edits, so `README.Rmd` and `R/zzz.R` need nothing. Only the version moves on. This push to `main` is also 
-what updates r-universe to increase the version (e.g. 2.0.53).
+`main` never received the release edits, so `README.Rmd` and `R/zzz.R` need nothing. Only the version moves on. This push to `main` is also what updates r-universe to increase the version (e.g. `r set_new_version`).
 
 - [ ] `DESCRIPTION`: `r glue::glue("Version: {set_new_version}")`
 - [ ] `NEWS.md`: change `r glue::glue("# {set_current_version} (development version)")` to `r glue::glue("# {set_new_version} (development version)")`
 - [ ] Copy any edits to `cran-comments.md` from `cran` to `main`, if they are to be kept: `r glue::glue("git checkout v{set_new_version} -- cran-comments.md")`
+- [ ] Run `devtools::document()` locally and install locally the new `main` version (which will have increased the version number)
+- [ ] Re-compile the `README.Rmd` file to update it. It may still pick up the earlier version from CRAN, so perhaps either wait until v`r set_current_version` has officially been published, or manually change the `README.md` file to use the correct value.
 
 ```{r}
 #| echo: false
 #| results: "asis"
-t1=glue::glue('git commit -am "Start {set_new_version} development"')
+t1=glue::glue('git commit -am "Start {set_current_version} development"')
 t2=glue::glue('git push')
 cat("```bash",t1,t2,"```",sep="\n")
 ```
