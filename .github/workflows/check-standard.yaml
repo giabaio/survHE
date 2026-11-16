@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-r@v4
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
@@ -33,7 +33,7 @@ jobs:
             https://giabaio.r-universe.dev
             https://inla.r-inla-download.org/R/stable
 
-      - uses: r-lib/actions/setup-pandoc@v4
+      - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Add INLA repo to Rprofile
         run: |
@@ -49,7 +49,7 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install gdal proj geos
 
-      - uses: r-lib/actions/setup-r-dependencies@v4
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"all"'
           extra-packages: |
@@ -60,6 +60,6 @@ jobs:
             RcppParallel
             inline
 
-      - uses: r-lib/actions/check-r-package@v4
+      - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
