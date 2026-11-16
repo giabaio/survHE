@@ -1,0 +1,31 @@
+data                    A fictional survival trial.
+digitise                Format digitised data for use in survival
+                        analysis
+fit.models              Fit parametric survival analysis for health
+                        economic evaluations
+make.ipd                Create an individual level dataset from
+                        digitised data
+make.surv               Engine for Probabilistic Sensitivity Analysis
+                        on the survival curves
+make.transition.probs   make.transition.probs
+make_data_multi_state   make_data_multi_state
+make_newdata            Creates a 'newdata' list to modify the plots
+                        for specific individual profiles (with respect
+                        to the covariates)
+markov_trace            Markov trace
+model.fit.plot          Graphical representation of the measures of
+                        model fitting based on Information Criteria
+msmdata                 NICE TA174 dataset in multi-state format.
+plot.survHE             Plot survival curves for the models fitted
+                        using 'fit.models'
+plot_transformed_km     Plot to assess suitability of parametric model
+print.survHE            Print a summary of the survival model(s) fitted
+                        by 'fit.models'
+psa.plot                Graphical depiction of the probabilistic
+                        sensitivity analysis for the survival curves
+summary.survHE          Prints a summary table for the distribution the
+                        mean survival time for a given model and data
+ta174                   NICE TA174 dataset.
+theme_survHE            A Custom ggplot2 Theme for Survival Plots
+three_state_mm          three_state_mm
+write.surv              write.surv
