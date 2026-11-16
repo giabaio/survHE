@@ -1,8 +1,6 @@
 survHE: CRAN release checklist
 ================
 
-# survHE: CRAN release checklist
-
 ## Introduction
 
 Prepare the current version from `main` on a temporary `cran` branch.

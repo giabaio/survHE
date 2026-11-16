@@ -15,8 +15,6 @@ v[length(v)]=v[length(v)]+1
 set_new_version=package_version(paste(v,collapse="."))
 ```
 
-# survHE: CRAN release checklist
-
 ## Introduction
 
 Prepare the current version from `main` on a temporary `cran` branch. r-universe builds `main`, so `main` stays untouched (and keeps the 
