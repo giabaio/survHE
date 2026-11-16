@@ -185,9 +185,8 @@ make_data_multi_state=function(data,id="id",prog="prog",death="death",prog_t="pr
         ),
         time=Tstop-Tstart,                    # time-to-event = Tstop-Tstart
         status=case_when(                     # censoring indicator:
-                                              #  1 if died at progression; 0 otherwise
-#          (!!sym(death)==1 & !!sym(prog_t)==!!sym(death_t))~1,
-          (!!sym(death)==1 & !!sym(prog_t)==0)~1,          
+                                              #  1 if died without progression; 0 otherwise
+          (!!sym(death)==1 & !!sym(prog)==0)~1,
           TRUE~0
         )
       )  %>% select(id,from,to,trans,Tstart,Tstop,time,status,treat,everything()) 
