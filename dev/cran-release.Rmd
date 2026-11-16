@@ -1,8 +1,11 @@
 ---
 title: "survHE: CRAN release checklist"
-output:
-  github_document:
-    html_preview: false
+format: gfm
+execute:
+  echo: false
+  message: false
+  warning: false
+output: github_document
 ---
 
 ```{r}
