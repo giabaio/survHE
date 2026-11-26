@@ -695,16 +695,11 @@ make_profile_surv <- function(formula,data,newdata) {
       # needs to change the type of variables that are 'factors' in the analysis as well as remove
       # the NAs and replace with 0s
       aug_data=data %>% mutate(across(names(is.fac),~factor(.))) %>% add_row(nd) 
-      # Creates a model frame with IDs
-      mf=model.frame(formula,aug_data,na.action="na.pass") %>% as_tibble() %>% select(-1) %>% 
-        mutate(id=row_number()) %>% rename_if(is.factor,.funs=~gsub("as.factor[( )]","",.x)) %>% 
-        rename_if(is.factor,.funs=~gsub("[( )]","",.x))
       # Now creates the 'model matrix' with the combination of all the factors. NB Needs to use model.matrix.lm
       # which accepts na.action="na.pass" as an option!
       mm=model.matrix.lm(formula,aug_data,na.action="na.pass") %>% as_tibble() %>% mutate(id=row_number())
-      mf=suppressMessages(mf %>% right_join(nd))
-      # And selects only the rows that match with the profile selected in 'newdata'
-      X=as.matrix(mm %>% dplyr::filter(id %in% mf$id) %>% select(-id) %>% unique,drop=FALSE)
+      # And selects the rows added from 'newdata', in the order given by the user
+      X=as.matrix(mm %>% dplyr::filter(id>nrow(data)) %>% select(-id),drop=FALSE)
     }
   }
   
