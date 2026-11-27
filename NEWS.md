@@ -1,15 +1,18 @@
 # 2.0.53 (development version)
 
+## November 2026
+* `make.surv()`: when `newdata` is given, the design matrix `des.mat` now keeps the profiles in the order in which they are listed in `newdata` (PR [#74](https://github.com/giabaio/survHE/pull/74)). Previously, the rows of `des.mat` followed the order in which the profiles first appear in the data, and repeated profiles were collapsed to a single row. For MLE models the survival curves `S` are computed directly from `newdata`; thus, when the two orders differed (e.g. with only categorical covariates and `newdata` listing the profiles in a different order from the data), the curves were attached to the wrong profiles. This affected the labels in `plot()`, `psa.plot()`, `summary()` and `make.transition.probs()`. For INLA and HMC models, the curves and `des.mat` were consistent with each other but in data order; they now follow the order of `newdata` too (thanks to [@chenyangsu](https://github.com/chenyangsu) for this).
+
 # 2.0.52 
 
 ## November 2026
-* `fit.models()` (MLE): user-defined initial values can now be passed to `flexsurv` through the option `inits` (PRs #65 and #66). For a single distribution, `inits` can be a numeric vector or a list with one numeric vector. For several distributions, it must be a list with one element per distribution (in the same order as `distr`); each element is a numeric vector or `NULL` (to use the `flexsurv` default for that model). Initial values are on the natural scale of the parameters, in the order used by `flexsurv`; covariate effects that are not given are initialised at 0 (thanks to @yansi5 for this).
+* `fit.models()` (MLE): user-defined initial values can now be passed to `flexsurv` through the option `inits` (PRs [#65](https://github.com/giabaio/survHE/pull/65) and [#66](https://github.com/giabaio/survHE/pull/66)). For a single distribution, `inits` can be a numeric vector or a list with one numeric vector. For several distributions, it must be a list with one element per distribution (in the same order as `distr`); each element is a numeric vector or `NULL` (to use the `flexsurv` default for that model). Initial values are on the natural scale of the parameters, in the order used by `flexsurv`; covariate effects that are not given are initialised at 0 (thanks to [@yansi5](https://github.com/yansi5) for this).
 * `inits` also works for the Royston-Parmar model (`distr="rps"`), where it is passed to `flexsurv::flexsurvspline`.
 * Fixes a bug in the hidden function `runMLE()`: for `distr="rps"`, the option `timescale` was read from `scale`, so a user-specified `timescale` was ignored.
 * Updates the documentation of `fit.models()`: the list of available distributions now matches `load_availables()` (adding `"rps"` for MLE, `"weibullPH"` for INLA and `"rps"` and `"polyweibull"` for HMC) and the MLE-specific options (`inits`, `weights`, `subset` and the `"rps"` options `k`, `knots`, `bknots`, `scale` and `timescale`) are now described.
-* `make.surv()` (MLE): all covariate profiles now use the same draws of the model parameters, so the simulations are paired across profiles, as needed for PSA (PR #68). Previously, when `newdata` was given, each profile had its own call to `normboot.flexsurvreg()`, so the parameter draws were independent across profiles. In addition, the sub-sampling of `nsim` draws picked different rows for each profile, which broke the pairing even when `newdata` was not given. Now there is a single call to `normboot.flexsurvreg()` with all the profiles and one set of sampled rows, shared by all profiles (thanks to @bitowaqr for this).
-* `make_state_occupancy()`: the computation of the state occupancy now restarts from `start` at the beginning of each simulation (PR #70). Previously it only restarted when `profile` changed; thus, with a single profile and `nsim>1`, each simulation carried on from the last row of the previous one, rather than from `start`. With several profiles the bug was hidden, because the profile changes at each simulation boundary  (thanks to @bitowaqr for this).
-* `make_data_multi_state()`: deaths without progression (transition 2, Pre-progression -> Death) are now identified by `death==1 & prog==0` (PR #72). Previously the condition was `death==1 & prog_t==0`, which never happens in typical data (e.g. for TA174 it gives 0 direct deaths instead of 48); thus, the Pre-progression -> Death hazard was badly wrong. The documentation of `prog_t` and `death_t` now explains that they contain the censoring time (or, for `prog_t`, the death time) when the event has not happened  (thanks to @bitowaqr for this).
+* `make.surv()` (MLE): all covariate profiles now use the same draws of the model parameters, so the simulations are paired across profiles, as needed for PSA (PR [#68](https://github.com/giabaio/survHE/pull/68)). Previously, when `newdata` was given, each profile had its own call to `normboot.flexsurvreg()`, so the parameter draws were independent across profiles. In addition, the sub-sampling of `nsim` draws picked different rows for each profile, which broke the pairing even when `newdata` was not given. Now there is a single call to `normboot.flexsurvreg()` with all the profiles and one set of sampled rows, shared by all profiles (thanks to [@bitowaqr](https://github.com/bitowaqr) for this).
+* `make_state_occupancy()`: the computation of the state occupancy now restarts from `start` at the beginning of each simulation (PR [#70](https://github.com/giabaio/survHE/pull/70)). Previously it only restarted when `profile` changed; thus, with a single profile and `nsim>1`, each simulation carried on from the last row of the previous one, rather than from `start`. With several profiles the bug was hidden, because the profile changes at each simulation boundary  (thanks to [@bitowaqr](https://github.com/bitowaqr) for this).
+* `make_data_multi_state()`: deaths without progression (transition 2, Pre-progression -> Death) are now identified by `death==1 & prog==0` (PR [#72](https://github.com/giabaio/survHE/pull/72)). Previously the condition was `death==1 & prog_t==0`, which never happens in typical data (e.g. for TA174 it gives 0 direct deaths instead of 48); thus, the Pre-progression -> Death hazard was badly wrong. The documentation of `prog_t` and `death_t` now explains that they contain the censoring time (or, for `prog_t`, the death time) when the event has not happened  (thanks to [@bitowaqr](https://github.com/bitowaqr) for this).
 
 ## April 2026
 * Adds support for the handling and plotting of Gamma models fitted in INLA (which will soon be available in `survHEinla` too).
@@ -77,14 +80,14 @@ _September 2024_
 
 # 2.0.1
 
-* Some refactoring (mainly thanks to @n8thangreen) with tidying up of the underlying code. One major change is that now 'make.surv' outputs an object named 'time' instead of 't', which was ambigious
+* Some refactoring (mainly thanks to [@n8thangreen](https://github.com/n8thangreen)) with tidying up of the underlying code. One major change is that now 'make.surv' outputs an object named 'time' instead of 't', which was ambigious
 
 _November 2022_
 
 # 2.0
 
-* @Philip-Cooney found a little mistake in how the print method works for hmc objects. The utility functions were accessing the data for the     first model of the list of possible models (instead of the specific 'mod' one). Also, RPS would produce bizarre results if no covariates included.
-    \item @Philip-Cooney also found that 'make_sim_hmc' would break in the case of a RPS model with no covariates, because the matrix of beta coefficients would be turned into a vector, essentially, but the code would try to still subset a column. This has now been fixed so it's OK to make simulations off an RPS with no intercept model and that propagates to plots too.
+* [@Philip-Cooney](https://github.com/Philip-Cooney) found a little mistake in how the print method works for hmc objects. The utility functions were accessing the data for the     first model of the list of possible models (instead of the specific 'mod' one). Also, RPS would produce bizarre results if no covariates included.
+    \item [@Philip-Cooney](https://github.com/Philip-Cooney) also found that 'make_sim_hmc' would break in the case of a RPS model with no covariates, because the matrix of beta coefficients would be turned into a vector, essentially, but the code would try to still subset a column. This has now been fixed so it's OK to make simulations off an RPS with no intercept model and that propagates to plots too.
     
 _April 2022_
 
@@ -99,7 +102,7 @@ _January 2022_
 the compiler because of declared variables with the same name of a function that was being defined. None of these are directly "visible" to the final user, though...
 
 * Changes to '.Rbuildignore' to allow 'rstantool' to automatically configuring on package install. Also improves compatibility across versions of
-'rstan'. See https://github.com/giabaio/survHE/pull/42
+'rstan'. See PR [#42](https://github.com/giabaio/survHE/pull/42)
 
 _September 2021_
 
@@ -109,7 +112,7 @@ _September 2021_
 
 * Updates the Gamma, GenGamma and GenF models in HMC to include for the possibility that the data contain no censoring. Also fix a small typo in the print method for Gamma/HMC models.
 
-* Updates in INLA means now the Gompertz model is also available for survival modelling. fit.models(), make.surv() and print() have now been updated so that the Gompertz model can be run under 'survHE'. In order to run the Gompertz model using INLA, the *testing* version (>=21.03.21) needs to be installed (see instructions here: https://www.r-inla.org/download-install).
+* Updates in INLA means now the Gompertz model is also available for survival modelling. fit.models(), make.surv() and print() have now been updated so that the Gompertz model can be run under 'survHE'. In order to run the Gompertz model using INLA, the *testing* version (>=21.03.21) needs to be installed (see instructions [here](https://www.r-inla.org/download-install)).
 
 * Related to this, to improve computational stability, *all* the INLA models are now run by 'survHE' using the following trick: first the times are rescaled (on the fly) in the interval [0-1] (by simply recomputing 'time=time/max(time'). The resulting models are *not* directly comparable to other inferential engines (because they are fitted to different data), but 'survHE' automatically rescales the estimates and model fitting statistics (eg *ICs) so that the 'plot' and 'print' methods give the correct answers. make.surv() has also been updated to reflect this.
 
