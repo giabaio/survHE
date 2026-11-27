@@ -117,6 +117,8 @@ make.surv <- function(fit, mod=1, t=NULL, newdata=NULL, nsim=1,...) {
     }
     if (fit$method=="mle" && dist=="rps") {
       exArgs$knots <- fit$models[[mod]]$knots
+      exArgs$scale <- fit$models[[mod]]$scale
+      exArgs$timescale <- fit$models[[mod]]$timescale
     }
     
     mat <- do.call(compute_surv_curve,
