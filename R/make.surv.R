@@ -113,6 +113,9 @@ make.surv <- function(fit, mod=1, t=NULL, newdata=NULL, nsim=1,...) {
     # Needs to add more inputs for the case of hmc/rps
     if (fit$method=="hmc" && dist=="rps") {
       exArgs$data.stan <- fit$misc$data.stan[[mod]]
+      # survHEhmc only fits the rps model on the hazard scale with log time
+      exArgs$scale <- "hazard"
+      exArgs$timescale <- "log"
       t[t==0] <- min(0.00001,min(t[t>0]))
     }
     if (fit$method=="mle" && dist=="rps") {
